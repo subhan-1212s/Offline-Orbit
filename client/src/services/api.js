@@ -7,7 +7,7 @@ import {
   cacheLessonsList 
 } from './indexedDB.js';
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
 const getHeaders = (role = 'student') => {
   const token = localStorage.getItem('orbit_token');
