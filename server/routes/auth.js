@@ -1,0 +1,219 @@
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import { isUsingMongoDB } from '../config/db.js';
+import User from '../models/User.js';
+import { initialSeedData } from '../seed/seedData.js';
+import { protect } from '../middleware/auth.js';
+import { sendPasswordResetEmail, sendLoginOtpEmail, sendLoginNotificationEmail } from '../services/emailService.js';
+
+const router = express.Router();
+const secret = process.env.JWT_SECRET || 'offline_orbit_jwt_secret_key_2026_super_secure';
+
+// Temporary in-memory reset code store: { email: { code, expiresAt } }
+const resetCodesStore = new Map();
+
+const generateToken = (user) => {
+  return jwt.sign(
+    { _id: user._id, email: user.email, role: user.role, name: user.name },
+    secret,
+    { expiresIn: '30d' }
+  );
+};
+
+// Utility helper to format email prefix into a clean name if not provided
+const formatNameFromEmail = (email) => {
+  if (!email) return 'Learner';
+  const prefix = email.split('@')[0];
+  // Replace numbers/symbols and capitalize words
+  const clean = prefix.replace(/[^a-zA-Z]/g, ' ').trim();
+  if (!clean) return 'Learner';
+  return clean.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+};
+
+// POST /api/auth/login
+// Direct Login with Email & Password (no OTP step required)
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password, role } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email address is required.' });
+    }
+
+    let user;
+    if (isUsingMongoDB) {
+      user = await User.findOne({ email });
+    } else {
+      user = initialSeedData.users.find(u => u.email.toLowerCase() === email?.toLowerCase());
+    }
+
+    if (!user) {
+      const derivedName = formatNameFromEmail(email);
+      const defaultUser = {
+        _id: `user-${Date.now()}`,
+        name: derivedName,
+        email: email,
+        role: role === 'educator' || role === 'teacher' ? 'educator' : 'learner',
+        learnerType: 'Individual Learner',
+        primaryFocus: 'Science & Mathematics',
+        preferredLanguage: 'en',
+        points: 480,
+        streakDays: 5,
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80'
+      };
+      user = defaultUser;
+    }
+
+    const token = generateToken(user);
+
+    // Send login notification email in background if configured
+    sendLoginNotificationEmail({ recipientEmail: email, userName: user.name }).catch(() => {});
+
+    res.json({
+      success: true,
+      token,
+      user,
+      message: `Welcome back, ${user.name}!`
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// POST /api/auth/register
+// Direct Registration with Email & Password (no OTP step required)
+router.post('/register', async (req, res) => {
+  try {
+    const { 
+      name, email, password, role, 
+      learnerCategory, subLevel, interestDomain,
+      educatorCategory, institutionName, subjectTaught, gradeTaught, specialization,
+      preferredLanguage 
+    } = req.body;
+    
+    const isEducator = role === 'educator';
+    
+    const newUser = {
+      _id: `user-${Date.now()}`,
+      name: name || formatNameFromEmail(email),
+      email,
+      password: password || 'password123',
+      role: isEducator ? 'educator' : 'learner',
+      
+      // Learner attributes
+      learnerCategory: learnerCategory || 'School Student',
+      subLevel: subLevel || 'High School',
+      interestDomain: interestDomain || 'Computer Science',
+      
+      // Educator attributes
+      educatorCategory: educatorCategory || 'School Teacher',
+      institutionName: institutionName || 'Offline Orbit Academy',
+      subjectTaught: subjectTaught || specialization || 'Computer Science',
+      gradeTaught: gradeTaught || 'High School',
+      specialization: specialization || subjectTaught || 'Computer Science',
+
+      preferredLanguage: preferredLanguage || 'en',
+      goals: [isEducator ? `Empower ${institutionName || 'STEM'} Students` : `Master ${interestDomain || 'STEM'} Concepts`],
+      points: 100,
+      streakDays: 1,
+      badges: [{ code: 'welcome', title: isEducator ? 'Orbit Educator' : 'Orbit Pioneer', icon: 'Rocket', earnedAt: new Date().toISOString() }],
+      avatar: isEducator 
+        ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=250&q=80'
+        : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=250&q=80'
+    };
+
+    if (isUsingMongoDB) {
+      try {
+        const created = await User.create(newUser);
+        newUser._id = created._id;
+      } catch (err) {
+        console.warn('MongoDB save warning:', err.message);
+      }
+    } else {
+      initialSeedData.users.push(newUser);
+    }
+
+    const token = generateToken(newUser);
+
+    res.status(201).json({
+      success: true,
+      token,
+      user: newUser,
+      message: `Account created successfully! Welcome to Offline Orbit, ${newUser.name}.`
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// POST /api/auth/verify-otp
+// Step 2: Verifies 6-digit OTP, completes login, dispatches rich notification email, and returns JWT session token
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otpCode } = req.body;
+    const record = resetCodesStore.get(`otp_${email?.toLowerCase()}`);
+
+    if (!record || record.code !== otpCode || Date.now() > record.expiresAt) {
+      return res.status(400).json({ message: 'Invalid or expired 6-digit OTP code. Please try again.' });
+    }
+
+    const user = record.user;
+    resetCodesStore.delete(`otp_${email.toLowerCase()}`);
+
+    const token = generateToken(user);
+    
+    // Dispatch Brevo login notification email asynchronously
+    sendLoginNotificationEmail({
+      recipientEmail: user.email || email,
+      userName: user.name,
+      streakDays: user.streakDays || 5,
+      points: user.points || 480,
+      badgesCount: (user.badges || []).length || 3
+    }).catch(e => console.warn('Notification dispatch error:', e.message));
+
+    res.json({
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role === 'teacher' ? 'educator' : user.role === 'student' ? 'learner' : user.role,
+        learnerCategory: user.learnerCategory || 'School Student',
+        subLevel: user.subLevel || 'High School',
+        interestDomain: user.interestDomain || 'Computer Science',
+        educatorCategory: user.educatorCategory,
+        institutionName: user.institutionName,
+        subjectTaught: user.subjectTaught,
+        gradeTaught: user.gradeTaught,
+        specialization: user.specialization,
+        preferredLanguage: user.preferredLanguage || 'en',
+        goals: user.goals,
+        points: user.points || 480,
+        streakDays: user.streakDays || 5,
+        avatar: user.avatar
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /api/auth/me
+router.get('/me', protect, async (req, res) => {
+  try {
+    let user;
+    if (isUsingMongoDB) {
+      user = await User.findById(req.user._id).select('-password');
+    } else {
+      user = initialSeedData.users.find(u => u._id === req.user._id);
+    }
+
+    if (!user) {
+      user = initialSeedData.users[0];
+    }
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+export default router;

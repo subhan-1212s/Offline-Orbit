@@ -1,0 +1,21 @@
+{
+  "short_name": "OfflineOrbit",
+  "name": "Offline Orbit - Low-Bandwidth & Offline Learning",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/color/96/planet.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "https://img.icons8.com/color/512/planet.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#FAF9F6",
+  "theme_color": "#F95738",
+  "display": "standalone",
+  "orientation": "portrait"
+}
