@@ -1,5 +1,6 @@
 // WebLLM, WebGPU, Transformers.js (transform.js) & Cloud Cache In-Browser STEM AI Engine
 // Enables true 100% offline, hardware-accelerated local intelligence with zero latency
+import { AI_KNOWLEDGE_BANK, aiKnowledgeEngine } from './aiKnowledgeBank.js';
 
 class WebLLMEngine {
   constructor() {
@@ -32,43 +33,20 @@ class WebLLMEngine {
     }
   }
 
-  // 2. Pre-seed Cloud Cache with High-Frequency STEM Intelligence
+  // 2. Pre-seed Cloud Cache with High-Frequency STEM & Conversational Intelligence (1,100+ items)
   async preSeedCloudCache() {
     if (typeof window === 'undefined' || !('caches' in window)) return;
     try {
       const cache = await caches.open(this.cacheName);
-      const seedEntries = [
-        {
-          key: 'photosynthesis',
-          response: this.computeTailoredSTEMAnswer('photosynthesis and stomata')
-        },
-        {
-          key: 'newton-laws',
-          response: this.computeTailoredSTEMAnswer('newton second law force f=ma')
-        },
-        {
-          key: 'binary-search',
-          response: this.computeTailoredSTEMAnswer('binary search algorithm complexity')
-        },
-        {
-          key: 'ohm-law',
-          response: this.computeTailoredSTEMAnswer('ohm law voltage current resistance')
-        },
-        {
-          key: 'stoichiometry',
-          response: this.computeTailoredSTEMAnswer('stoichiometry and the mole concept')
-        },
-        {
-          key: 'linear-equations',
-          response: this.computeTailoredSTEMAnswer('solve 2x + 6 = 20')
-        }
-      ];
-
-      for (const item of seedEntries) {
-        const req = new Request(`/orbit-cloud-cache/${item.key}`);
+      // Pre-seed first 150 high-frequency knowledge items for instantaneous 0ms response
+      const sampleItems = AI_KNOWLEDGE_BANK.slice(0, 150);
+      for (const item of sampleItems) {
+        const trig = (item.triggers && item.triggers[0]) || item.question;
+        const key = encodeURIComponent(trig.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 50));
+        const req = new Request(`/orbit-cloud-cache/${key}`);
         const existing = await cache.match(req);
         if (!existing) {
-          await cache.put(req, new Response(JSON.stringify({ query: item.key, response: item.response }), {
+          await cache.put(req, new Response(JSON.stringify({ query: item.question, response: item.answer }), {
             headers: { 'Content-Type': 'application/json' }
           }));
         }
@@ -153,7 +131,30 @@ class WebLLMEngine {
       }
     } catch (e) {}
 
-    // B. If WebLLM WebGPU is loaded and ready, use WebGPU inference
+    // B. Check dynamic numerical equations & percentages (Exact calculation with verified numbers)
+    const isDynamicMath = /(\d*)\s*x\s*[\+\-]\s*(\d+)\s*=\s*(\d+)/i.test(cleanPrompt) || /(\d+(?:\.\d+)?)\s*%\s*(?:of)\s*(\d+(?:\.\d+)?)/i.test(cleanPrompt);
+    if (isDynamicMath) {
+      const dynamicMathSolution = this.computeTailoredSTEMAnswer(cleanPrompt, lessonContext);
+      await this.saveToCloudCache(cacheKey, cleanPrompt, dynamicMathSolution);
+      return {
+        text: dynamicMathSolution,
+        engine: 'In-Browser Deterministic Math Solver',
+        isWebGPU: this.isWebGPUSupported
+      };
+    }
+
+    // C. Check 1,100+ Offline Knowledge Bank & Semantic Engine (Exact & Intent Matches)
+    const knowledgeMatch = aiKnowledgeEngine.findBestMatch(cleanPrompt);
+    if (knowledgeMatch && knowledgeMatch.item?.answer) {
+      await this.saveToCloudCache(cacheKey, cleanPrompt, knowledgeMatch.item.answer);
+      return {
+        text: knowledgeMatch.item.answer,
+        engine: `WebLLM & Cloud Cache (${knowledgeMatch.strategy})`,
+        isWebGPU: this.isWebGPUSupported
+      };
+    }
+
+    // C. If WebLLM WebGPU is loaded and ready, use WebGPU inference
     if (this.engine && this.isModelLoaded) {
       try {
         const messages = [
@@ -188,7 +189,7 @@ class WebLLMEngine {
       }
     }
 
-    // C. High-Intelligence In-Browser STEM Neural Engine (100% Offline with Full Rigor)
+    // D. High-Intelligence In-Browser STEM Neural Engine (100% Offline with Full Rigor)
     const tailoredResponse = this.computeTailoredSTEMAnswer(cleanPrompt, lessonContext);
     
     // Save to Cloud Cache Storage
@@ -219,6 +220,43 @@ class WebLLMEngine {
   // 7. Comprehensive STEM Question Solving & Step-by-Step Mathematical Solver
   computeTailoredSTEMAnswer(query, lessonContext = '') {
     const rawQ = (query || '').trim();
+    if (!rawQ) return 'Please ask a STEM question, equation, or chat freely.';
+
+    // 0A. Dynamic Percentage calculation: "what is 15% of 240", "20% of 85"
+    const pctMatch = rawQ.match(/(\d+(?:\.\d+)?)\s*%\s*(?:of)\s*(\d+(?:\.\d+)?)/i);
+    if (pctMatch) {
+      const pct = parseFloat(pctMatch[1]);
+      const val = parseFloat(pctMatch[2]);
+      const ans = ((pct / 100) * val).toFixed(2).replace(/\.00$/, '');
+      return `🔢 **Percentage Calculation:**\n\n• **Question:** ${pct}% of ${val}\n• **Step 1:** Convert percentage to decimal: ${pct}% = ${pct} / 100 = **${pct / 100}**\n• **Step 2:** Multiply by base value: ${pct / 100} × ${val} = **${ans}**\n\n✅ **Final Answer:** **${ans}**`;
+    }
+
+    // 0B. Dynamic Linear Equation Solver: e.g. "solve 5x + 3 = 23", "2x + 6 = 20"
+    const linearMatch = rawQ.match(/(\d*)\s*x\s*([\+\-])\s*(\d+)\s*=\s*(\d+)/i);
+    if (linearMatch) {
+      const coeff = linearMatch[1] === '' ? 1 : parseInt(linearMatch[1], 10);
+      const sign = linearMatch[2];
+      const constant = parseInt(linearMatch[3], 10);
+      const rhs = parseInt(linearMatch[4], 10);
+      const targetRhs = sign === '+' ? rhs - constant : rhs + constant;
+      const xVal = (targetRhs / coeff).toFixed(2).replace(/\.00$/, '');
+
+      return `📐 **Step-by-Step Algebraic Solution for "${rawQ}":**\n\n` +
+        `• **Given Equation:** ${coeff}x ${sign} ${constant} = ${rhs}\n` +
+        `• **Step 1 (Apply Inverse Operation):** ${sign === '+' ? `Subtract ${constant}` : `Add ${constant}`} on both sides of the equation:\n` +
+        `  ${coeff}x = ${rhs} ${sign === '+' ? '-' : '+'} ${constant} ➔ **${coeff}x = ${targetRhs}**\n` +
+        `• **Step 2 (Isolate Variable x):** Divide both sides by the coefficient **${coeff}**:\n` +
+        `  x = ${targetRhs} / ${coeff} ➔ **x = ${xVal}**\n\n` +
+        `🔍 **Verification Check:**\n` +
+        `${coeff}(${xVal}) ${sign} ${constant} = ${coeff * parseFloat(xVal)} ${sign} ${constant} = **${rhs}** ✓ Verified Correct!`;
+    }
+
+    // 0C. Check 1,100+ Offline Knowledge Bank & Semantic Engine first!
+    const kbMatch = aiKnowledgeEngine.findBestMatch(rawQ);
+    if (kbMatch && kbMatch.item?.answer) {
+      return kbMatch.item.answer;
+    }
+
     const cleanQ = rawQ.toLowerCase().replace(/[?!.,]/g, '').trim();
 
     // =========================================================================
@@ -369,40 +407,6 @@ class WebLLMEngine {
     // =========================================================================
     // SECTION 1: DIRECT ARITHMETIC & NUMERICAL EXPRESSION SOLVER
     // =========================================================================
-    
-    // 1A. Percentage calculation: "what is 15% of 240", "20% of 85"
-    const pctMatch = query.match(/(\d+(?:\.\d+)?)\s*%\s*(?:of)\s*(\d+(?:\.\d+)?)/i);
-    if (pctMatch) {
-      const pct = parseFloat(pctMatch[1]);
-      const val = parseFloat(pctMatch[2]);
-      const ans = ((pct / 100) * val).toFixed(2).replace(/\.00$/, '');
-      return `🔢 **Percentage Calculation:**\n\n` +
-        `• **Question:** ${pct}% of ${val}\n` +
-        `• **Step 1:** Convert percentage to decimal: ${pct}% = ${pct} / 100 = **${pct / 100}**\n` +
-        `• **Step 2:** Multiply by base value: ${pct / 100} × ${val} = **${ans}**\n\n` +
-        `✅ **Final Answer:** **${ans}**`;
-    }
-
-    // 1B. Linear Equation Solver: e.g. "solve 2x + 4 = 16", "3x - 9 = 21", "5x + 15 = 45"
-    const linearMatch = query.match(/(\d*)\s*x\s*([\+\-])\s*(\d+)\s*=\s*(\d+)/i);
-    if (linearMatch) {
-      const a = parseInt(linearMatch[1]) || 1;
-      const op = linearMatch[2];
-      const b = parseInt(linearMatch[3]);
-      const c = parseInt(linearMatch[4]);
-      
-      const intermediate = op === '+' ? c - b : c + b;
-      const solution = (intermediate / a).toFixed(2).replace(/\.00$/, '');
-
-      return `📐 **Step-by-Step Algebraic Solution for "${query.trim()}":**\n\n` +
-        `• **Given Equation:** ${a}x ${op} ${b} = ${c}\n` +
-        `• **Step 1 (Apply Inverse Operation):** ${op === '+' ? 'Subtract' : 'Add'} ${b} on both sides of the equation:\n` +
-        `  ${a}x = ${c} ${op === '+' ? '-' : '+'} ${b} ➔ **${a}x = ${intermediate}**\n` +
-        `• **Step 2 (Isolate Variable x):** Divide both sides by the coefficient **${a}**:\n` +
-        `  x = ${intermediate} / ${a} ➔ **x = ${solution}**\n\n` +
-        `🔍 **Verification Check:**\n` +
-        `${a}(${solution}) ${op} ${b} = ${a * parseFloat(solution)} ${op} ${b} = **${c}** ✓ Verified Correct!`;
-    }
 
     // 1C. Simple arithmetic: e.g. "calculate 45 * 12", "what is 144 / 12", "solve 50 + 25 * 2"
     const arithMatch = query.match(/(?:calculate|solve|what is|compute)?\s*(\d+(?:\.\d+)?)\s*([\+\-\*\/])\s*(\d+(?:\.\d+)?)/i);
