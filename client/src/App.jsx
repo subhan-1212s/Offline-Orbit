@@ -180,11 +180,11 @@ const MainAppContent = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#1E2229] relative">
+    <div className={`min-h-screen flex flex-col text-[#1E2229] relative ${activeTab === 'admin-management' ? 'bg-white' : 'bg-[#FAF9F6]'}`}>
       <SyncStatusBanner />
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} onSignOut={handleSignOut} />
       
-      <main className="flex-1 pb-16">
+      <main className={`flex-1 pb-16 ${activeTab === 'admin-management' ? 'bg-white' : ''}`}>
         {renderActiveScreen()}
       </main>
 

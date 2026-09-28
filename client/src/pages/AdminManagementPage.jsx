@@ -27,15 +27,25 @@ export const AdminManagementPage = () => {
   const [usersList, setUsersList] = useState(() => {
     try {
       const stored = localStorage.getItem('orbit_admin_users');
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(u => {
+            if (u.name === 'Aarav Sharma') {
+              return { ...u, name: 'Mohamed Subhan', email: 'mohamedsubhan155@gmail.com', grade: 'High School' };
+            }
+            return u;
+          });
+        }
+      }
     } catch (e) {}
     return [
       { 
         id: 'usr-1', 
-        name: 'Aarav Sharma', 
-        email: 'aarav@orbit.edu', 
+        name: 'Mohamed Subhan', 
+        email: 'mohamedsubhan155@gmail.com', 
         role: 'student', 
-        grade: 'Grade 7 STEM', 
+        grade: 'High School', 
         streak: 5, 
         points: 520, 
         status: 'Active Now',
@@ -409,38 +419,39 @@ export const AdminManagementPage = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <div className="w-full bg-white min-h-[calc(100vh-140px)] py-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
       
-      {/* Admin Top Header Banner */}
-      <div className="bg-gradient-to-r from-[#1E2229] via-[#2A303C] to-[#1E2229] text-white border border-[#3E4554] rounded-3xl p-6 sm:p-8 shadow-xl flex flex-wrap items-center justify-between gap-6">
+      {/* Admin Top Header Banner - Full White Theme */}
+      <div className="bg-white text-[#0F172A] border border-[#E2E8F0] rounded-3xl p-6 sm:p-8 shadow-sm flex flex-wrap items-center justify-between gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-[#0D9488]/20 border border-[#0D9488]/40 rounded-2xl text-[#14B8A6]">
+            <div className="p-3 bg-[#EEFDFB] border border-[#0D9488]/30 rounded-2xl text-[#0D9488] shadow-xs">
               <ShieldCheck className="w-7 h-7" />
             </div>
             <div>
-              <span className="text-[11px] font-bold text-[#14B8A6] uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-[#0D9488] uppercase tracking-wider">
                 Root System Administration Console
               </span>
-              <h1 className="text-2xl sm:text-3xl font-black text-white">
+              <h1 className="text-2xl sm:text-3xl font-black text-[#0F172A]">
                 Offline Orbit Super Admin Control
               </h1>
             </div>
           </div>
-          <p className="text-xs text-[#94A3B8] max-w-2xl leading-relaxed">
+          <p className="text-xs text-[#64748B] max-w-2xl leading-relaxed">
             Live telemetry supervision, user roster management (learners & educators), in-depth student analytics audit, user deletion controls, and Paytm platform subscription billing.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="bg-[#14B8A6]/10 border border-[#14B8A6]/30 px-3.5 py-2 rounded-2xl flex items-center gap-2 text-xs font-semibold text-[#14B8A6]">
-            <span className="w-2 h-2 rounded-full bg-[#14B8A6] animate-ping" />
+          <div className="bg-[#F0FDF4] border border-[#BBF7D0] px-3.5 py-2 rounded-2xl flex items-center gap-2 text-xs font-semibold text-[#16A34A] shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-ping" />
             <span>Telemetry: Live</span>
           </div>
 
           <button
             onClick={loadLiveTelemetry}
-            className="p-2.5 bg-white/10 hover:bg-white/20 rounded-2xl border border-white/20 transition-all text-white flex items-center gap-2 text-xs font-bold"
+            className="p-2.5 bg-white hover:bg-[#F8FAFC] rounded-2xl border border-[#E2E8F0] shadow-xs transition-all text-[#0F172A] flex items-center gap-2 text-xs font-bold cursor-pointer"
             title="Refresh Telemetry"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -450,7 +461,7 @@ export const AdminManagementPage = () => {
       </div>
 
       {notificationMsg && (
-        <div className="p-4 rounded-2xl bg-[#ECFDF5] border border-[#10B981]/30 text-xs font-bold text-[#065F46] flex items-center gap-2 shadow-sm animate-in fade-in duration-200">
+        <div className="p-4 rounded-2xl bg-white border-2 border-[#10B981] text-xs font-bold text-[#065F46] flex items-center gap-2 shadow-sm animate-in fade-in duration-200">
           <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0" />
           <span>{notificationMsg}</span>
         </div>
@@ -460,57 +471,59 @@ export const AdminManagementPage = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         
         {/* Total Users */}
-        <div className="bg-white border border-[#E5E2DA] rounded-2xl p-5 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-[#5A606C]">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-sm space-y-1">
+          <div className="flex items-center justify-between text-[#64748B]">
             <span className="text-[11px] font-bold uppercase tracking-wider">Total Active Users</span>
-            <Users className="w-4 h-4 text-[#1E2229]" />
+            <Users className="w-4 h-4 text-[#0D9488]" />
           </div>
-          <div className="text-3xl font-black text-[#1E2229]">{totalUsersCount}</div>
+          <div className="text-3xl font-black text-[#0F172A]">{totalUsersCount}</div>
           <p className="text-[11px] text-[#0D9488] font-bold">● {totalUsersCount} Registered on Platform</p>
         </div>
 
         {/* Learners (Students) */}
-        <div className="bg-white border border-[#E5E2DA] rounded-2xl p-5 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-[#5A606C]">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-sm space-y-1">
+          <div className="flex items-center justify-between text-[#64748B]">
             <span className="text-[11px] font-bold uppercase tracking-wider">Learners (Students)</span>
             <span className="w-2.5 h-2.5 rounded-full bg-[#F95738]" />
           </div>
           <div className="text-3xl font-black text-[#F95738]">{learnerCount}</div>
-          <p className="text-[11px] text-[#5A606C]">Active STEM Students</p>
+          <p className="text-[11px] text-[#64748B]">Active STEM Students</p>
         </div>
 
         {/* Educators (Teachers) */}
-        <div className="bg-white border border-[#E5E2DA] rounded-2xl p-5 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-[#5A606C]">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-sm space-y-1">
+          <div className="flex items-center justify-between text-[#64748B]">
             <span className="text-[11px] font-bold uppercase tracking-wider">Educators (Teachers)</span>
             <span className="w-2.5 h-2.5 rounded-full bg-[#4F46E5]" />
           </div>
           <div className="text-3xl font-black text-[#4F46E5]">{educatorCount}</div>
-          <p className="text-[11px] text-[#5A606C]">Classroom Instructors</p>
+          <p className="text-[11px] text-[#64748B]">Classroom Instructors</p>
         </div>
 
         {/* Active Subscription Status */}
-        <div className="bg-white border border-[#E5E2DA] rounded-2xl p-5 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-[#5A606C]">
+        <div className="bg-white border border-[#E2E8F0] rounded-2xl p-5 shadow-sm space-y-1">
+          <div className="flex items-center justify-between text-[#64748B]">
             <span className="text-[11px] font-bold uppercase tracking-wider">Platform License</span>
             <CreditCard className="w-4 h-4 text-[#00BAF2]" />
           </div>
           <div className="text-sm font-black text-[#002970] truncate">
             {activeSubscription.name.split(' ')[0]} {activeSubscription.name.split(' ')[1]}
           </div>
-          <p className="text-[11px] text-[#21C17A] font-bold flex items-center gap-1">
+          <p className="text-[11px] text-[#16A34A] font-bold flex items-center gap-1">
             <CheckCircle2 className="w-3 h-3" /> Paytm Verified ({activeSubscription.billingCycle})
           </p>
         </div>
 
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#E5E2DA] pb-2 text-xs font-bold overflow-x-auto">
+      {/* Navigation Tabs - Full White Theme with Clean Borders */}
+      <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-2 text-xs font-bold overflow-x-auto">
         <button
           onClick={() => setActiveTab('users')}
           className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 shrink-0 ${
-            activeTab === 'users' ? 'bg-[#1E2229] text-white shadow-sm' : 'bg-white text-[#5A606C] hover:bg-[#FAF9F6]'
+            activeTab === 'users' 
+              ? 'bg-white text-[#0D9488] border-2 border-[#0D9488] shadow-xs font-extrabold' 
+              : 'bg-white text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC] border border-[#E2E8F0]'
           }`}
         >
           <Users className="w-4 h-4" />
@@ -520,7 +533,9 @@ export const AdminManagementPage = () => {
         <button
           onClick={() => setActiveTab('analytics')}
           className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 shrink-0 ${
-            activeTab === 'analytics' ? 'bg-[#1E2229] text-white shadow-sm' : 'bg-white text-[#5A606C] hover:bg-[#FAF9F6]'
+            activeTab === 'analytics' 
+              ? 'bg-white text-[#F95738] border-2 border-[#F95738] shadow-xs font-extrabold' 
+              : 'bg-white text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC] border border-[#E2E8F0]'
           }`}
         >
           <BarChart2 className="w-4 h-4 text-[#F95738]" />
@@ -530,17 +545,21 @@ export const AdminManagementPage = () => {
         <button
           onClick={() => setActiveTab('billing')}
           className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 shrink-0 ${
-            activeTab === 'billing' ? 'bg-[#002970] text-white shadow-sm' : 'bg-white text-[#002970] hover:bg-[#F0FBFF] border border-[#00BAF2]/30'
+            activeTab === 'billing' 
+              ? 'bg-white text-[#002970] border-2 border-[#00BAF2] shadow-xs font-extrabold' 
+              : 'bg-white text-[#002970] hover:bg-[#F0FBFF] border border-[#00BAF2]/30'
           }`}
         >
           <CreditCard className="w-4 h-4 text-[#00BAF2]" />
-          <span>Paytm Subscriptions & Billing (Monthly/Yearly)</span>
+          <span>Paytm Subscriptions & Billing</span>
         </button>
 
         <button
           onClick={() => setActiveTab('classes')}
           className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 shrink-0 ${
-            activeTab === 'classes' ? 'bg-[#1E2229] text-white shadow-sm' : 'bg-white text-[#5A606C] hover:bg-[#FAF9F6]'
+            activeTab === 'classes' 
+              ? 'bg-white text-[#4F46E5] border-2 border-[#4F46E5] shadow-xs font-extrabold' 
+              : 'bg-white text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC] border border-[#E2E8F0]'
           }`}
         >
           <BookOpen className="w-4 h-4" />
@@ -550,7 +569,9 @@ export const AdminManagementPage = () => {
         <button
           onClick={() => setActiveTab('system')}
           className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 shrink-0 ${
-            activeTab === 'system' ? 'bg-[#1E2229] text-white shadow-sm' : 'bg-white text-[#5A606C] hover:bg-[#FAF9F6]'
+            activeTab === 'system' 
+              ? 'bg-white text-[#0D9488] border-2 border-[#0D9488] shadow-xs font-extrabold' 
+              : 'bg-white text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC] border border-[#E2E8F0]'
           }`}
         >
           <Database className="w-4 h-4" />
@@ -562,7 +583,7 @@ export const AdminManagementPage = () => {
       {/* TAB 1: User Management (Remove User & Role Filtering) */}
       {/* ========================================================================= */}
       {activeTab === 'users' && (
-        <div className="bg-white border border-[#E5E2DA] rounded-3xl p-6 shadow-sm space-y-4">
+        <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-sm space-y-4">
           
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="relative w-full sm:w-72">
@@ -571,17 +592,17 @@ export const AdminManagementPage = () => {
                 placeholder="Search users by name or email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#FAF9F6] border border-[#E5E2DA] rounded-xl pl-9 pr-3 py-2 text-xs font-semibold focus:outline-none focus:border-[#4F46E5]"
+                className="w-full bg-white border border-[#E2E8F0] rounded-xl pl-9 pr-3 py-2 text-xs font-semibold focus:outline-none focus:border-[#0D9488] text-[#0F172A]"
               />
-              <Search className="w-4 h-4 text-[#89909E] absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-[#94A3B8] absolute left-3 top-2.5" />
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <span className="text-xs font-bold text-[#5A606C]">Filter By Role:</span>
+              <span className="text-xs font-bold text-[#64748B]">Filter By Role:</span>
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
-                className="bg-[#FAF9F6] border border-[#E5E2DA] rounded-xl px-3 py-2 text-xs font-bold text-[#1E2229] focus:outline-none"
+                className="bg-white border border-[#E2E8F0] rounded-xl px-3 py-2 text-xs font-bold text-[#0F172A] focus:outline-none focus:border-[#0D9488]"
               >
                 <option value="all">All Roles ({totalUsersCount})</option>
                 <option value="student">Learners / Students ({learnerCount})</option>
@@ -593,7 +614,7 @@ export const AdminManagementPage = () => {
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#FAF9F6] text-[#5A606C] uppercase font-bold text-[10px] tracking-wider border-b border-[#E5E2DA]">
+              <thead className="bg-[#F8FAFC] text-[#64748B] uppercase font-bold text-[10px] tracking-wider border-b border-[#E2E8F0]">
                 <tr>
                   <th className="py-3 px-4">User Details</th>
                   <th className="py-3 px-4">Platform Role</th>
@@ -603,28 +624,28 @@ export const AdminManagementPage = () => {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E5E2DA]">
+              <tbody className="divide-y divide-[#E2E8F0]">
                 {filteredUsers.map((u) => (
-                  <tr key={u.id} className="hover:bg-[#FAF9F6]/80 transition-colors">
+                  <tr key={u.id} className="hover:bg-[#F8FAFC] transition-colors">
                     <td className="py-3.5 px-4">
-                      <div className="font-extrabold text-[#1E2229]">{u.name}</div>
-                      <div className="text-[#89909E] text-[11px]">{u.email}</div>
+                      <div className="font-extrabold text-[#0F172A]">{u.name}</div>
+                      <div className="text-[#64748B] text-[11px]">{u.email}</div>
                     </td>
 
                     <td className="py-3.5 px-4">
                       <span className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase tracking-wider ${
-                        u.role === 'admin' ? 'bg-[#0D9488]/10 text-[#0D9488] border border-[#0D9488]/30' :
-                        (u.role === 'educator' || u.role === 'teacher') ? 'bg-[#4F46E5]/10 text-[#4F46E5] border border-[#4F46E5]/30' :
-                        'bg-[#F95738]/10 text-[#F95738] border border-[#F95738]/30'
+                        u.role === 'admin' ? 'bg-[#EEFDFB] text-[#0D9488] border border-[#0D9488]/30' :
+                        (u.role === 'educator' || u.role === 'teacher') ? 'bg-[#EEF2FF] text-[#4F46E5] border border-[#4F46E5]/30' :
+                        'bg-[#FFF0ED] text-[#F95738] border border-[#F95738]/30'
                       }`}>
                         {u.role === 'student' ? 'Learner' : u.role}
                       </span>
                     </td>
 
-                    <td className="py-3.5 px-4 text-[#5A606C] font-semibold">{u.grade}</td>
+                    <td className="py-3.5 px-4 text-[#64748B] font-semibold">{u.grade}</td>
 
                     <td className="py-3.5 px-4">
-                      <div className="font-bold text-[#1E2229] flex items-center gap-1">
+                      <div className="font-bold text-[#0F172A] flex items-center gap-1">
                         <Zap className="w-3 h-3 text-[#FFC107] fill-[#FFC107]" />
                         <span>{u.streak} Days</span>
                       </div>
@@ -633,13 +654,13 @@ export const AdminManagementPage = () => {
 
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-16 bg-[#E5E2DA] h-2 rounded-full overflow-hidden">
+                        <div className="w-16 bg-[#F1F5F9] h-2 rounded-full overflow-hidden">
                           <div 
                             className="bg-[#0D9488] h-full rounded-full" 
                             style={{ width: `${u.analytics?.masteryScore || 75}%` }}
                           />
                         </div>
-                        <span className="font-bold text-[#1E2229]">{u.analytics?.masteryScore || 75}%</span>
+                        <span className="font-bold text-[#0F172A]">{u.analytics?.masteryScore || 75}%</span>
                       </div>
                     </td>
 
@@ -648,7 +669,7 @@ export const AdminManagementPage = () => {
                         {/* Inspect Analytics Button */}
                         <button
                           onClick={() => setSelectedUserForAnalytics(u)}
-                          className="px-2.5 py-1.5 rounded-lg border border-[#E5E2DA] bg-white hover:bg-[#FAF9F6] text-[#1E2229] font-bold text-[11px] flex items-center gap-1 shadow-2xs"
+                          className="px-2.5 py-1.5 rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F8FAFC] text-[#0F172A] font-bold text-[11px] flex items-center gap-1 shadow-2xs cursor-pointer"
                           title="View In-Depth Learning Analytics"
                         >
                           <Eye className="w-3.5 h-3.5 text-[#4F46E5]" />
@@ -659,7 +680,7 @@ export const AdminManagementPage = () => {
                         {u.role !== 'admin' && (
                           <button
                             onClick={() => handlePromoteRole(u.id, (u.role === 'student' || u.role === 'learner') ? 'educator' : 'student')}
-                            className="px-2 py-1.5 rounded-lg border border-[#E5E2DA] bg-white hover:bg-[#EEF2FF] text-[#4F46E5] font-bold text-[11px]"
+                            className="px-2 py-1.5 rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#EEF2FF] text-[#4F46E5] font-bold text-[11px] cursor-pointer"
                             title="Toggle between Learner and Educator"
                           >
                             {(u.role === 'student' || u.role === 'learner') ? 'Make Educator' : 'Make Learner'}
@@ -670,13 +691,13 @@ export const AdminManagementPage = () => {
                         {u.role !== 'admin' ? (
                           <button
                             onClick={() => setUserToDelete(u)}
-                            className="p-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 transition-colors"
+                            className="p-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 transition-colors cursor-pointer"
                             title="Remove User from Website"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         ) : (
-                          <span className="text-[10px] font-bold text-[#89909E] px-2 py-1 bg-[#FAF9F6] rounded">
+                          <span className="text-[10px] font-bold text-[#64748B] px-2 py-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded">
                             Protected
                           </span>
                         )}
@@ -696,21 +717,21 @@ export const AdminManagementPage = () => {
       {/* ========================================================================= */}
       {activeTab === 'analytics' && (
         <div className="space-y-6">
-          <div className="bg-white border border-[#E5E2DA] rounded-3xl p-6 shadow-sm space-y-4">
+          <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-sm space-y-4">
             <div>
-              <h3 className="text-xl font-extrabold text-[#1E2229]">Detailed Learner & Educator Analytics</h3>
-              <p className="text-xs text-[#5A606C] mt-0.5">
+              <h3 className="text-xl font-extrabold text-[#0F172A]">Detailed Learner & Educator Analytics</h3>
+              <p className="text-xs text-[#64748B] mt-0.5">
                 Audit individual learner mastery scores, topic proficiencies, misconception alerts, and time spent.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
               {usersList.filter(u => u.role !== 'admin').map((u) => (
-                <div key={u.id} className="p-5 rounded-2xl border border-[#E5E2DA] bg-[#FAF9F6] space-y-4 flex flex-col justify-between">
+                <div key={u.id} className="p-5 rounded-2xl border border-[#E2E8F0] bg-white hover:border-[#CBD5E1] shadow-sm space-y-4 flex flex-col justify-between transition-all">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] uppercase ${
-                        u.role === 'educator' ? 'bg-[#4F46E5]/10 text-[#4F46E5]' : 'bg-[#F95738]/10 text-[#F95738]'
+                        u.role === 'educator' ? 'bg-[#EEF2FF] text-[#4F46E5] border border-[#4F46E5]/20' : 'bg-[#FFF0ED] text-[#F95738] border border-[#F95738]/20'
                       }`}>
                         {u.role === 'student' ? 'Learner' : u.role}
                       </span>
@@ -718,21 +739,21 @@ export const AdminManagementPage = () => {
                     </div>
 
                     <div>
-                      <h4 className="font-extrabold text-[#1E2229] text-base">{u.name}</h4>
-                      <p className="text-xs text-[#89909E]">{u.email} • {u.grade}</p>
+                      <h4 className="font-extrabold text-[#0F172A] text-base">{u.name}</h4>
+                      <p className="text-xs text-[#64748B]">{u.email} • {u.grade}</p>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2 bg-white p-3 rounded-xl border border-[#E5E2DA] text-center text-xs">
+                    <div className="grid grid-cols-3 gap-2 bg-[#F8FAFC] p-3 rounded-xl border border-[#E2E8F0] text-center text-xs">
                       <div>
-                        <span className="text-[10px] text-[#89909E] uppercase block">Mastery</span>
+                        <span className="text-[10px] text-[#64748B] uppercase block">Mastery</span>
                         <span className="font-black text-[#0D9488] text-sm">{u.analytics?.masteryScore || 80}%</span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-[#89909E] uppercase block">Quizzes</span>
-                        <span className="font-black text-[#1E2229] text-sm">{u.analytics?.quizzesAttempted || 12}</span>
+                        <span className="text-[10px] text-[#64748B] uppercase block">Quizzes</span>
+                        <span className="font-black text-[#0F172A] text-sm">{u.analytics?.quizzesAttempted || 12}</span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-[#89909E] uppercase block">Accuracy</span>
+                        <span className="text-[10px] text-[#64748B] uppercase block">Accuracy</span>
                         <span className="font-black text-[#4F46E5] text-sm">{u.analytics?.accuracyRate || 90}%</span>
                       </div>
                     </div>
@@ -740,7 +761,7 @@ export const AdminManagementPage = () => {
 
                   <button
                     onClick={() => setSelectedUserForAnalytics(u)}
-                    className="w-full py-2.5 px-3 rounded-xl bg-white border border-[#E5E2DA] hover:bg-[#F3F1EC] text-xs font-bold text-[#1E2229] flex items-center justify-center gap-1.5 shadow-2xs transition-colors"
+                    className="w-full py-2.5 px-3 rounded-xl bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-xs font-bold text-[#0F172A] flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                   >
                     <Eye className="w-3.5 h-3.5 text-[#4F46E5]" />
                     <span>View Complete Analytics Profile</span>
@@ -758,46 +779,46 @@ export const AdminManagementPage = () => {
       {activeTab === 'billing' && (
         <div className="space-y-6">
           
-          {/* Active Platform Plan Overview Banner */}
-          <div className="bg-gradient-to-br from-[#002970] via-[#003B99] to-[#002970] text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-[#00BAF2]/30 flex flex-wrap items-center justify-between gap-6">
+          {/* Active Platform Plan Overview Banner - White Theme */}
+          <div className="bg-white text-[#0F172A] rounded-3xl p-6 sm:p-8 shadow-sm border-2 border-[#00BAF2]/30 flex flex-wrap items-center justify-between gap-6">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <span className="bg-[#21C17A] text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
+                <span className="bg-[#ECFDF5] text-[#16A34A] border border-[#BBF7D0] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
                   Paytm Verified Active License
                 </span>
-                <span className="bg-white/10 text-white text-[10px] font-bold px-3 py-1 rounded-full">
+                <span className="bg-[#F0FBFF] text-[#002970] border border-[#00BAF2]/30 text-[10px] font-bold px-3 py-1 rounded-full">
                   Official Institution Plan
                 </span>
               </div>
 
-              <h2 className="text-2xl sm:text-3xl font-black">{activeSubscription.name}</h2>
-              <p className="text-xs text-white/80 max-w-xl">
-                Authorized academic license with offline SD syncing, multi-educator rooms, and AI diagnostic engines. Renews on: <strong>{activeSubscription.renewsOn}</strong>.
+              <h2 className="text-2xl sm:text-3xl font-black text-[#002970]">{activeSubscription.name}</h2>
+              <p className="text-xs text-[#64748B] max-w-xl">
+                Authorized academic license with offline SD syncing, multi-educator rooms, and AI diagnostic engines. Renews on: <strong className="text-[#0F172A]">{activeSubscription.renewsOn}</strong>.
               </p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-xs border border-white/20 p-4 rounded-2xl text-right">
-              <span className="text-[10px] text-white/70 block uppercase font-bold">Seats In Use</span>
-              <div className="text-2xl font-black text-white">{usersList.length} / {activeSubscription.seatsAllocated}</div>
+            <div className="bg-[#F0FBFF] border border-[#00BAF2]/20 p-4 rounded-2xl text-right shadow-xs">
+              <span className="text-[10px] text-[#64748B] block uppercase font-bold">Seats In Use</span>
+              <div className="text-2xl font-black text-[#002970]">{usersList.length} / {activeSubscription.seatsAllocated}</div>
               <span className="text-[11px] text-[#00BAF2] font-bold block mt-1">Paytm Payment Gateway Active</span>
             </div>
           </div>
 
           {/* Billing Cycle Frequency Toggle (Monthly vs Yearly) */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white border border-[#E5E2DA] rounded-2xl p-4 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white border border-[#E2E8F0] rounded-2xl p-4 shadow-sm">
             <div>
-              <h3 className="font-extrabold text-sm text-[#1E2229]">Select Platform Subscription & Billing Frequency</h3>
-              <p className="text-xs text-[#5A606C]">Switch between monthly and yearly billing options with Paytm test gateway.</p>
+              <h3 className="font-extrabold text-sm text-[#0F172A]">Select Platform Subscription & Billing Frequency</h3>
+              <p className="text-xs text-[#64748B]">Switch between monthly and yearly billing options with Paytm test gateway.</p>
             </div>
 
-            <div className="flex items-center gap-2 bg-[#FAF9F6] p-1.5 rounded-2xl border border-[#E5E2DA]">
+            <div className="flex items-center gap-2 bg-[#F8FAFC] p-1.5 rounded-2xl border border-[#E2E8F0]">
               <button
                 type="button"
                 onClick={() => setBillingCycle('Monthly')}
-                className={`py-2 px-4 rounded-xl text-xs font-bold transition-all ${
+                className={`py-2 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   billingCycle === 'Monthly' 
                     ? 'bg-[#002970] text-white shadow-sm' 
-                    : 'text-[#5A606C] hover:text-[#1E2229]'
+                    : 'text-[#64748B] hover:text-[#0F172A]'
                 }`}
               >
                 Monthly Billing
@@ -806,10 +827,10 @@ export const AdminManagementPage = () => {
               <button
                 type="button"
                 onClick={() => setBillingCycle('Yearly')}
-                className={`py-2 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                className={`py-2 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   billingCycle === 'Yearly' 
                     ? 'bg-[#00BAF2] text-white shadow-sm font-extrabold' 
-                    : 'text-[#5A606C] hover:text-[#1E2229]'
+                    : 'text-[#64748B] hover:text-[#0F172A]'
                 }`}
               >
                 <span>Yearly Billing</span>
@@ -829,8 +850,8 @@ export const AdminManagementPage = () => {
                   key={plan.id}
                   className={`rounded-3xl p-6 sm:p-7 flex flex-col justify-between transition-all bg-white border shadow-sm relative ${
                     plan.isPopular 
-                      ? 'border-[#00BAF2] ring-2 ring-[#00BAF2]/30 shadow-lg' 
-                      : 'border-[#E5E2DA]'
+                      ? 'border-[#00BAF2] ring-2 ring-[#00BAF2]/30 shadow-md' 
+                      : 'border-[#E2E8F0]'
                   }`}
                 >
                   {plan.badge && (
@@ -841,21 +862,21 @@ export const AdminManagementPage = () => {
 
                   <div className="space-y-4">
                     <div>
-                      <h4 className="text-lg font-black text-[#1E2229]">{plan.name}</h4>
-                      <p className="text-xs text-[#5A606C] mt-1 leading-snug">{plan.tagline}</p>
+                      <h4 className="text-lg font-black text-[#0F172A]">{plan.name}</h4>
+                      <p className="text-xs text-[#64748B] mt-1 leading-snug">{plan.tagline}</p>
                     </div>
 
-                    <div className="bg-[#FAF9F6] p-4 rounded-2xl border border-[#E5E2DA]">
+                    <div className="bg-[#F8FAFC] p-4 rounded-2xl border border-[#E2E8F0]">
                       <div className="flex items-baseline gap-1">
                         <span className="text-3xl font-black text-[#002970]">₹{price}</span>
-                        <span className="text-xs text-[#5A606C] font-bold">/ {billingCycle === 'Yearly' ? 'year' : 'month'}</span>
+                        <span className="text-xs text-[#64748B] font-bold">/ {billingCycle === 'Yearly' ? 'year' : 'month'}</span>
                       </div>
                       <span className="text-[11px] font-bold text-[#0D9488] block mt-1">
                         {plan.seats}
                       </span>
                     </div>
 
-                    <ul className="space-y-2.5 text-xs text-[#1E2229] pt-2">
+                    <ul className="space-y-2.5 text-xs text-[#0F172A] pt-2">
                       {plan.features.map((feat, fIdx) => (
                         <li key={fIdx} className="flex items-start gap-2">
                           <CheckCircle2 className="w-4 h-4 text-[#21C17A] shrink-0 mt-0.5" />
@@ -872,13 +893,13 @@ export const AdminManagementPage = () => {
                         setSelectedPlanForPaytm(plan);
                         setPaytmModalOpen(true);
                       }}
-                      className="w-full py-3.5 px-4 rounded-2xl font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 bg-[#00BAF2] hover:bg-[#009ED0] text-white hover:scale-[1.01]"
+                      className="w-full py-3.5 px-4 rounded-2xl font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 bg-[#00BAF2] hover:bg-[#009ED0] text-white hover:scale-[1.01] cursor-pointer"
                     >
                       <span className="font-bold tracking-tight">Paytm</span>
                       <span>Pay ₹{price} ({billingCycle})</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
-                    <span className="text-[10px] text-center text-[#89909E] block mt-2">
+                    <span className="text-[10px] text-center text-[#64748B] block mt-2">
                       Simulated Paytm Test API Handshake & Instant Digital Invoice
                     </span>
                   </div>
@@ -889,21 +910,21 @@ export const AdminManagementPage = () => {
           </div>
 
           {/* Paytm Transaction History Card */}
-          <div className="bg-white border border-[#E5E2DA] rounded-3xl p-6 shadow-sm space-y-4">
+          <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-extrabold text-[#1E2229] flex items-center gap-2">
+                <h3 className="text-base font-extrabold text-[#0F172A] flex items-center gap-2">
                   <CreditCard className="w-4 h-4 text-[#00BAF2]" />
                   <span>Paytm Payment Receipts & Billing History</span>
                 </h3>
-                <p className="text-xs text-[#5A606C]">Verified Paytm gateway transaction logs for this institution.</p>
+                <p className="text-xs text-[#64748B]">Verified Paytm gateway transaction logs for this institution.</p>
               </div>
               <span className="text-xs font-bold text-[#0D9488]">● {paytmHistory.length} Transactions</span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#FAF9F6] text-[#5A606C] uppercase font-bold text-[10px] tracking-wider border-b border-[#E5E2DA]">
+                <thead className="bg-[#F8FAFC] text-[#64748B] uppercase font-bold text-[10px] tracking-wider border-b border-[#E2E8F0]">
                   <tr>
                     <th className="py-3 px-4">Paytm Txn ID</th>
                     <th className="py-3 px-4">Subscription Plan</th>
@@ -913,14 +934,14 @@ export const AdminManagementPage = () => {
                     <th className="py-3 px-4">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#E5E2DA]">
+                <tbody className="divide-y divide-[#E2E8F0]">
                   {paytmHistory.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-[#FAF9F6]">
+                    <tr key={idx} className="hover:bg-[#F8FAFC] transition-colors">
                       <td className="py-3 px-4 font-mono font-bold text-[#002970]">{item.txnId}</td>
-                      <td className="py-3 px-4 font-bold text-[#1E2229]">{item.planName}</td>
-                      <td className="py-3 px-4 font-black text-[#1E2229]">₹{item.amount}.00</td>
-                      <td className="py-3 px-4 text-[#5A606C]">{item.paymentMode}</td>
-                      <td className="py-3 px-4 text-[#5A606C]">{item.date}</td>
+                      <td className="py-3 px-4 font-bold text-[#0F172A]">{item.planName}</td>
+                      <td className="py-3 px-4 font-black text-[#0F172A]">₹{item.amount}.00</td>
+                      <td className="py-3 px-4 text-[#64748B]">{item.paymentMode}</td>
+                      <td className="py-3 px-4 text-[#64748B]">{item.date}</td>
                       <td className="py-3 px-4">
                         <span className="bg-[#ECFDF5] text-[#21C17A] border border-[#21C17A]/30 text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 w-max">
                           <Check className="w-3 h-3" /> Paid (Success)
@@ -940,37 +961,37 @@ export const AdminManagementPage = () => {
       {/* TAB 4: Educator Workspaces / Rooms */}
       {/* ========================================================================= */}
       {activeTab === 'classes' && (
-        <div className="bg-white border border-[#E5E2DA] rounded-3xl p-6 shadow-sm space-y-4">
+        <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-extrabold text-[#1E2229]">
+              <h3 className="text-base font-extrabold text-[#0F172A]">
                 Configured Educator Workspaces & Join Codes
               </h3>
-              <p className="text-xs text-[#5A606C]">Live collaborative rooms configured by educators.</p>
+              <p className="text-xs text-[#64748B]">Live collaborative rooms configured by educators.</p>
             </div>
-            <span className="text-xs text-[#5A606C]">Total Active: {roomsList.length}</span>
+            <span className="text-xs text-[#64748B]">Total Active: {roomsList.length}</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {roomsList.map(r => (
-              <div key={r._id} className="p-5 rounded-2xl border border-[#E5E2DA] bg-[#FAF9F6] space-y-3">
+              <div key={r._id} className="p-5 rounded-2xl border border-[#E2E8F0] bg-white shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-[#4F46E5] uppercase tracking-wider bg-[#EEF2FF] px-2 py-0.5 rounded">
                     {r.grade || 'Grade 10'} • {r.subject || 'STEM'}
                   </span>
                   <div className="text-right">
-                    <span className="text-[10px] text-[#89909E] block">Join Code</span>
+                    <span className="text-[10px] text-[#64748B] block">Join Code</span>
                     <span className="font-mono text-base font-black text-[#4F46E5]">{r.code}</span>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="font-extrabold text-[#1E2229] text-base">{r.className}</h4>
-                  <p className="text-xs text-[#5A606C] mt-0.5">{r.description || 'Active Live Educator Workspace'}</p>
+                  <h4 className="font-extrabold text-[#0F172A] text-base">{r.className}</h4>
+                  <p className="text-xs text-[#64748B] mt-0.5">{r.description || 'Active Live Educator Workspace'}</p>
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-[#5A606C] border-t border-[#E5E2DA] pt-2">
-                  <span>Enrolled Students: <strong className="text-[#1E2229]">{r.studentIds?.length || 1}</strong></span>
+                <div className="flex items-center justify-between text-xs text-[#64748B] border-t border-[#E2E8F0] pt-2">
+                  <span>Enrolled Students: <strong className="text-[#0F172A]">{r.studentIds?.length || 1}</strong></span>
                   <span className="text-[#0D9488] font-bold">● Active Telemetry</span>
                 </div>
               </div>
@@ -983,36 +1004,36 @@ export const AdminManagementPage = () => {
       {/* TAB 5: Diagnostics */}
       {/* ========================================================================= */}
       {activeTab === 'system' && (
-        <div className="bg-white border border-[#E5E2DA] rounded-3xl p-6 shadow-sm space-y-6">
-          <h3 className="text-base font-extrabold text-[#1E2229]">
+        <div className="bg-white border border-[#E2E8F0] rounded-3xl p-6 shadow-sm space-y-6">
+          <h3 className="text-base font-extrabold text-[#0F172A]">
             System Health, IndexedDB & Low-Bandwidth Sync Cache
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#FAF9F6] border border-[#E5E2DA] space-y-2">
-              <span className="font-bold text-[#1E2229] block">Local IndexedDB Stores</span>
-              <p className="text-[#5A606C]">Offline video storage and sync queues ready.</p>
-              <div className="text-[11px] font-mono text-[#0D9488] bg-white p-2 rounded border border-[#E5E2DA]">
+            <div className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-sm space-y-2">
+              <span className="font-bold text-[#0F172A] block">Local IndexedDB Stores</span>
+              <p className="text-[#64748B]">Offline video storage and sync queues ready.</p>
+              <div className="text-[11px] font-mono text-[#0D9488] bg-[#F8FAFC] p-2 rounded border border-[#E2E8F0]">
                 • downloadedVideos: Active<br />
                 • pendingSync: 0 queued<br />
                 • lessonsCache: Synced
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#FAF9F6] border border-[#E5E2DA] space-y-2">
-              <span className="font-bold text-[#1E2229] block">In-App Telemetry & Badges</span>
-              <p className="text-[#5A606C]">Real-time student progress updates & alerts.</p>
-              <div className="text-[11px] font-mono text-[#4F46E5] bg-white p-2 rounded border border-[#E5E2DA]">
+            <div className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-sm space-y-2">
+              <span className="font-bold text-[#0F172A] block">In-App Telemetry & Badges</span>
+              <p className="text-[#64748B]">Real-time student progress updates & alerts.</p>
+              <div className="text-[11px] font-mono text-[#4F46E5] bg-[#F8FAFC] p-2 rounded border border-[#E2E8F0]">
                 • Notification Bus: Active<br />
                 • Real-time Mesh: Connected<br />
                 • Digest Export: Enabled
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#FAF9F6] border border-[#E5E2DA] space-y-2">
-              <span className="font-bold text-[#1E2229] block">Paytm PG Gateway Status</span>
-              <p className="text-[#5A606C]">Test merchant key & simulated checksum verified.</p>
-              <div className="text-[11px] font-mono text-[#00BAF2] bg-white p-2 rounded border border-[#E5E2DA]">
+            <div className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-sm space-y-2">
+              <span className="font-bold text-[#0F172A] block">Paytm PG Gateway Status</span>
+              <p className="text-[#64748B]">Test merchant key & simulated checksum verified.</p>
+              <div className="text-[11px] font-mono text-[#00BAF2] bg-[#F8FAFC] p-2 rounded border border-[#E2E8F0]">
                 • Merchant ID: OFFLINEORBIT_TEST<br />
                 • Environment: Sandbox<br />
                 • UPI / Wallet / NetBanking: Ready
@@ -1026,20 +1047,20 @@ export const AdminManagementPage = () => {
       {/* MODAL 1: Confirm Remove User Modal */}
       {/* ========================================================================= */}
       {userToDelete && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E5E2DA] space-y-4 animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E2E8F0] space-y-4 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3 text-red-600">
               <div className="p-3 bg-red-100 rounded-2xl">
                 <AlertTriangle className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-extrabold text-base text-[#1E2229]">Confirm Remove User</h3>
+                <h3 className="font-extrabold text-base text-[#0F172A]">Confirm Remove User</h3>
                 <span className="text-xs text-red-600 font-semibold">Irreversible Action</span>
               </div>
             </div>
 
-            <p className="text-xs text-[#5A606C] leading-relaxed">
-              Are you sure you want to remove <strong>{userToDelete.name}</strong> (<span className="text-[#1E2229]">{userToDelete.email}</span>)?
+            <p className="text-xs text-[#64748B] leading-relaxed">
+              Are you sure you want to remove <strong>{userToDelete.name}</strong> (<span className="text-[#0F172A]">{userToDelete.email}</span>)?
               <br /><br />
               This will permanently delete their account profile, assessment records, learning streak, and remove them from all enrolled classroom workspaces.
             </p>
@@ -1048,7 +1069,7 @@ export const AdminManagementPage = () => {
               <button
                 type="button"
                 onClick={() => setUserToDelete(null)}
-                className="py-2.5 px-4 rounded-xl border border-[#E5E2DA] text-xs font-bold text-[#5A606C] hover:bg-[#FAF9F6]"
+                className="py-2.5 px-4 rounded-xl border border-[#E2E8F0] text-xs font-bold text-[#64748B] hover:bg-[#F8FAFC] cursor-pointer"
               >
                 Cancel
               </button>
@@ -1056,7 +1077,7 @@ export const AdminManagementPage = () => {
               <button
                 type="button"
                 onClick={handleConfirmRemoveUser}
-                className="py-2.5 px-5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-md flex items-center gap-1.5"
+                className="py-2.5 px-5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-md flex items-center gap-1.5 cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Remove User</span>
@@ -1070,18 +1091,18 @@ export const AdminManagementPage = () => {
       {/* MODAL 2: User In-Depth Analytics Modal */}
       {/* ========================================================================= */}
       {selectedUserForAnalytics && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-[#E5E2DA] space-y-6 my-8 animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-[#E2E8F0] space-y-6 my-8 animate-in fade-in zoom-in-95 duration-200">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-[#E5E2DA] pb-4">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-[#EEFDFB] border border-[#0D9488]/30 flex items-center justify-center text-lg font-black text-[#0D9488]">
                   {selectedUserForAnalytics.name.charAt(0)}
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-lg text-[#1E2229]">{selectedUserForAnalytics.name}</h3>
-                  <div className="flex items-center gap-2 text-xs text-[#5A606C]">
+                  <h3 className="font-extrabold text-lg text-[#0F172A]">{selectedUserForAnalytics.name}</h3>
+                  <div className="flex items-center gap-2 text-xs text-[#64748B]">
                     <span>{selectedUserForAnalytics.email}</span>
                     <span>•</span>
                     <span className="font-bold text-[#4F46E5]">{selectedUserForAnalytics.grade}</span>
@@ -1091,7 +1112,7 @@ export const AdminManagementPage = () => {
 
               <button 
                 onClick={() => setSelectedUserForAnalytics(null)}
-                className="p-2 text-[#89909E] hover:text-[#1E2229] rounded-xl hover:bg-[#FAF9F6]"
+                className="p-2 text-[#94A3B8] hover:text-[#0F172A] rounded-xl hover:bg-[#F8FAFC] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1106,9 +1127,9 @@ export const AdminManagementPage = () => {
                 </span>
               </div>
 
-              <div className="bg-[#FAF9F6] border border-[#E5E2DA] p-3 rounded-2xl">
-                <span className="text-[10px] font-bold text-[#5A606C] uppercase block">Quizzes Taken</span>
-                <span className="text-2xl font-black text-[#1E2229]">
+              <div className="bg-white border border-[#E2E8F0] p-3 rounded-2xl shadow-2xs">
+                <span className="text-[10px] font-bold text-[#64748B] uppercase block">Quizzes Taken</span>
+                <span className="text-2xl font-black text-[#0F172A]">
                   {selectedUserForAnalytics.analytics?.quizzesAttempted || 12}
                 </span>
               </div>
@@ -1130,7 +1151,7 @@ export const AdminManagementPage = () => {
 
             {/* Topic Mastery Bars */}
             <div className="space-y-3">
-              <h4 className="text-xs font-extrabold text-[#1E2229] uppercase tracking-wider flex items-center gap-1.5">
+              <h4 className="text-xs font-extrabold text-[#0F172A] uppercase tracking-wider flex items-center gap-1.5">
                 <BarChart2 className="w-4 h-4 text-[#0D9488]" />
                 <span>Curriculum Topic Breakdown</span>
               </h4>
@@ -1141,12 +1162,12 @@ export const AdminManagementPage = () => {
                   { name: 'Photosynthesis & Plant Energy', score: 85, status: 'Mastered' },
                   { name: 'Newtonian Physics & Vectors', score: 76, status: 'Proficient' }
                 ]).map((top, idx) => (
-                  <div key={idx} className="bg-[#FAF9F6] p-3 rounded-xl border border-[#E5E2DA] space-y-1 text-xs">
+                  <div key={idx} className="bg-white p-3 rounded-xl border border-[#E2E8F0] space-y-1 text-xs shadow-2xs">
                     <div className="flex items-center justify-between font-bold">
-                      <span className="text-[#1E2229]">{top.name}</span>
+                      <span className="text-[#0F172A]">{top.name}</span>
                       <span className="text-[#0D9488]">{top.score}% ({top.status})</span>
                     </div>
-                    <div className="w-full bg-[#E5E2DA] h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-[#F1F5F9] h-2 rounded-full overflow-hidden">
                       <div className="bg-[#0D9488] h-full rounded-full transition-all" style={{ width: `${top.score}%` }} />
                     </div>
                   </div>
@@ -1161,7 +1182,7 @@ export const AdminManagementPage = () => {
                   <AlertCircle className="w-4 h-4" />
                   <span>Misconceptions Flagged by Diagnostic Engine</span>
                 </span>
-                <ul className="text-xs text-[#1E2229] space-y-1 list-disc list-inside">
+                <ul className="text-xs text-[#0F172A] space-y-1 list-disc list-inside">
                   {selectedUserForAnalytics.analytics.misconceptions.map((m, mIdx) => (
                     <li key={mIdx}>{m}</li>
                   ))}
@@ -1172,15 +1193,15 @@ export const AdminManagementPage = () => {
             {/* Recent Assessments */}
             {selectedUserForAnalytics.analytics?.recentAttempts?.length > 0 && (
               <div className="space-y-2">
-                <span className="text-xs font-bold text-[#1E2229] block">Recent Quiz Submissions</span>
+                <span className="text-xs font-bold text-[#0F172A] block">Recent Quiz Submissions</span>
                 <div className="space-y-1.5">
                   {selectedUserForAnalytics.analytics.recentAttempts.map((att, aIdx) => (
-                    <div key={aIdx} className="p-2.5 rounded-xl border border-[#E5E2DA] bg-[#FAF9F6] flex items-center justify-between text-xs">
+                    <div key={aIdx} className="p-2.5 rounded-xl border border-[#E2E8F0] bg-white shadow-2xs flex items-center justify-between text-xs">
                       <div>
-                        <span className="font-bold text-[#1E2229]">{att.quiz}</span>
-                        <p className="text-[11px] text-[#89909E]">{att.date}</p>
+                        <span className="font-bold text-[#0F172A]">{att.quiz}</span>
+                        <p className="text-[11px] text-[#64748B]">{att.date}</p>
                       </div>
-                      <span className="font-black text-[#0D9488] bg-[#EEFDFB] px-2.5 py-1 rounded-lg">
+                      <span className="font-black text-[#0D9488] bg-[#EEFDFB] border border-[#0D9488]/20 px-2.5 py-1 rounded-lg">
                         {att.score} / {att.total}
                       </span>
                     </div>
@@ -1193,7 +1214,7 @@ export const AdminManagementPage = () => {
               <button
                 type="button"
                 onClick={() => setSelectedUserForAnalytics(null)}
-                className="btn-coral text-xs py-2 px-5 bg-[#1E2229] hover:bg-[#333A48]"
+                className="py-2.5 px-6 rounded-xl bg-white hover:bg-[#F8FAFC] text-[#0F172A] border border-[#E2E8F0] text-xs font-bold shadow-xs cursor-pointer transition-colors"
               >
                 Close Analytics View
               </button>
@@ -1216,8 +1237,10 @@ export const AdminManagementPage = () => {
         />
       )}
 
+      </div>
     </div>
   );
 };
 
 export default AdminManagementPage;
+

@@ -111,35 +111,6 @@ export const AuthPage = ({ onAuthSuccess }) => {
     }
   };
 
-  // 1-Click Super Admin Login
-  const handleQuickAdminLogin = async () => {
-    setLoading(true);
-    setMessage('');
-    try {
-      const res = await api.demoLogin('admin');
-      const adminUser = { ...res.user, role: 'admin' };
-      localStorage.setItem('orbit_token', res.token || 'admin-session-token');
-      localStorage.setItem('orbit_user', JSON.stringify(adminUser));
-      updateUserProfile(adminUser);
-      onAuthSuccess(adminUser);
-    } catch (err) {
-      const adminUser = {
-        _id: 'user-super-admin',
-        name: 'Super Admin',
-        email: 'admin@offline-orbit.edu',
-        role: 'admin',
-        grade: 'Root Administrator',
-        points: 9999,
-        streakDays: 30
-      };
-      localStorage.setItem('orbit_token', 'admin-session-token');
-      localStorage.setItem('orbit_user', JSON.stringify(adminUser));
-      updateUserProfile(adminUser);
-      onAuthSuccess(adminUser);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Handle Learner Account Registration -> Direct Sign In
   const handleLearnerRegisterSubmit = async (e) => {
@@ -391,15 +362,10 @@ export const AuthPage = ({ onAuthSuccess }) => {
               </button>
 
               {activeMode === 'admin-login' ? (
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={handleQuickAdminLogin}
-                    className="w-full py-2.5 rounded-xl bg-[#F0FDF4] hover:bg-[#DCFCE7] border border-[#86EFAC] text-[#166534] text-xs font-bold transition-all flex items-center justify-center gap-2"
-                  >
-                    <Sparkles className="w-4 h-4 text-[#16A34A]" />
-                    <span>⚡ 1-Click Super Admin Sign In</span>
-                  </button>
+                <div className="pt-3 text-center">
+                  <p className="text-[11px] text-[#64748B] font-medium">
+                    🔒 Protected Administrative Console. Enter root credentials to authenticate.
+                  </p>
                 </div>
               ) : (
                 <div className="pt-3 border-t border-[#E2E8F0] text-center text-xs">
