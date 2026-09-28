@@ -22,7 +22,6 @@ import { OfflineManagerPage } from './pages/OfflineManagerPage';
 import { AIConceptPlaygroundPage } from './pages/AIConceptPlaygroundPage';
 import { AIQuizGeneratorPage } from './pages/AIQuizGeneratorPage';
 import { CommunityBoardPage } from './pages/CommunityBoardPage';
-import { OrganizationDashboardPage } from './pages/OrganizationDashboardPage';
 
 const MainAppContent = () => {
   const { user, setUser } = useAuth();
@@ -153,9 +152,6 @@ const MainAppContent = () => {
             onBack={() => setActiveTab('teacher-dashboard')}
           />
         );
-
-      case 'org-dashboard':
-        return <OrganizationDashboardPage />;
 
       case 'offline-manager':
         return <OfflineManagerPage onNavigateToLesson={handleLaunchLesson} />;

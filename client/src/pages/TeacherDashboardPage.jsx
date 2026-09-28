@@ -5,8 +5,76 @@ import { ConceptGapsChart } from '../components/charts/ConceptGapsChart';
 import { AssignmentCompletionChart } from '../components/charts/AssignmentCompletionChart';
 import { 
   BookOpen, Users, AlertTriangle, Sparkles, CheckCircle2, 
-  PlusCircle, RefreshCw, FileText, ArrowRight, Eye, Copy, MessageSquare, Send, Film, Key 
+  PlusCircle, RefreshCw, FileText, ArrowRight, Eye, Copy, MessageSquare, Send, Film, Key,
+  Star, Lock, ShieldCheck, Download, Award, Tag, Check, ExternalLink 
 } from 'lucide-react';
+import { UdemyCourseCheckoutModal } from '../components/UdemyCourseCheckoutModal';
+
+const EDUCATOR_COURSES = [
+  {
+    id: 'stem-curriculum-bundle',
+    title: 'Complete STEM Curriculum & Diagnostic Toolkit for Educators',
+    subtitle: 'Master offline classroom management, automated Bloom\'s taxonomy diagnostics, and multilingual audio lessons.',
+    instructor: 'Dr. Sarah Vance, Senior STEM Pedagogist',
+    rating: 4.9,
+    ratingCount: '2,480 ratings',
+    studentsCount: '14,350 educators',
+    originalPrice: 3499,
+    discountPrice: 499,
+    bestseller: true,
+    badge: 'Bestseller',
+    badgeColor: 'bg-[#ECEB98] text-[#2D2F31]',
+    features: [
+      'Full Lifetime Access to 150+ Offline STEM Question Banks',
+      'Downloadable Animated WebM Video Lesson Packs (~400KB)',
+      'Automated Diagnostic Misconception PDF Report Card Generator',
+      '6-Digit Classroom Code Telemetry & Live Chat',
+      'Official Certificate of Completion for School Accreditation'
+    ]
+  },
+  {
+    id: 'ai-heuristic-diagnostic-suite',
+    title: 'Offline AI Diagnostic & Misconception Remediation Suite Pro',
+    subtitle: 'Deploy on-premise heuristic diagnostic engines, automated feedback generators, and personalized study planners without internet.',
+    instructor: 'Prof. Rajesh Sharma, AI in Education Lab',
+    rating: 4.95,
+    ratingCount: '1,890 ratings',
+    studentsCount: '9,420 educators',
+    originalPrice: 4999,
+    discountPrice: 699,
+    bestseller: false,
+    badge: 'Highest Rated',
+    badgeColor: 'bg-[#A435F0] text-white',
+    features: [
+      'Pre-trained Lightweight Rule Engine & Diagnostic Parser',
+      'Offline Micro-Quiz Creator with Distractor Rationale',
+      'Bloom\'s Taxonomy Cognitive Mapping (Remembering to Creating)',
+      'Multi-Student Batch Progress Sync & Analytics Export',
+      '30-Day Money-Back Guarantee'
+    ]
+  },
+  {
+    id: 'multi-campus-accreditation',
+    title: 'Multi-Campus Offline-Orbit Deployment & Institutional License',
+    subtitle: 'Step-by-step institutional licensing, mesh synchronization setup for remote schools, and administrative governance.',
+    instructor: 'Global Rural Education Council',
+    rating: 4.88,
+    ratingCount: '940 ratings',
+    studentsCount: '3,200 institutions',
+    originalPrice: 7999,
+    discountPrice: 1299,
+    bestseller: false,
+    badge: 'Institutional Pack',
+    badgeColor: 'bg-[#0D9488] text-white',
+    features: [
+      'Multi-Classroom Unlimited Telemetry Sync',
+      'Offline Local Server (Raspberry Pi / Local PC) Image',
+      'Teacher Training Video Series (10 Hours On-Demand)',
+      'Verified School Accreditation Certificate',
+      'Dedicated Priority Pedagogical Support'
+    ]
+  }
+];
 
 export const TeacherDashboardPage = ({ onSelectStudent }) => {
   const { user } = useAuth();
@@ -33,6 +101,26 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
   const [draftResult, setDraftResult] = useState(null);
   const [draftLoading, setDraftLoading] = useState(false);
   const [assignedMessage, setAssignedMessage] = useState('');
+
+  // Udemy In-App Purchases State
+  const [selectedCourseForCheckout, setSelectedCourseForCheckout] = useState(null);
+  const [purchasedCourseIds, setPurchasedCourseIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('orbit_educator_purchases') || '[]');
+    } catch (e) {
+      return [];
+    }
+  });
+
+  const handlePurchaseSuccess = (courseItem, receipt) => {
+    setPurchasedCourseIds(prev => {
+      const updated = Array.from(new Set([courseItem.id, ...prev]));
+      try {
+        localStorage.setItem('orbit_educator_purchases', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+  };
 
   useEffect(() => {
     loadClassData();
@@ -397,6 +485,129 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
           ))}
         </div>
       </div>
+
+      {/* Udemy-Style Educator In-App Purchases Section */}
+      <div className="bg-white border border-[#E5E2DA] rounded-3xl p-6 shadow-sm space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E5E2DA] pb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-[#2D2F31] text-white flex items-center justify-center font-extrabold text-2xl shadow-md border border-gray-700">
+              <span className="text-[#A435F0]">U</span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="bg-[#A435F0]/10 text-[#A435F0] text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
+                  Educator & Org In-App Purchases
+                </span>
+                <span className="bg-[#ECEB98] text-[#2D2F31] text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
+                  Udemy Format
+                </span>
+              </div>
+              <h3 className="text-xl font-black text-[#1E2229] mt-0.5">
+                Pro Pedagogical Toolkits & Masterclass Courses
+              </h3>
+              <p className="text-xs text-[#5A606C]">
+                Accredited institutional modules, curriculum question packs, and offline heuristic diagnostic engines. <em className="text-[#0D9488] font-bold not-italic">Students learn 100% free.</em>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 bg-[#F7F9FA] px-4 py-2.5 rounded-2xl border border-[#E5E2DA] self-start md:self-auto text-xs font-semibold text-[#5A606C]">
+            <ShieldCheck className="w-4 h-4 text-[#0D9488]" />
+            <span>30-Day Money-Back Guarantee • Lifetime Access</span>
+          </div>
+        </div>
+
+        {/* 3 Course Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {EDUCATOR_COURSES.map((course) => {
+            const isPurchased = purchasedCourseIds.includes(course.id);
+            return (
+              <div 
+                key={course.id}
+                className="border border-[#E5E2DA] rounded-2xl bg-[#FAF9F6] hover:bg-white hover:shadow-lg transition-all duration-200 flex flex-col justify-between overflow-hidden"
+              >
+                {/* Card Top Banner */}
+                <div className="p-5 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${course.badgeColor}`}>
+                      {course.badge}
+                    </span>
+                    <div className="flex items-center gap-1 text-xs text-[#B4690E] font-bold">
+                      <Star className="w-3.5 h-3.5 fill-[#B4690E]" />
+                      <span>{course.rating}</span>
+                      <span className="text-[#89909E] font-normal">({course.ratingCount})</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-extrabold text-[#1E2229] text-base leading-snug">
+                      {course.title}
+                    </h4>
+                    <p className="text-xs text-[#5A606C] mt-1.5 line-clamp-2">
+                      {course.subtitle}
+                    </p>
+                    <span className="text-[11px] font-semibold text-[#89909E] block mt-1">
+                      By {course.instructor}
+                    </span>
+                  </div>
+
+                  {/* Price section */}
+                  <div className="pt-2 border-t border-[#E5E2DA]/60 flex items-baseline gap-2">
+                    <span className="text-xl font-black text-[#1E2229]">₹{course.discountPrice}</span>
+                    <span className="text-xs text-[#89909E] line-through font-semibold">₹{course.originalPrice}</span>
+                    <span className="text-xs font-black text-[#A435F0]">86% off</span>
+                  </div>
+
+                  {/* Checklist */}
+                  <div className="space-y-1.5 pt-2 text-xs text-[#1E2229]">
+                    {course.features.slice(0, 3).map((feat, idx) => (
+                      <div key={idx} className="flex items-start gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-[#0D9488] shrink-0 mt-0.5" />
+                        <span className="text-[11px] text-[#5A606C] leading-snug">{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Button Footer */}
+                <div className="p-4 bg-white border-t border-[#E5E2DA] mt-auto">
+                  {isPurchased ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-center gap-1.5 text-xs font-black text-[#0D9488] bg-green-50 py-1.5 rounded-xl border border-green-200">
+                        <CheckCircle2 className="w-4 h-4 text-[#0D9488]" />
+                        <span>Enrolled & Active Access</span>
+                      </div>
+                      <button
+                        onClick={() => alert(`Accessing ${course.title} resources: Toolkit and Question Banks loaded into your offline workspace cache.`)}
+                        className="w-full py-2 bg-[#2D2F31] hover:bg-black text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Open Toolkit / Downloads</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setSelectedCourseForCheckout(course)}
+                      className="w-full py-2.5 bg-[#A435F0] hover:bg-[#8710D8] text-white text-xs font-extrabold rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                    >
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>Enroll Now (In-App Purchase)</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Udemy Checkout Modal */}
+      <UdemyCourseCheckoutModal
+        isOpen={!!selectedCourseForCheckout}
+        onClose={() => setSelectedCourseForCheckout(null)}
+        courseItem={selectedCourseForCheckout}
+        onPurchaseSuccess={handlePurchaseSuccess}
+      />
 
       {/* Create Classroom Room Modal */}
       {showCreateModal && (
