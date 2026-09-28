@@ -22,12 +22,14 @@ import { OfflineManagerPage } from './pages/OfflineManagerPage';
 import { AIConceptPlaygroundPage } from './pages/AIConceptPlaygroundPage';
 import { AIQuizGeneratorPage } from './pages/AIQuizGeneratorPage';
 import { CommunityBoardPage } from './pages/CommunityBoardPage';
+import { AdminManagementPage } from './pages/AdminManagementPage';
 
 const MainAppContent = () => {
   const { user, setUser } = useAuth();
   
   const getDefaultTab = () => {
     if (!user) return 'auth';
+    if (user.role === 'admin') return 'admin-management';
     if (user.role === 'educator' || user.role === 'teacher') return 'teacher-dashboard';
     if (user.role === 'independent') return 'independent-home';
     return 'student-home';
@@ -59,7 +61,9 @@ const MainAppContent = () => {
     return (
       <div className="min-h-screen bg-[#FAF9F6] text-[#1E2229]">
         <AuthPage onAuthSuccess={(u) => {
-          if (u?.role === 'educator' || u?.role === 'teacher') {
+          if (u?.role === 'admin') {
+            setActiveTab('admin-management');
+          } else if (u?.role === 'educator' || u?.role === 'teacher') {
             setActiveTab('teacher-dashboard');
           } else {
             setSelectedQuizId('quiz-diagnostic-g7');
@@ -152,6 +156,9 @@ const MainAppContent = () => {
             onBack={() => setActiveTab('teacher-dashboard')}
           />
         );
+
+      case 'admin-management':
+        return <AdminManagementPage />;
 
       case 'offline-manager':
         return <OfflineManagerPage onNavigateToLesson={handleLaunchLesson} />;

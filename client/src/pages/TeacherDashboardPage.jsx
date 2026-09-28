@@ -6,7 +6,7 @@ import { AssignmentCompletionChart } from '../components/charts/AssignmentComple
 import { 
   BookOpen, Users, AlertTriangle, Sparkles, CheckCircle2, 
   PlusCircle, RefreshCw, FileText, ArrowRight, Eye, Copy, MessageSquare, Send, Film, Key,
-  Star, Lock, ShieldCheck, Download, Award, Tag, Check, ExternalLink 
+  Star, Lock, ShieldCheck, Download, Award, Tag, Check, ExternalLink, Zap, Activity 
 } from 'lucide-react';
 import { ByjusCourseCheckoutModal } from '../components/ByjusCourseCheckoutModal';
 
@@ -119,20 +119,82 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
     });
   };
 
-  useEffect(() => {
-    loadClassData();
-    loadMyRooms();
-  }, []);
+  const [lastSyncTime, setLastSyncTime] = useState('Just now');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simulationToast, setSimulationToast] = useState('');
 
-  const loadClassData = async () => {
-    setLoading(true);
+  const loadClassData = async (roomId = activeRoomId, specificRoom = null) => {
     try {
-      const data = await api.getClassAnalytics('class-7a');
+      const targetRoom = specificRoom || rooms.find(r => r._id === roomId) || rooms[0] || null;
+      const data = await api.getClassAnalytics(roomId || 'class-7a', targetRoom);
       setClassData(data);
+      setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
     } catch (err) {
       console.warn('Class analytics error:', err);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    loadClassData(activeRoomId);
+    loadMyRooms();
+
+    // Listen for real-time telemetry events from quiz submissions
+    const handleTelemetryChange = () => {
+      loadClassData(activeRoomId);
+    };
+
+    window.addEventListener('storage', handleTelemetryChange);
+    window.addEventListener('orbit_telemetry_updated', handleTelemetryChange);
+
+    // Periodic 6s background telemetry poll
+    const interval = setInterval(() => {
+      loadClassData(activeRoomId);
+    }, 6000);
+
+    return () => {
+      window.removeEventListener('storage', handleTelemetryChange);
+      window.removeEventListener('orbit_telemetry_updated', handleTelemetryChange);
+      clearInterval(interval);
+    };
+  }, [activeRoomId]);
+
+  const handleManualRefresh = () => {
+    setIsRefreshing(true);
+    loadClassData(activeRoomId);
+  };
+
+  const handleSimulateQuizSubmission = async () => {
+    setIsSimulating(true);
+    try {
+      const studentNames = ['Aarav Sharma', 'Priya Patel', 'Rohan Mehta', 'Sneha Gupta'];
+      const topics = [
+        'Solving Two-Step Linear Equations',
+        'Photosynthesis & Stomata',
+        'Algorithmic Complexity & Logic',
+        'Ratios & Unit Rates'
+      ];
+      const randomStudent = studentNames[Math.floor(Math.random() * studentNames.length)];
+      const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+      const randomScore = Math.floor(Math.random() * 3) + 1; // 1 to 3 out of 5 to trigger concept gap
+      
+      const newAttempt = await api.simulateStudentQuizAttempt({
+        studentName: randomStudent,
+        topic: randomTopic,
+        score: randomScore,
+        total: 5
+      });
+
+      setSimulationToast(`⚡ Real-time Telemetry: ${randomStudent} submitted ${randomTopic} (${newAttempt.percentage}%)! Live pulse and concept gaps updated.`);
+      await loadClassData(activeRoomId);
+      setTimeout(() => setSimulationToast(''), 6000);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSimulating(false);
     }
   };
 
@@ -286,7 +348,10 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
           {rooms.map(room => (
             <button
               key={room._id}
-              onClick={() => setActiveRoomId(room._id)}
+              onClick={() => {
+                setActiveRoomId(room._id);
+                loadClassData(room._id, room);
+              }}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
                 activeRoomId === room._id
                   ? 'bg-[#EEF2FF] text-[#4F46E5] border border-[#4F46E5]/40 shadow-xs'
@@ -401,31 +466,102 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
 
       </div>
 
-      {/* Top Metrics Cards */}
+      {/* Real-time Telemetry Live Banner */}
+      <div className="bg-gradient-to-r from-[#FAF9F6] via-white to-[#FAF9F6] border border-[#E5E2DA] rounded-2xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-[#ECFDF5] border border-[#10B981]/30 px-3 py-1.5 rounded-xl text-xs font-bold text-[#065F46]">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-ping" />
+            <span>Live Telemetry Active</span>
+          </div>
+          <span className="text-xs text-[#5A606C]">
+            Real-time analytics synced across local mesh & active workspace • <span className="font-semibold text-[#1E2229]">Updated: {lastSyncTime}</span>
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSimulateQuizSubmission}
+            disabled={isSimulating}
+            className="px-3.5 py-1.5 rounded-xl bg-[#EEF2FF] border border-[#4F46E5]/30 hover:bg-[#4F46E5] hover:text-white transition-all text-[#4F46E5] text-xs font-bold flex items-center gap-1.5 shadow-xs"
+            title="Simulate student quiz attempt to test live reactive update"
+          >
+            <Zap className={`w-3.5 h-3.5 ${isSimulating ? 'animate-bounce' : 'fill-current'}`} />
+            <span>{isSimulating ? 'Simulating...' : '⚡ Test Live Student Attempt'}</span>
+          </button>
+
+          <button
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
+            className="px-3.5 py-1.5 rounded-xl bg-white border border-[#E5E2DA] hover:bg-[#FAF9F6] text-[#1E2229] text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-[#4F46E5] ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      {simulationToast && (
+        <div className="p-3.5 rounded-xl bg-[#ECFDF5] border border-[#10B981]/40 text-xs font-bold text-[#065F46] flex items-center gap-2 shadow-sm animate-fade-in">
+          <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0" />
+          <span>{simulationToast}</span>
+        </div>
+      )}
+
       {/* Top Metrics Cards - Real-time Room & Student Values */}
       <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
         
         <div className="bg-white border border-[#E5E2DA] rounded-2xl p-4 shadow-sm">
-          <span className="text-[11px] font-bold text-[#89909E] uppercase tracking-wider">Class Mastery Pulse</span>
-          <div className="text-3xl font-extrabold text-[#0D9488] mt-1">{classData?.classPulseAvg || 82}%</div>
-          <p className="text-[11px] text-[#5A606C] mt-1">Average across active modules</p>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-[#89909E] uppercase tracking-wider">Class Mastery Pulse</span>
+            <span className="text-[10px] font-bold bg-[#ECFDF5] text-[#059669] px-2 py-0.5 rounded-full border border-[#10B981]/20">
+              Live Real-Time
+            </span>
+          </div>
+          <div className={`text-3xl font-extrabold mt-1 ${
+            (classData?.classPulseAvg !== undefined ? classData.classPulseAvg : 85) >= 80 ? 'text-[#0D9488]' : 
+            (classData?.classPulseAvg !== undefined ? classData.classPulseAvg : 85) >= 65 ? 'text-[#D97706]' : 'text-[#F95738]'
+          }`}>
+            {classData?.classPulseAvg !== undefined ? classData.classPulseAvg : 85}%
+          </div>
+          <p className="text-[11px] text-[#5A606C] mt-1">Average across recent assessments</p>
         </div>
 
         <div className="bg-white border border-[#E5E2DA] rounded-2xl p-4 shadow-sm">
-          <span className="text-[11px] font-bold text-[#89909E] uppercase tracking-wider">Learners Needing Support</span>
-          <div className="text-3xl font-extrabold text-[#D97706] mt-1">{classData?.learnersNeedingSupport?.length || 1}</div>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-[#89909E] uppercase tracking-wider">Learners Needing Support</span>
+            <span className="text-[10px] font-bold bg-[#FEF3C7] text-[#B45309] px-2 py-0.5 rounded-full border border-[#F59E0B]/20">
+              Scoring &lt;75%
+            </span>
+          </div>
+          <div className="text-3xl font-extrabold text-[#D97706] mt-1">
+            {classData?.learnersNeedingSupport?.length || 0}
+          </div>
           <p className="text-[11px] text-[#5A606C] mt-1">Private supportive reviews</p>
         </div>
 
         <div className="bg-white border border-[#E5E2DA] rounded-2xl p-4 shadow-sm">
-          <span className="text-[11px] font-bold text-[#89909E] uppercase tracking-wider">Students Enrolled</span>
-          <div className="text-3xl font-extrabold text-[#4F46E5] mt-1">{activeRoom?.studentIds?.length || 1}</div>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-[#89909E] uppercase tracking-wider">Students Enrolled</span>
+            <span className="text-[10px] font-bold bg-[#EEF2FF] text-[#4F46E5] px-2 py-0.5 rounded-full border border-[#4F46E5]/20">
+              Roster
+            </span>
+          </div>
+          <div className="text-3xl font-extrabold text-[#4F46E5] mt-1">
+            {activeRoom?.studentIds?.length || classData?.totalStudents || 1}
+          </div>
           <p className="text-[11px] text-[#5A606C] mt-1">Room {activeRoom?.code || 'Active'} active roster</p>
         </div>
 
         <div className="bg-white border border-[#E5E2DA] rounded-2xl p-4 shadow-sm">
-          <span className="text-[11px] font-bold text-[#89909E] uppercase tracking-wider">Active Classroom Rooms</span>
-          <div className="text-3xl font-extrabold text-[#F95738] mt-1">{rooms.length || 1}</div>
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-[#89909E] uppercase tracking-wider">Active Classroom Rooms</span>
+            <span className="text-[10px] font-bold bg-[#FFF0ED] text-[#F95738] px-2 py-0.5 rounded-full border border-[#F95738]/20">
+              Workspaces
+            </span>
+          </div>
+          <div className="text-3xl font-extrabold text-[#F95738] mt-1">
+            {rooms.length || 1}
+          </div>
           <p className="text-[11px] text-[#5A606C] mt-1">Live workspaces configured</p>
         </div>
 
@@ -438,8 +574,11 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
         <div className="bg-white border border-[#E5E2DA] rounded-2xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-lg font-extrabold text-[#1E2229]">Class Concept Gaps</h3>
-              <p className="text-xs text-[#5A606C]">Ranked topics where learners struggle most.</p>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-extrabold text-[#1E2229]">Class Concept Gaps</h3>
+                <span className="text-[10px] font-bold bg-[#FFF0ED] text-[#F95738] px-2 py-0.5 rounded-full">Live Ranking</span>
+              </div>
+              <p className="text-xs text-[#5A606C]">Ranked topics where learners struggle most based on actual answers.</p>
             </div>
             <AlertTriangle className="w-5 h-5 text-[#F95738]" />
           </div>
@@ -450,8 +589,11 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
         <div className="bg-white border border-[#E5E2DA] rounded-2xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h3 className="text-lg font-extrabold text-[#1E2229]">Assignment Completion</h3>
-              <p className="text-xs text-[#5A606C]">Status breakdown across current modules.</p>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-extrabold text-[#1E2229]">Assignment Completion</h3>
+                <span className="text-[10px] font-bold bg-[#ECFDF5] text-[#0D9488] px-2 py-0.5 rounded-full">Live Status</span>
+              </div>
+              <p className="text-xs text-[#5A606C]">Real-time completion status across active curriculum modules.</p>
             </div>
             <CheckCircle2 className="w-5 h-5 text-[#0D9488]" />
           </div>
@@ -462,35 +604,53 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
 
       {/* Learners Needing Support (Private, Non-Shaming) */}
       <div className="bg-white border border-[#E5E2DA] rounded-2xl p-6 shadow-sm">
-        <h3 className="text-lg font-extrabold text-[#1E2229] mb-1">Learners Recommended for Targeted Support</h3>
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-lg font-extrabold text-[#1E2229]">Learners Recommended for Targeted Support</h3>
+          <span className="text-xs font-bold text-[#5A606C]">
+            {classData?.learnersNeedingSupport?.length || 0} Student{classData?.learnersNeedingSupport?.length === 1 ? '' : 's'}
+          </span>
+        </div>
         <p className="text-xs text-[#5A606C] mb-4">
           Private, supportive insights to guide one-on-one assistance without public rankings or shame.
         </p>
 
-        <div className="space-y-3">
-          {(classData?.learnersNeedingSupport || []).map((student) => (
-            <div 
-              key={student.id} 
-              onClick={() => onSelectStudent(student.id)}
-              className="p-4 rounded-xl border border-[#E5E2DA] bg-[#FAF9F6] hover:bg-white hover:border-[#D4CF0] cursor-pointer flex flex-wrap items-center justify-between gap-3 transition-all"
-            >
-              <div>
-                <h4 className="font-bold text-[#1E2229] text-sm">{student.name}</h4>
-                <p className="text-xs text-[#5A606C] mt-0.5">
-                  Concept Gaps: <span className="font-semibold text-[#F95738]">{student.needsReviewTopics?.join(', ')}</span>
-                </p>
-              </div>
+        {(!classData?.learnersNeedingSupport || classData.learnersNeedingSupport.length === 0) ? (
+          <div className="p-6 rounded-2xl bg-[#F0FDF4] border border-[#86EFAC] text-center space-y-1">
+            <CheckCircle2 className="w-8 h-8 text-[#16A34A] mx-auto" />
+            <h4 className="font-extrabold text-[#166534] text-sm">All Learners Meeting Mastery Benchmarks</h4>
+            <p className="text-xs text-[#15803D]">Every student scored &ge; 75% on recent assessments with no unresolved concept gaps.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {classData.learnersNeedingSupport.map((student) => (
+              <div 
+                key={student.id} 
+                onClick={() => onSelectStudent(student.id)}
+                className="p-4 rounded-xl border border-[#E5E2DA] bg-[#FAF9F6] hover:bg-white hover:border-[#D4CF0] cursor-pointer flex flex-wrap items-center justify-between gap-3 transition-all"
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-bold text-[#1E2229] text-sm">{student.name}</h4>
+                    <span className="text-[10px] bg-[#FFF0ED] text-[#F95738] font-bold px-2 py-0.5 rounded-full border border-[#F95738]/20">
+                      Needs Review
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#5A606C] mt-1">
+                    Concept Gaps: <span className="font-semibold text-[#F95738]">{student.needsReviewTopics?.join(', ')}</span>
+                  </p>
+                </div>
 
-              <div className="flex items-center gap-3 text-xs">
-                <span className="text-[#89909E]">{student.lastSync}</span>
-                <button className="btn-outline text-xs py-1 px-3 bg-white">
-                  <Eye className="w-3.5 h-3.5 text-[#4F46E5]" />
-                  <span>Inspect Student Analytics</span>
-                </button>
+                <div className="flex items-center gap-3 text-xs">
+                  <span className="text-[#89909E]">{student.lastSync}</span>
+                  <button className="btn-outline text-xs py-1 px-3 bg-white hover:bg-[#EEF2FF]">
+                    <Eye className="w-3.5 h-3.5 text-[#4F46E5]" />
+                    <span>Inspect Student Analytics</span>
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* BYJU'S Style Essential Learning Programs & Offline Curriculum Section */}

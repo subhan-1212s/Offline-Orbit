@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   Orbit, Compass, BookOpen, GraduationCap, Award, HardDrive, 
-  Sparkles, MessageSquare, LogOut, Sliders, Menu, X, Bell, CheckCircle2, Zap 
+  Sparkles, MessageSquare, LogOut, Sliders, Menu, X, Bell, CheckCircle2, Zap, ShieldCheck 
 } from 'lucide-react';
 
 export const Navbar = ({ activeTab, setActiveTab, onSignOut }) => {
@@ -78,6 +78,14 @@ export const Navbar = ({ activeTab, setActiveTab, onSignOut }) => {
   };
 
   const getNavLinks = () => {
+    if (user?.role === 'admin') {
+      return [
+        { id: 'admin-management', label: 'Admin Console', icon: ShieldCheck },
+        { id: 'teacher-dashboard', label: 'Educator Portal', icon: BookOpen },
+        { id: 'student-home', label: 'Learner Home', icon: Orbit }
+      ];
+    }
+
     if (user?.role === 'educator' || user?.role === 'teacher') {
       return [
         { id: 'teacher-dashboard', label: 'Educator Portal', icon: BookOpen },

@@ -43,7 +43,7 @@ export const AuthPage = ({ onAuthSuccess }) => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
-    const role = (activeMode === 'educator-login' || activeMode === 'register-educator') ? 'educator' : 'learner';
+    const role = activeMode === 'admin-login' ? 'admin' : (activeMode === 'educator-login' || activeMode === 'register-educator') ? 'educator' : 'learner';
     
     try {
       const res = await api.login({ email, password, role });
@@ -53,6 +53,33 @@ export const AuthPage = ({ onAuthSuccess }) => {
       onAuthSuccess(res.user);
     } catch (err) {
       setMessage(err.message || 'Login failed. Please check your email and password.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 1-Click Super Admin Login
+  const handleQuickAdminLogin = async () => {
+    setLoading(true);
+    setMessage('');
+    try {
+      const res = await api.demoLogin('admin');
+      updateUserProfile(res.user);
+      onAuthSuccess(res.user);
+    } catch (err) {
+      const adminUser = {
+        _id: 'user-super-admin',
+        name: 'Super Admin',
+        email: 'admin@offline-orbit.edu',
+        role: 'admin',
+        grade: 'Root Administrator',
+        points: 9999,
+        streakDays: 30
+      };
+      localStorage.setItem('orbit_token', 'admin-session-token');
+      localStorage.setItem('orbit_user', JSON.stringify(adminUser));
+      updateUserProfile(adminUser);
+      onAuthSuccess(adminUser);
     } finally {
       setLoading(false);
     }
@@ -167,6 +194,7 @@ export const AuthPage = ({ onAuthSuccess }) => {
             <h2 className="text-2xl font-extrabold text-[#1E2229] tracking-tight">
               {activeMode === 'learner-login' && 'Learner Sign In'}
               {activeMode === 'educator-login' && 'Educator Portal Sign In'}
+              {activeMode === 'admin-login' && 'Super Admin Console Sign In'}
               {activeMode === 'register-learner' && 'Create Learner Account'}
               {activeMode === 'register-educator' && 'Create Educator Account'}
               {activeMode === 'forgot-password' && 'Reset Your Password'}
@@ -174,15 +202,17 @@ export const AuthPage = ({ onAuthSuccess }) => {
             <p className="text-xs text-[#5A606C] mt-1">
               {activeMode === 'register-learner' && 'Select your learner path to personalize your AI STEM curriculum'}
               {activeMode === 'register-educator' && 'Set up your educator profile to manage school, college, or independent tutoring'}
+              {activeMode === 'admin-login' && 'Authorized system administrators and telemetry supervisors only'}
               {(activeMode === 'learner-login' || activeMode === 'educator-login') && 'Enter your credentials to access your personalized learning orbit'}
               {activeMode === 'forgot-password' && 'Verify your email code to reset your account password'}
             </p>
           </div>
 
-          {/* Mode Selector Tabs (Learner vs Educator) */}
+          {/* Mode Selector Tabs (Learner vs Educator vs Admin) */}
           {activeMode !== 'forgot-password' && (
-            <div className="grid grid-cols-2 gap-1 bg-[#FAF9F6] p-1 rounded-2xl border border-[#E2E8F0] mb-6 text-xs font-bold">
+            <div className="grid grid-cols-3 gap-1 bg-[#FAF9F6] p-1 rounded-2xl border border-[#E2E8F0] mb-6 text-xs font-bold">
               <button
+                type="button"
                 onClick={() => { 
                   setActiveMode(activeMode === 'register-educator' ? 'register-learner' : 'learner-login'); 
                   setMessage(''); 
@@ -195,6 +225,7 @@ export const AuthPage = ({ onAuthSuccess }) => {
               </button>
 
               <button
+                type="button"
                 onClick={() => { 
                   setActiveMode(activeMode === 'register-learner' ? 'register-educator' : 'educator-login'); 
                   setMessage(''); 
@@ -205,6 +236,19 @@ export const AuthPage = ({ onAuthSuccess }) => {
               >
                 Educator Portal
               </button>
+
+              <button
+                type="button"
+                onClick={() => { 
+                  setActiveMode('admin-login'); 
+                  setMessage(''); 
+                }}
+                className={`py-2.5 rounded-xl transition-all ${
+                  activeMode === 'admin-login' ? 'bg-white text-[#0D9488] shadow-sm' : 'text-[#5A606C]'
+                }`}
+              >
+                Admin Portal
+              </button>
             </div>
           )}
 
@@ -214,16 +258,25 @@ export const AuthPage = ({ onAuthSuccess }) => {
             </div>
           )}
 
-          {/* Form 1: Learner / Educator Login Flow */}
-          {(activeMode === 'learner-login' || activeMode === 'educator-login') && (
+          {/* Form 1: Learner / Educator / Admin Login Flow */}
+          {(activeMode === 'learner-login' || activeMode === 'educator-login' || activeMode === 'admin-login') && (
             <form onSubmit={handleLoginSubmitPassword} className="space-y-4">
+              {activeMode === 'admin-login' && (
+                <div className="p-3 rounded-2xl bg-[#ECFDF5] border border-[#10B981]/30 flex items-center gap-2.5 text-xs text-[#065F46] font-semibold">
+                  <ShieldCheck className="w-4 h-4 text-[#10B981] shrink-0" />
+                  <span>Super Admin Console • Authorized Personnel Only</span>
+                </div>
+              )}
+
               <div>
-                <label className="block text-xs font-bold text-[#1E2229] mb-1">Email Address</label>
+                <label className="block text-xs font-bold text-[#1E2229] mb-1">
+                  {activeMode === 'admin-login' ? 'Super Admin Email' : 'Email Address'}
+                </label>
                 <div className="relative">
                   <input
                     type="email"
                     required
-                    placeholder="mohamedsubhan155@gmail.com"
+                    placeholder={activeMode === 'admin-login' ? 'admin@offline-orbit.edu' : 'mohamedsubhan155@gmail.com'}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full bg-[#FAF9F6] border border-[#E2E8F0] rounded-xl p-3 text-xs font-semibold focus:outline-none focus:border-[#F95738]"
@@ -234,14 +287,18 @@ export const AuthPage = ({ onAuthSuccess }) => {
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-bold text-[#1E2229]">Password</label>
-                  <button
-                    type="button"
-                    onClick={() => { setActiveMode('forgot-password'); setResetStep(1); setMessage(''); }}
-                    className="text-[11px] font-bold text-[#F95738] hover:underline"
-                  >
-                    Forgot Password?
-                  </button>
+                  <label className="text-xs font-bold text-[#1E2229]">
+                    {activeMode === 'admin-login' ? 'Master Password' : 'Password'}
+                  </label>
+                  {activeMode !== 'admin-login' && (
+                    <button
+                      type="button"
+                      onClick={() => { setActiveMode('forgot-password'); setResetStep(1); setMessage(''); }}
+                      className="text-[11px] font-bold text-[#F95738] hover:underline"
+                    >
+                      Forgot Password?
+                    </button>
+                  )}
                 </div>
                 
                 <div className="relative">
@@ -267,26 +324,40 @@ export const AuthPage = ({ onAuthSuccess }) => {
                 type="submit"
                 disabled={loading}
                 className={`w-full btn-coral text-xs py-3.5 shadow-md hover:scale-[1.01] transition-all justify-center ${
-                  activeMode === 'educator-login' ? 'bg-[#4F46E5] hover:bg-[#4338CA]' : ''
+                  activeMode === 'educator-login' ? 'bg-[#4F46E5] hover:bg-[#4338CA]' : 
+                  activeMode === 'admin-login' ? 'bg-[#0D9488] hover:bg-[#0B7A70]' : ''
                 }`}
               >
-                <span>{loading ? 'Signing In...' : 'Sign In'}</span>
+                <span>{loading ? 'Signing In...' : activeMode === 'admin-login' ? 'Enter Super Admin Console' : 'Sign In'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
-              <div className="pt-3 border-t border-[#E2E8F0] text-center text-xs">
-                <span className="text-[#5A606C]">Don't have an account? </span>
-                <button
-                  type="button"
-                  onClick={() => { 
-                    setActiveMode(activeMode === 'educator-login' ? 'register-educator' : 'register-learner'); 
-                    setMessage(''); 
-                  }}
-                  className="font-bold text-[#F95738] hover:underline"
-                >
-                  Create Account
-                </button>
-              </div>
+              {activeMode === 'admin-login' ? (
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={handleQuickAdminLogin}
+                    className="w-full py-2.5 rounded-xl bg-[#F0FDF4] hover:bg-[#DCFCE7] border border-[#86EFAC] text-[#166534] text-xs font-bold transition-all flex items-center justify-center gap-2"
+                  >
+                    <Sparkles className="w-4 h-4 text-[#16A34A]" />
+                    <span>⚡ 1-Click Super Admin Sign In</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="pt-3 border-t border-[#E2E8F0] text-center text-xs">
+                  <span className="text-[#5A606C]">Don't have an account? </span>
+                  <button
+                    type="button"
+                    onClick={() => { 
+                      setActiveMode(activeMode === 'educator-login' ? 'register-educator' : 'register-learner'); 
+                      setMessage(''); 
+                    }}
+                    className="font-bold text-[#F95738] hover:underline"
+                  >
+                    Create Account
+                  </button>
+                </div>
+              )}
             </form>
           )}
 

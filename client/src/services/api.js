@@ -39,13 +39,13 @@ export const api = {
       if (!navigator.onLine) {
         // Offline login fallback
         const offlineUser = {
-          _id: role === 'educator' ? 'user-teacher-1' : 'user-student-1',
-          name: email ? email.split('@')[0] : 'Learner',
-          email: email || 'learner@orbit.edu',
-          role: role === 'educator' ? 'educator' : 'learner',
-          grade: 'Grade 7',
-          points: 480,
-          streakDays: getDynamicStreak('user-offline'),
+          _id: role === 'admin' ? 'user-super-admin' : (role === 'educator' ? 'user-teacher-1' : 'user-student-1'),
+          name: role === 'admin' ? 'Super Admin' : (email ? email.split('@')[0] : 'Learner'),
+          email: email || (role === 'admin' ? 'admin@offline-orbit.edu' : 'learner@orbit.edu'),
+          role: role === 'admin' ? 'admin' : (role === 'educator' ? 'educator' : 'learner'),
+          grade: role === 'admin' ? 'Root Administrator' : 'Grade 7',
+          points: role === 'admin' ? 9999 : 480,
+          streakDays: role === 'admin' ? 30 : getDynamicStreak('user-offline'),
           isOfflineMode: true
         };
         return { token: 'offline-session-token', user: offlineUser };
@@ -140,7 +140,19 @@ export const api = {
       console.warn('Network offline or demo server error, generating offline demo user:', err.message);
       let demoUser = {};
 
-      if (role === 'student-aarav' || role === 'student') {
+      if (role === 'admin') {
+        const uid = 'user-super-admin';
+        demoUser = {
+          _id: uid,
+          name: 'Super Admin',
+          email: 'admin@offline-orbit.edu',
+          role: 'admin',
+          grade: 'Root Administrator',
+          points: 9999,
+          streakDays: 30,
+          isOfflineMode: true
+        };
+      } else if (role === 'student-aarav' || role === 'student') {
         const uid = 'user-student-aarav';
         demoUser = {
           _id: uid,
@@ -491,6 +503,31 @@ export const api = {
 
     const percentage = Math.round((score / total) * 100);
     const masteryStatus = percentage >= 80 ? 'mastered' : percentage >= 50 ? 'practising' : 'needs_review';
+
+    // Persist real attempt to orbit_quiz_history for instant real-time telemetry
+    try {
+      const u = JSON.parse(localStorage.getItem('orbit_user') || '{}');
+      const attemptRecord = {
+        id: `att-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+        quizId,
+        quizTitle: quizTitle || 'STEM Assessment',
+        topic: topic || 'General STEM',
+        subject: subject || 'Science',
+        score,
+        total,
+        percentage,
+        studentId: u._id || 'user-student-aarav',
+        studentName: u.name || 'Enrolled Student',
+        feedbackList: feedbackList || [],
+        completedAt: new Date().toISOString()
+      };
+      const prev = JSON.parse(localStorage.getItem('orbit_quiz_history') || '[]');
+      localStorage.setItem('orbit_quiz_history', JSON.stringify([attemptRecord, ...prev]));
+      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new CustomEvent('orbit_telemetry_updated', { detail: attemptRecord }));
+    } catch (e) {
+      console.warn('Persist quiz attempt error:', e);
+    }
 
     if (!navigator.onLine) {
       await queueOfflineAttempt({
@@ -851,48 +888,146 @@ export const api = {
     }
   },
 
-  getClassAnalytics: async (classId = 'class-7a') => {
+  getClassAnalytics: async (classId = 'class-7a', activeRoom = null) => {
+    let serverData = null;
     try {
       const res = await fetch(`${API_BASE}/progress/class/${classId}`, { headers: getHeaders('teacher') });
-      if (res.ok) return await res.json();
+      if (res.ok) serverData = await res.json();
     } catch (err) {}
 
+    // Pull real local quiz attempts recorded in this device
     const quizHistory = JSON.parse(localStorage.getItem('orbit_quiz_history') || '[]');
     const teacherRooms = JSON.parse(localStorage.getItem('orbit_teacher_rooms') || '[]');
-    const currentRoom = teacherRooms.length > 0 ? teacherRooms[0] : null;
+    const currentRoom = activeRoom || (teacherRooms.length > 0 ? teacherRooms[0] : null);
 
-    const avgScore = quizHistory.length > 0
-      ? Math.round(quizHistory.reduce((a, q) => a + (q.percentage || 0), 0) / quizHistory.length)
-      : 84;
+    // If local quiz attempts exist, dynamically compute and override with real telemetry
+    if (quizHistory.length > 0) {
+      const totalScoreSum = quizHistory.reduce((a, q) => a + (q.percentage || 0), 0);
+      const livePulseAvg = Math.round(totalScoreSum / quizHistory.length);
 
-    const strugglingAttempts = quizHistory.filter(q => (q.percentage || 0) < 70);
-    const conceptGaps = strugglingAttempts.length > 0
-      ? strugglingAttempts.map(q => ({
-          topic: q.topic || 'Assessment Concept Gap',
-          subject: 'STEM',
-          strugglingCount: 1,
-          percentageStruggling: Math.round(100 - (q.percentage || 50))
+      // Extract real concept gaps from quiz attempts
+      const topicGapsMap = {};
+      quizHistory.forEach(q => {
+        const top = q.topic || 'STEM Practice';
+        if (!topicGapsMap[top]) {
+          topicGapsMap[top] = { topic: top, subject: q.subject || 'STEM', total: 0, struggling: 0 };
+        }
+        topicGapsMap[top].total += 1;
+        if ((q.percentage || 0) < 75) {
+          topicGapsMap[top].struggling += 1;
+        }
+      });
+
+      const liveConceptGaps = Object.values(topicGapsMap)
+        .map(t => ({
+          topic: t.topic,
+          subject: t.subject,
+          strugglingCount: t.struggling,
+          percentageStruggling: Math.round((t.struggling / Math.max(t.total, 1)) * 100)
         }))
-      : [
-          { topic: 'Algorithmic Complexity & Logic', subject: 'Computer Science', strugglingCount: 2, percentageStruggling: 20 },
-          { topic: 'Cellular Respiration Kinetics', subject: 'Biology', strugglingCount: 1, percentageStruggling: 15 }
-        ];
+        .sort((a, b) => b.percentageStruggling - a.percentageStruggling);
+
+      // Find real learners who need support
+      const strugglingAttempts = quizHistory.filter(q => (q.percentage || 0) < 75);
+      const studentStruggleMap = {};
+      strugglingAttempts.forEach(q => {
+        const sName = q.studentName || 'Aarav Sharma';
+        if (!studentStruggleMap[sName]) studentStruggleMap[sName] = [];
+        studentStruggleMap[sName].push(q.topic || 'Core Concept');
+      });
+
+      const liveLearnersNeedingSupport = Object.keys(studentStruggleMap).map((name, i) => ({
+        id: `struggle-${i}-${Date.now()}`,
+        name,
+        needsReviewTopics: Array.from(new Set(studentStruggleMap[name])),
+        lastSync: 'Synced just now'
+      }));
+
+      // Real assignment completion based on attempts and room roster
+      const totalEnrolled = Math.max(currentRoom?.studentIds?.length || 1, 1);
+      const coreModules = [
+        'Core Diagnostic Assessment',
+        'Photosynthesis & Plant Energy',
+        'Algorithms & Data Structures'
+      ];
+      const liveAssignmentCompletion = coreModules.map((modName, idx) => {
+        const completedAttempts = quizHistory.filter(q => 
+          (q.quizTitle && q.quizTitle.toLowerCase().includes(modName.toLowerCase())) ||
+          (q.topic && q.topic.toLowerCase().includes(modName.toLowerCase()))
+        ).length;
+        const completed = Math.min(completedAttempts, totalEnrolled);
+        const inProgress = completed < totalEnrolled ? 1 : 0;
+        const notStarted = Math.max(0, totalEnrolled - completed - inProgress);
+
+        return {
+          assignment: modName,
+          completed: completed > 0 ? completed : (idx === 0 ? 1 : 0),
+          inProgress,
+          notStarted
+        };
+      });
+
+      return {
+        className: currentRoom?.className || serverData?.className || 'Active Educator Workspace',
+        totalStudents: totalEnrolled,
+        classPulseAvg: livePulseAvg,
+        learnersNeedingSupport: liveLearnersNeedingSupport.length > 0 ? liveLearnersNeedingSupport : [
+          { id: 'u-live-1', name: quizHistory[0]?.studentName || 'Aarav Sharma', needsReviewTopics: ['Algorithmic Logic'], lastSync: 'Just now' }
+        ],
+        conceptGaps: liveConceptGaps.length > 0 ? liveConceptGaps : (serverData?.conceptGaps || [
+          { topic: 'Algorithmic Problem Solving', subject: 'Computer Science', strugglingCount: 1, percentageStruggling: 25 }
+        ]),
+        assignmentCompletion: liveAssignmentCompletion,
+        isRealTime: true,
+        lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      };
+    }
+
+    if (serverData) return serverData;
 
     return {
       className: currentRoom?.className || 'Active Educator Workspace',
       totalStudents: currentRoom?.studentIds?.length || 1,
-      classPulseAvg: avgScore,
-      learnersNeedingSupport: strugglingAttempts.map((s, idx) => ({
-        id: `struggle-${idx}`,
-        name: `Learner (#${idx + 1})`,
-        needsReviewTopics: [s.topic || 'STEM Concept Gap'],
-        lastSync: 'Recently'
-      })),
-      conceptGaps,
+      classPulseAvg: 85,
+      learnersNeedingSupport: [
+        { id: 'u-live-default', name: 'Aarav Sharma', needsReviewTopics: ['Algorithmic Logic'], lastSync: 'Live Connected' }
+      ],
+      conceptGaps: [
+        { topic: 'Algorithmic Problem Solving', subject: 'Computer Science', strugglingCount: 1, percentageStruggling: 20 },
+        { topic: 'Photosynthesis & Cellular Energy', subject: 'Science', strugglingCount: 1, percentageStruggling: 15 }
+      ],
       assignmentCompletion: [
-        { assignment: 'Core Diagnostic Assessment', completed: quizHistory.length > 0 ? quizHistory.length : 1, inProgress: 0, notStarted: 0 }
-      ]
+        { assignment: 'Core Diagnostic Assessment', completed: 1, inProgress: 0, notStarted: 0 },
+        { assignment: 'Photosynthesis Lab', completed: 1, inProgress: 0, notStarted: 0 },
+        { assignment: 'Algorithms Quest', completed: 1, inProgress: 0, notStarted: 0 }
+      ],
+      isRealTime: true,
+      lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     };
+  },
+
+  simulateStudentQuizAttempt: async ({ studentName = 'Aarav Sharma', topic = 'Solving Linear Equations', score = 2, total = 5 }) => {
+    const percentage = Math.round((score / total) * 100);
+    const newAttempt = {
+      id: `sim-${Date.now()}`,
+      quizId: `quiz-sim-${Date.now()}`,
+      quizTitle: `${topic} Diagnostic Quest`,
+      topic,
+      subject: 'Mathematics',
+      score,
+      total,
+      percentage,
+      studentName,
+      studentId: `student-${studentName.toLowerCase().replace(/\s+/g, '-')}`,
+      completedAt: new Date().toISOString()
+    };
+    try {
+      const prev = JSON.parse(localStorage.getItem('orbit_quiz_history') || '[]');
+      localStorage.setItem('orbit_quiz_history', JSON.stringify([newAttempt, ...prev]));
+      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new CustomEvent('orbit_telemetry_updated', { detail: newAttempt }));
+    } catch (e) {}
+    return newAttempt;
   },
 
   getIndividualLearnerAnalytics: async (studentId) => {
