@@ -24,7 +24,20 @@ export const sendBrevoEmail = async ({ toEmail, toName, subject, htmlContent }) 
     if (!response.ok) {
       const errText = await response.text();
       console.warn('Brevo API response error:', errText);
-      return { success: false, error: errText };
+      let parsed = {};
+      try { parsed = JSON.parse(errText); } catch(e) {}
+      
+      const isUnrecognisedIp = errText.includes('unrecognised IP address');
+      const ipMatch = errText.match(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/);
+      const ip = ipMatch ? ipMatch[0] : '122.186.158.146';
+
+      return { 
+        success: false, 
+        error: parsed.message || errText,
+        unrecognisedIp: isUnrecognisedIp,
+        ip: isUnrecognisedIp ? ip : null,
+        authUrl: 'https://app.brevo.com/security/authorised_ips'
+      };
     }
 
     const data = await response.json();
