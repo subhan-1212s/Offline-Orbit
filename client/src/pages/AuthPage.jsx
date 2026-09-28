@@ -10,6 +10,7 @@ export const AuthPage = ({ onAuthSuccess }) => {
   const { updateUserProfile } = useAuth();
   
   const [activeMode, setActiveMode] = useState('learner-login'); // 'learner-login' | 'educator-login' | 'register-learner' | 'register-educator' | 'forgot-password'
+  const [previousMode, setPreviousMode] = useState('learner-login');
   
   // Login & Registration Form States
   const [email, setEmail] = useState('');
@@ -176,16 +177,19 @@ export const AuthPage = ({ onAuthSuccess }) => {
 
   // Forgot Password Step 1: Send Code
   const handleForgotPassword = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     setLoading(true);
     setMessage('');
 
     try {
       const res = await api.forgotPassword({ email });
-      setMessage(res.message || `Password reset 6-digit code sent to ${email}!`);
+      if (res.resetCode) {
+        setResetCode(res.resetCode);
+      }
+      setMessage(res.message || `Password reset 6-digit code dispatched to ${email}!`);
       setResetStep(2);
     } catch (err) {
-      setMessage(err.message || 'Failed to send reset code.');
+      setMessage(err.message || 'Failed to send reset code. Please check your email address.');
     } finally {
       setLoading(false);
     }
@@ -193,20 +197,21 @@ export const AuthPage = ({ onAuthSuccess }) => {
 
   // Forgot Password Step 2: Verify Code & Update Password
   const handleResetPassword = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     setLoading(true);
     setMessage('');
 
     try {
       const res = await api.resetPassword({ email, resetCode, newPassword });
-      setMessage('✅ Password reset successful! You can now sign in with your new password.');
+      setMessage(res.message || '✅ Password reset successful! You can now sign in with your new password.');
+      setPassword(newPassword); // Pre-fill password on the login form
       setTimeout(() => {
-        setActiveMode('learner-login');
+        setActiveMode(previousMode || 'learner-login');
         setResetStep(1);
-        setMessage('');
-      }, 2000);
+        setMessage('✅ Password reset successful! Please sign in with your new password.');
+      }, 1600);
     } catch (err) {
-      setMessage(err.message || 'Password reset failed.');
+      setMessage(err.message || 'Password reset failed. Please verify your 6-digit code.');
     } finally {
       setLoading(false);
     }
@@ -226,14 +231,14 @@ export const AuthPage = ({ onAuthSuccess }) => {
               {activeMode === 'admin-login' && 'Super Admin Console Sign In'}
               {activeMode === 'register-learner' && 'Create Learner Account'}
               {activeMode === 'register-educator' && 'Create Educator Account'}
-              {activeMode === 'forgot-password' && 'Reset Your Password'}
+              {activeMode === 'forgot-password' && (resetStep === 1 ? 'Reset Your Password' : 'Verify & Set Password')}
             </h2>
             <p className="text-xs text-[#5A606C] mt-1">
               {activeMode === 'register-learner' && 'Select your learner path to personalize your AI STEM curriculum'}
               {activeMode === 'register-educator' && 'Set up your educator profile to manage school, college, or independent tutoring'}
               {activeMode === 'admin-login' && 'Authorized system administrators and telemetry supervisors only'}
               {(activeMode === 'learner-login' || activeMode === 'educator-login') && 'Enter your credentials to access your personalized learning orbit'}
-              {activeMode === 'forgot-password' && 'Verify your email code to reset your account password'}
+              {activeMode === 'forgot-password' && (resetStep === 1 ? 'Enter your registered email address to receive a 6-digit verification code' : `Enter the 6-digit code dispatched to ${email || 'your email'} and set your new password`)}
             </p>
           </div>
 
@@ -322,7 +327,12 @@ export const AuthPage = ({ onAuthSuccess }) => {
                   {activeMode !== 'admin-login' && (
                     <button
                       type="button"
-                      onClick={() => { setActiveMode('forgot-password'); setResetStep(1); setMessage(''); }}
+                      onClick={() => { 
+                        setPreviousMode(activeMode);
+                        setActiveMode('forgot-password'); 
+                        setResetStep(1); 
+                        setMessage(''); 
+                      }}
                       className="text-[11px] font-bold text-[#F95738] hover:underline"
                     >
                       Forgot Password?
@@ -814,35 +824,75 @@ export const AuthPage = ({ onAuthSuccess }) => {
             <div>
               {resetStep === 1 ? (
                 <form onSubmit={handleForgotPassword} className="space-y-4">
-                  <p className="text-xs text-[#5A606C] leading-relaxed">
-                    Enter your registered email address below to reset your password.
-                  </p>
+                  <div className="p-3 rounded-2xl bg-[#FFF8F6] border border-[#F95738]/20 flex items-start gap-2.5 text-xs text-[#8C3A27]">
+                    <KeyRound className="w-4 h-4 text-[#F95738] shrink-0 mt-0.5" />
+                    <span>Enter your registered email address. We will generate and dispatch a 6-digit verification code to reset your account password.</span>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-bold text-[#1E2229] mb-1">Email Address</label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-[#FAF9F6] border border-[#E2E8F0] rounded-xl p-3 text-xs font-semibold focus:outline-none"
-                    />
+                    <div className="relative">
+                      <input
+                        type="email"
+                        required
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full bg-[#FAF9F6] border border-[#E2E8F0] rounded-xl p-3 text-xs font-semibold focus:outline-none focus:border-[#F95738] pr-10"
+                      />
+                      <Mail className="w-4 h-4 text-[#94A3B8] absolute right-3.5 top-3.5" />
+                    </div>
                   </div>
+
                   <button type="submit" disabled={loading} className="w-full btn-coral text-xs py-3.5 shadow-md justify-center">
-                    <span>{loading ? 'Processing...' : 'Reset Password'}</span>
+                    <span>{loading ? 'Sending Code...' : 'Send Verification Code'}</span>
+                    <ArrowRight className="w-4 h-4 ml-1" />
                   </button>
                 </form>
               ) : (
                 <form onSubmit={handleResetPassword} className="space-y-4">
+                  {/* Email address confirmation banner */}
+                  <div className="p-3 rounded-2xl bg-[#F0FDF4] border border-[#10B981]/25 flex items-center justify-between text-xs text-[#166534]">
+                    <div className="flex items-center gap-2 truncate">
+                      <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0" />
+                      <span className="truncate">Code sent to: <strong className="font-semibold">{email}</strong></span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setResetStep(1); setMessage(''); }}
+                      className="text-[11px] font-bold text-[#0D9488] hover:underline shrink-0 ml-2"
+                    >
+                      Change
+                    </button>
+                  </div>
+
+                  {/* Demo / Sandbox Code Badge */}
+                  {resetCode && (
+                    <div className="p-2.5 rounded-xl bg-[#FFFBEB] border border-[#FDE68A] text-[11px] text-[#92400E] flex items-center justify-between">
+                      <span>🔑 Verification Code: <strong className="font-mono text-xs tracking-wider">{resetCode}</strong></span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (navigator.clipboard) navigator.clipboard.writeText(resetCode);
+                          setMessage('Code copied to clipboard!');
+                        }}
+                        className="font-bold underline text-[#B45309]"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-xs font-bold text-[#1E2229] mb-1">6-Digit Verification Code</label>
                     <input
                       type="text"
                       required
+                      maxLength={6}
                       placeholder="123456"
                       value={resetCode}
-                      onChange={(e) => setResetCode(e.target.value)}
-                      className="w-full bg-[#FAF9F6] border border-[#E2E8F0] rounded-xl p-3 text-xs font-bold text-center tracking-widest text-lg"
+                      onChange={(e) => setResetCode(e.target.value.trim())}
+                      className="w-full bg-[#FAF9F6] border border-[#E2E8F0] rounded-xl p-3 text-xs font-bold text-center tracking-[0.35em] text-lg font-mono focus:outline-none focus:border-[#F95738]"
                     />
                   </div>
 
@@ -852,10 +902,11 @@ export const AuthPage = ({ onAuthSuccess }) => {
                       <input
                         type={showNewPassword ? 'text' : 'password'}
                         required
-                        placeholder="••••••••"
+                        minLength={4}
+                        placeholder="Enter at least 4 characters"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full bg-[#FAF9F6] border border-[#E2E8F0] rounded-xl p-3 text-xs font-semibold focus:outline-none pr-10"
+                        className="w-full bg-[#FAF9F6] border border-[#E2E8F0] rounded-xl p-3 text-xs font-semibold focus:outline-none focus:border-[#F95738] pr-10"
                       />
                       <button
                         type="button"
@@ -867,16 +918,35 @@ export const AuthPage = ({ onAuthSuccess }) => {
                     </div>
                   </div>
 
-                  <button type="submit" disabled={loading} className="w-full btn-coral text-xs py-3.5 shadow-md justify-center bg-[#0D9488]">
-                    <span>{loading ? 'Updating Password...' : 'Reset Password'}</span>
+                  <button type="submit" disabled={loading} className="w-full btn-coral text-xs py-3.5 shadow-md justify-center bg-[#0D9488] hover:bg-[#0F766E]">
+                    <CheckCircle2 className="w-4 h-4 mr-1" />
+                    <span>{loading ? 'Updating Password...' : 'Save New Password & Sign In'}</span>
                   </button>
+
+                  <div className="flex items-center justify-between pt-1 text-xs">
+                    <button
+                      type="button"
+                      onClick={handleForgotPassword}
+                      disabled={loading}
+                      className="text-[#5A606C] hover:text-[#1E2229] underline text-[11px]"
+                    >
+                      Resend code
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setResetCode('123456')}
+                      className="text-[#94A3B8] hover:text-[#5A606C] text-[11px]"
+                    >
+                      Use test code (123456)
+                    </button>
+                  </div>
                 </form>
               )}
 
               <div className="pt-3 mt-4 border-t border-[#E2E8F0] text-center text-xs">
                 <button
                   type="button"
-                  onClick={() => { setActiveMode('learner-login'); setLoginStep(1); setMessage(''); }}
+                  onClick={() => { setActiveMode(previousMode || 'learner-login'); setResetStep(1); setMessage(''); }}
                   className="font-bold text-[#5A606C] hover:underline"
                 >
                   ← Back to Sign In
