@@ -125,49 +125,6 @@ export const generateExplainAnotherWay = async ({ sectionTitle, content, mode })
   };
 };
 
-// 3. AI Interactive Tutor Chat
-export const generateTutorChatResponse = async ({ userMessage, conversationHistory, currentLessonContext }) => {
-  const client = getOpenAIClient();
-
-  if (client) {
-    try {
-      const messages = [
-        { role: 'system', content: 'You are Orbit AI, an encouraging, patient STEM tutor for students. Keep answers concise (under 3 sentences), clear, friendly, and grounded in standard middle/high school STEM concepts. Encourage active thinking.' },
-        ...(conversationHistory || []).map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text })),
-        { role: 'user', content: `Lesson Context: ${currentLessonContext || 'General STEM'}\nStudent Question: ${userMessage}` }
-      ];
-
-      const response = await client.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages,
-        max_tokens: 180
-      });
-
-      return {
-        reply: response.choices[0].message.content.trim(),
-        isAIGenerated: true,
-        source: 'OpenAI Cloud'
-      };
-    } catch (err) {
-      console.warn('Tutor chat OpenAI error:', err.message);
-    }
-  }
-
-  // Fallback Tutor responses
-  const fallbacks = [
-    `Great question! In plant cells, chlorophyll pigments absorb red and blue light while reflecting green light—which is why leaves look green to our eyes!`,
-    `To solve a two-step equation like 3x + 5 = 20, first subtract 5 from both sides to get 3x = 15, then divide by 3 to find x = 5!`,
-    `A unit rate simplifies a ratio so the second quantity is 1 unit. For example, driving 120 km in 2 hours equals a unit speed of 60 km/h!`
-  ];
-
-  return {
-    reply: fallbacks[Math.floor(Math.random() * fallbacks.length)],
-    isAIGenerated: true,
-    isFallback: true,
-    source: 'Offline Fallback Engine'
-  };
-};
-
 // 4. AI Concept Breakdown & Visual Playground
 export const generateConceptBreakdown = async ({ topic, query }) => {
   const client = getOpenAIClient();
