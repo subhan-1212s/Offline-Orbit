@@ -432,26 +432,54 @@ export const api = {
     }
   },
 
-  submitQuiz: async ({ quizId, answers, quizTitle, topic, subject }) => {
+  submitQuiz: async ({ quizId, questions = [], answers = {}, quizTitle, topic, subject }) => {
+    // Evaluate exact score from questions array
+    let score = 0;
+    const total = questions.length || 10;
+    const feedbackList = questions.map((q, idx) => {
+      const studentAnswerIndex = answers[q.id] !== undefined ? answers[q.id] : answers[idx];
+      const isCorrect = Number(studentAnswerIndex) === Number(q.correctAnswerIndex);
+      if (isCorrect) score += 1;
+
+      const misconception = !isCorrect 
+        ? (q.misconceptionMap?.[studentAnswerIndex] || q.misconceptionMap?.[String(studentAnswerIndex)] || q.explanation || 'Review the core concept steps to fix this error.')
+        : null;
+
+      return {
+        questionId: q.id,
+        questionText: q.questionText,
+        isCorrect,
+        studentAnswerIndex,
+        correctAnswerIndex: q.correctAnswerIndex,
+        misconception,
+        explanation: q.explanation,
+        followUpQuestion: !isCorrect ? q.followUpQuestion : null
+      };
+    });
+
+    const percentage = Math.round((score / total) * 100);
+    const masteryStatus = percentage >= 80 ? 'mastered' : percentage >= 50 ? 'practising' : 'needs_review';
+
     if (!navigator.onLine) {
-      const score = Object.keys(answers).reduce((acc, k) => acc + 1, 0);
-      const offlineItem = await queueOfflineAttempt({
+      await queueOfflineAttempt({
         quizId,
-        quizTitle: quizTitle || 'Offline Quiz',
-        topic: topic || 'Offline Practice',
+        quizTitle: quizTitle || 'Offline Assessment',
+        topic: topic || 'STEM Practice',
         subject: subject || 'Science',
         score,
-        total: Object.keys(answers).length || 2,
+        total,
+        percentage,
         answers,
         offlineSynced: false
       });
       return {
         score,
-        total: offlineItem.total,
-        percentage: Math.round((score / offlineItem.total) * 100),
-        masteryStatus: 'practising',
+        total,
+        percentage,
+        masteryStatus,
+        feedbackList,
         isOfflineSaved: true,
-        message: 'Quiz progress saved on this device! Will sync automatically when connectivity returns.'
+        message: 'Quiz progress saved on this device! Will sync automatically when online.'
       };
     }
 
@@ -459,28 +487,38 @@ export const api = {
       const res = await fetch(`${API_BASE}/quizzes/submit`, {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ quizId, answers })
+        body: JSON.stringify({ quizId, answers, questions, quizTitle, topic, subject })
       });
-      if (!res.ok) throw new Error('Submit quiz failed');
-      return await res.json();
+      if (!res.ok) throw new Error('Submit quiz server error');
+      const data = await res.json();
+      return {
+        score,
+        total,
+        percentage,
+        masteryStatus,
+        feedbackList,
+        ...data
+      };
     } catch (err) {
-      const offlineItem = await queueOfflineAttempt({
+      await queueOfflineAttempt({
         quizId,
-        quizTitle: quizTitle || 'Offline Quiz',
+        quizTitle: quizTitle || 'Offline Assessment',
         topic,
         subject,
-        score: 1,
-        total: 2,
+        score,
+        total,
+        percentage,
         answers,
         offlineSynced: false
       });
       return {
-        score: 1,
-        total: 2,
-        percentage: 50,
-        masteryStatus: 'practising',
+        score,
+        total,
+        percentage,
+        masteryStatus,
+        feedbackList,
         isOfflineSaved: true,
-        message: 'Saved locally on this device!'
+        message: 'Quiz attempt saved locally on this device.'
       };
     }
   },
@@ -619,21 +657,46 @@ export const api = {
   },
 
   aiRecommend: async (progressData) => {
+    const attempt = progressData?.quizAttempts?.[0] || progressData?.progress?.quizAttempts?.[0];
+    const scorePct = attempt?.percentage !== undefined ? attempt.percentage : 70;
+    const topicName = attempt?.topic || attempt?.quizTitle || 'STEM Curriculum';
+
+    let whyThisMsg = '';
+    if (scorePct >= 80) {
+      whyThisMsg = `🎯 Score Mastery (${scorePct}%): Excellent work on ${topicName}! You have demonstrated strong conceptual understanding. We recommend advancing to high-velocity category sorters and Boss Review challenges.`;
+    } else if (scorePct >= 50) {
+      whyThisMsg = `⚡ Progress Alert (${scorePct}%): Solid attempt on ${topicName}! Review the step-by-step misconception notes above and retake the assessment to reach 80%+ mastery.`;
+    } else {
+      whyThisMsg = `💡 Learning Recovery Focus (${scorePct}%): ${topicName} needs targeted review. Watch the step-by-step video lesson below and try the interactive matching game to lock in key definitions.`;
+    }
+
     if (!navigator.onLine) {
       return {
         lessonId: 'lesson-1',
-        lessonTitle: 'Photosynthesis & Cellular Energy',
-        whyThis: 'Offline Recommendation: Continue Photosynthesis to lock in your 5-day study streak!',
+        lessonTitle: topicName,
+        whyThis: whyThisMsg,
         isAIGenerated: true,
         isOffline: true
       };
     }
-    const res = await fetch(`${API_BASE}/ai/recommend`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ progress: progressData })
-    });
-    return await res.json();
+    try {
+      const res = await fetch(`${API_BASE}/ai/recommend`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ progress: progressData })
+      });
+      if (!res.ok) throw new Error('Network recommend call failed');
+      const data = await res.json();
+      return { whyThis: whyThisMsg, ...data };
+    } catch (err) {
+      return {
+        lessonId: 'lesson-1',
+        lessonTitle: topicName,
+        whyThis: whyThisMsg,
+        isAIGenerated: true,
+        isOffline: true
+      };
+    }
   },
 
   aiExplain: async ({ sectionTitle, content, mode }) => {

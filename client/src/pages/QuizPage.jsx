@@ -112,6 +112,7 @@ export const QuizPage = ({
           quizTitle: quiz?.title,
           topic: quiz?.topic,
           subject: quiz?.subject,
+          questions: quiz?.questions || [],
           answers
         });
         setQuizResult(res);
@@ -300,35 +301,54 @@ export const QuizPage = ({
 
           {/* Detailed Misconception Breakdown for Missed Questions */}
           {missedFeedback.length > 0 && (
-            <div className="bg-[#FAF9F6] border border-[#E5E2DA] rounded-2xl p-5 space-y-3">
-              <h4 className="text-xs font-extrabold text-[#1E2229] uppercase tracking-wider flex items-center gap-1.5">
-                <BookOpen className="w-4 h-4 text-[#F95738]" /> Misconception Analysis & Areas to Improve for Future
-              </h4>
+            <div className="bg-white border border-[#E5E2DA] rounded-2xl p-6 space-y-4 shadow-xs">
+              <div className="flex items-center justify-between border-b border-[#E5E2DA] pb-3">
+                <h4 className="text-xs font-extrabold text-[#1E2229] uppercase tracking-wider flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-[#F95738]" /> Misconception Analysis & Areas to Improve for Future
+                </h4>
+                <span className="text-[10px] font-extrabold bg-[#FFF0ED] text-[#F95738] px-2.5 py-0.5 rounded-full border border-[#F95738]/20">
+                  {missedFeedback.length} Missed Concept Step(s)
+                </span>
+              </div>
               
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {missedFeedback.map((fb, idx) => (
-                  <div key={idx} className="bg-white border border-[#E5E2DA] p-3.5 rounded-xl text-xs space-y-1">
-                    <div className="flex items-center gap-2 text-[#F95738] font-bold">
-                      <XCircle className="w-3.5 h-3.5 shrink-0" />
-                      <span>Focus Area #{idx + 1}</span>
+                  <div key={idx} className="bg-[#FAF9F6] border border-[#E5E2DA] p-4 rounded-xl text-xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-extrabold text-[#F95738] flex items-center gap-1.5">
+                        <XCircle className="w-3.5 h-3.5" /> Concept Focus Area #{idx + 1}
+                      </span>
+                      {fb.questionText && <span className="text-[11px] font-semibold text-[#89909E]">Question {idx + 1}</span>}
                     </div>
-                    <p className="text-[#1E2229] font-medium leading-relaxed">
-                      {fb.misconception || fb.explanation || 'Review inverse operations and step-by-step logic.'}
-                    </p>
+
+                    {fb.questionText && (
+                      <p className="font-bold text-[#1E2229]">{fb.questionText}</p>
+                    )}
+
+                    <div className="p-3 bg-white border border-[#E5E2DA] rounded-lg text-xs leading-relaxed space-y-1">
+                      <span className="font-bold text-[#F95738] block">Step Correction:</span>
+                      <p className="text-[#1E2229]">{fb.misconception || fb.explanation || 'Review inverse algebraic operations and step-by-step logic.'}</p>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* AI Tailored Recommendation */}
-          <div className="bg-[#EEF2FF] border border-[#4F46E5]/20 rounded-2xl p-4 space-y-2">
-            <span className="text-[10px] font-extrabold text-[#4F46E5] uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-[#4F46E5]" /> AI Recommendation Rationale
-            </span>
-            <p className="text-xs text-[#1E2229] font-medium leading-relaxed bg-white p-3 rounded-xl border border-[#E5E2DA]">
-              {recommendation?.whyThis || `Based on your score of ${quizResult.percentage}%, we have unlocked custom next-step video modules and interactive practice games.`}
-            </p>
+          {/* AI Tailored Recommendation (Clean White Theme) */}
+          <div className="bg-white border border-[#E5E2DA] rounded-2xl p-6 space-y-3 shadow-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold text-[#4F46E5] uppercase tracking-wider flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#4F46E5]" /> AI Recommendation Rationale
+              </span>
+              <span className="text-[10px] font-bold text-[#0D9488] bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                Personalized On-Device AI Output
+              </span>
+            </div>
+            
+            <div className="p-4 bg-[#FAF9F6] border border-[#E5E2DA] rounded-xl text-xs text-[#1E2229] font-medium leading-relaxed">
+              {recommendation?.whyThis || `Based on your score of ${quizResult.percentage}%, we have generated targeted next-step video modules and interactive practice games.`}
+            </div>
           </div>
 
         </div>
