@@ -416,6 +416,9 @@ export const StudentHomePage = ({
 
   const interest = user?.interestDomain || 'Computer Science';
   const primaryLesson = (lessons || []).find(l => 
+    (recommendation?.lessonId && l._id === recommendation.lessonId) ||
+    (recommendation?.lessonTitle && l.title === recommendation.lessonTitle)
+  ) || (lessons || []).find(l => 
     l?.subject?.toLowerCase().includes(interest.toLowerCase()) || 
     l?.topic?.toLowerCase().includes(interest.toLowerCase())
   ) || lessons?.[0] || DEFAULT_CURRICULUM_LESSONS[0] || {};
@@ -745,6 +748,23 @@ export const StudentHomePage = ({
             <p className="text-xs text-[#5A606C] mt-2 leading-relaxed">
               {primaryLesson?.summary || 'Interactive offline and low-bandwidth curriculum module.'}
             </p>
+
+            {/* AI Recommendation Rationale (Personalized On-Device AI Output) */}
+            {recommendation?.whyThis && (
+              <div className="mt-4 p-4 bg-[#FAF9F6] border border-[#E5E2DA] rounded-2xl space-y-2">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <span className="text-xs font-extrabold text-[#4F46E5] uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-[#4F46E5]" /> AI Recommendation Rationale
+                  </span>
+                  <span className="text-[10px] font-bold text-[#0D9488] bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                    Personalized On-Device AI Output
+                  </span>
+                </div>
+                <p className="text-xs text-[#1E2229] font-medium leading-relaxed">
+                  {recommendation.whyThis}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="mt-6 pt-4 border-t border-[#E5E2DA] flex flex-wrap items-center justify-between gap-3">

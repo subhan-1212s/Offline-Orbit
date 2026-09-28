@@ -257,7 +257,11 @@ export const Navbar = ({ activeTab, setActiveTab, onSignOut }) => {
             />
             <div className="hidden xl:block text-left">
               <p className="text-xs font-bold text-[#1E2229] leading-tight">{user?.name}</p>
-              <span className="text-[10px] font-semibold text-[#89909E]">{user?.role === 'educator' || user?.role === 'teacher' ? 'Educator' : 'Learner'}</span>
+              {user?.role !== 'admin' && !user?.name?.toLowerCase().includes('admin') && (
+                <span className="text-[10px] font-semibold text-[#89909E]">
+                  {user?.role === 'educator' || user?.role === 'teacher' ? 'Educator' : 'Learner'}
+                </span>
+              )}
             </div>
           </div>
 
@@ -311,7 +315,11 @@ export const Navbar = ({ activeTab, setActiveTab, onSignOut }) => {
               />
               <div>
                 <p className="text-xs font-bold text-[#1E2229]">{user?.name}</p>
-                <span className="text-[10px] font-semibold text-[#89909E]">{user?.role === 'educator' || user?.role === 'teacher' ? 'Educator' : 'Learner'}</span>
+                {user?.role !== 'admin' && !user?.name?.toLowerCase().includes('admin') && (
+                  <span className="text-[10px] font-semibold text-[#89909E]">
+                    {user?.role === 'educator' || user?.role === 'teacher' ? 'Educator' : 'Learner'}
+                  </span>
+                )}
               </div>
             </div>
 

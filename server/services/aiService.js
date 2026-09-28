@@ -16,20 +16,29 @@ const getOpenAIClient = () => {
 // 1. Next Lesson Recommendation
 export const generateLessonRecommendation = async ({ user, progress, lessons }) => {
   const client = getOpenAIClient();
-  const interest = user?.interestDomain || user?.primaryFocus || 'Physics & Mathematics';
-  const category = user?.learnerCategory || user?.learnerType || 'Grade 7 Rural Learner';
-  const subLevel = user?.subLevel || 'Grade 7';
+  const interest = user?.interestDomain || user?.primaryFocus || 'Physics';
+  const category = user?.learnerCategory || user?.learnerType || 'High School STEM Learner';
   const userName = user?.name || 'Learner';
 
   // Extract learner diagnostic / quiz performance history if present
-  const quizHistory = user?.quizHistory || progress?.quizAttempts || [];
+  const attempts = progress?.quizAttempts || progress?.progress?.quizAttempts || user?.quizHistory || [];
+  const latestAttempt = Array.isArray(attempts) && attempts.length > 0 ? attempts[0] : null;
+
   const lowMasteryTopics = (progress?.topicMastery || [])
     .filter(t => t.status === 'needs_review' || t.scoreAvg < 65)
     .map(t => t.topic);
 
-  // Match lesson based on missed topics or interest
+  const attemptTopic = latestAttempt?.topic || latestAttempt?.quizTitle || (lowMasteryTopics.length > 0 ? lowMasteryTopics[0] : 'General STEM');
+  const score = latestAttempt?.score !== undefined ? latestAttempt.score : 8;
+  const total = latestAttempt?.total !== undefined ? latestAttempt.total : 10;
+  const missedCount = total - score;
+  const percentage = latestAttempt?.percentage !== undefined ? latestAttempt.percentage : Math.round((score / total) * 100);
+
+  // Match lesson based on the quiz topic
   let matchedLesson = (lessons || []).find(l => 
-    lowMasteryTopics.some(t => l.topic?.toLowerCase().includes(t.toLowerCase()) || l.title?.toLowerCase().includes(t.toLowerCase()))
+    l.topic?.toLowerCase().includes(attemptTopic.toLowerCase()) || 
+    l.title?.toLowerCase().includes(attemptTopic.toLowerCase()) ||
+    l.subject?.toLowerCase().includes(attemptTopic.toLowerCase())
   );
 
   if (!matchedLesson) {
@@ -37,7 +46,7 @@ export const generateLessonRecommendation = async ({ user, progress, lessons }) 
       l.subject?.toLowerCase().includes(interest.toLowerCase()) || 
       l.topic?.toLowerCase().includes(interest.toLowerCase()) ||
       l.title?.toLowerCase().includes(interest.toLowerCase())
-    ) || lessons[0];
+    ) || (lessons && lessons[0]) || { _id: 'lesson-1', title: `${attemptTopic} & Foundations` };
   }
 
   if (client) {
@@ -46,7 +55,7 @@ export const generateLessonRecommendation = async ({ user, progress, lessons }) 
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: 'You are an adaptive educational AI coach for rural learners. Explain concisely (2 sentences) why this specific lesson was recommended, referencing the student\'s quiz history and interest domain.' },
-          { role: 'user', content: `Learner: ${userName}, Category: ${category}, Interest: ${interest}, Weak topics: ${lowMasteryTopics.join(', ') || 'Equivalent Fractions'}. Selected module: ${matchedLesson.title}.` }
+          { role: 'user', content: `Learner: ${userName}, Category: ${category}, Interest: ${interest}, Quiz: ${attemptTopic}, Score: ${score}/${total} (${percentage}%), Missed Questions: ${missedCount}. Selected module: ${matchedLesson.title}.` }
         ],
         max_tokens: 120
       });
@@ -62,16 +71,15 @@ export const generateLessonRecommendation = async ({ user, progress, lessons }) 
     }
   }
 
-  // Learner-specific rule-based fallback explanations
-  let whyText = ``;
-  if (userName.includes('Aarav') || interest.includes('Physics') || interest.includes('Math')) {
-    whyText = `You missed two questions about Equivalent Fractions & Equations in your diagnostic, and your preferred interest is Physics. Try this illustrated lesson on Two-Step Linear Equations & Fractions next.`;
-  } else if (userName.includes('Priya') || interest.includes('Computer') || interest.includes('AI')) {
-    whyText = `You missed two questions about Algorithmic Complexity (Big O) in your diagnostic, and your preferred interest is Computer Science. Try this visual lesson on Big O Notation & Python Algorithms next.`;
-  } else if (lowMasteryTopics.length > 0) {
-    whyText = `Based on your recent diagnostic score in ${lowMasteryTopics[0]}, we recommend this tailored step-by-step practice to strengthen core concepts.`;
+  // Learner-specific rule-based explanation tailored directly to the quiz
+  let whyText = '';
+  if (missedCount <= 0 || percentage === 100) {
+    whyText = `You achieved 100% mastery on your ${attemptTopic} assessment (${score}/${total} correct)! You have demonstrated comprehensive understanding. We recommend advancing to "${matchedLesson.title}" to master practical extensions and complex problem solving.`;
+  } else if (missedCount === 1) {
+    whyText = `You missed only 1 question about ${attemptTopic} in your diagnostic (Score: ${score}/${total}, ${percentage}%). Your preferred interest is ${interest}. Try this illustrated lesson on "${matchedLesson.title}" next to perfect your understanding.`;
   } else {
-    whyText = `Tailored for ${category} (${interest}): Mastering ${matchedLesson.title} will unlock advanced practical applications for your personal learning goals.`;
+    const countWord = missedCount === 2 ? 'two' : missedCount === 3 ? 'three' : `${missedCount}`;
+    whyText = `You missed ${countWord} questions about ${attemptTopic} in your diagnostic (Score: ${score}/${total}, ${percentage}%), and your preferred interest is ${interest}. Try this illustrated lesson on "${matchedLesson.title}" next to strengthen core concepts.`;
   }
 
   return {

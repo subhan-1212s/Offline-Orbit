@@ -9,20 +9,20 @@ export const AITutorWidget = () => {
     { 
       id: 1, 
       sender: 'ai', 
-      text: 'Hi! I am Orbit AI, your personal STEM study tutor powered by WebLLM Cloud Cache & WebGPU.\n\nAsk me any question in Algebra, Algorithms, Physics, or Biology—I work 100% offline directly in your browser!',
-      engine: 'WebLLM Cloud Cache (Offline Ready)'
+      text: 'Hi! I am Orbit AI, your personal STEM study tutor powered by WebLLM, WebGPU & Transformers.js Cloud Cache.\n\nAsk me any question in Algebra, Calculus, Algorithms, Physics, Chemistry, or Biology—I work 100% offline directly in your browser with comprehensive, verified STEM responses!',
+      engine: 'WebLLM & Transformers.js Cloud Cache'
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [engineStatus, setEngineStatus] = useState('WebLLM Cloud Cache Active');
+  const [engineStatus, setEngineStatus] = useState('WebLLM WebGPU & Transformers.js Cloud Cache');
 
   useEffect(() => {
     if (webllmEngine.isWebGPUSupported) {
-      setEngineStatus('WebGPU Hardware Accelerated');
+      setEngineStatus('WebGPU Hardware Accelerated • Cloud Cache Ready');
     } else {
-      setEngineStatus('WebLLM Cloud Cache Active');
+      setEngineStatus('WebLLM WebGPU & Transformers.js Cloud Cache');
     }
   }, []);
 
@@ -175,7 +175,7 @@ export const AITutorWidget = () => {
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                    WebLLM WebGPU Cloud Cache
+                    WebLLM WebGPU & Transformers.js Cloud Cache
                   </span>
                   <span className="text-[9px] bg-white/10 text-white/80 px-1.5 py-0.2 rounded font-mono">
                     100% Offline
@@ -233,7 +233,7 @@ export const AITutorWidget = () => {
             {loading && (
               <div className="flex items-center gap-2 p-2 rounded-xl bg-white border border-[#E5E2DA] w-fit text-[#5A606C] text-xs shadow-xs">
                 <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#F95738]" />
-                <span className="font-semibold text-[11px]">Orbit WebLLM is reasoning step-by-step...</span>
+                <span className="font-semibold text-[11px]">Orbit WebLLM & Transformers.js is reasoning step-by-step...</span>
               </div>
             )}
           </div>

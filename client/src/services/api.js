@@ -756,23 +756,77 @@ export const api = {
   },
 
   aiRecommend: async (progressData) => {
-    const attempt = progressData?.quizAttempts?.[0] || progressData?.progress?.quizAttempts?.[0];
-    const scorePct = attempt?.percentage !== undefined ? attempt.percentage : 70;
-    const topicName = attempt?.topic || attempt?.quizTitle || 'STEM Curriculum';
+    // 1. Gather latest real quiz attempt
+    let attempts = progressData?.quizAttempts || progressData?.progress?.quizAttempts || [];
+    if (!attempts || attempts.length === 0) {
+      try {
+        attempts = JSON.parse(localStorage.getItem('orbit_quiz_history') || '[]');
+      } catch (e) {
+        attempts = [];
+      }
+    }
+    const attempt = attempts?.[0];
+    let userInterest = 'Physics';
+    try {
+      const u = JSON.parse(localStorage.getItem('orbit_auth_user') || '{}');
+      if (u?.interestDomain) userInterest = u.interestDomain;
+    } catch (e) {}
 
+    const attemptTopic = attempt?.topic || attempt?.quizTitle || 'Diagnostic Assessment';
+    const score = attempt?.score !== undefined ? attempt.score : 8;
+    const total = attempt?.total !== undefined ? attempt.total : 10;
+    const missedCount = Math.max(0, total - score);
+    const percentage = attempt?.percentage !== undefined ? attempt.percentage : Math.round((score / total) * 100);
+
+    // Map attempt topic to recommended next lesson
+    let matchedTitle = 'Algebra: Two-Step Linear Equations & Functions';
+    let matchedId = 'lesson-math-1';
+    const topLower = (attemptTopic || '').toLowerCase();
+
+    if (topLower.includes('fraction') || topLower.includes('algebra') || topLower.includes('linear') || topLower.includes('equation') || topLower.includes('math')) {
+      matchedTitle = 'Algebra: Two-Step Linear Equations & Functions';
+      matchedId = 'lesson-math-1';
+    } else if (topLower.includes('algorithm') || topLower.includes('big o') || topLower.includes('python') || topLower.includes('computer')) {
+      matchedTitle = 'Computer Science: Algorithms, Big O & Python';
+      matchedId = 'lesson-cs-1';
+    } else if (topLower.includes('neural') || topLower.includes('ai') || topLower.includes('machine learning')) {
+      matchedTitle = 'Artificial Intelligence & Neural Networks';
+      matchedId = 'lesson-cs-2';
+    } else if (topLower.includes('photo') || topLower.includes('plant') || topLower.includes('cell') || topLower.includes('bio') || topLower.includes('dna')) {
+      matchedTitle = 'Cellular Biology, DNA Replication & Genetics';
+      matchedId = 'lesson-bio-1';
+    } else if (topLower.includes('crispr') || topLower.includes('genomics') || topLower.includes('gene editing')) {
+      matchedTitle = 'Molecular Genetics & CRISPR Gene Editing';
+      matchedId = 'lesson-bio-2';
+    } else if (topLower.includes('chem') || topLower.includes('stoich') || topLower.includes('reaction') || topLower.includes('periodic')) {
+      matchedTitle = 'Chemical Reactions, Stoichiometry & Periodic Table';
+      matchedId = 'lesson-chem-1';
+    } else if (topLower.includes('force') || topLower.includes('newton') || topLower.includes('physic') || topLower.includes('motion')) {
+      matchedTitle = 'Newtonian Physics & Force Vectors';
+      matchedId = 'lesson-phy-1';
+    } else if (topLower.includes('circuit') || topLower.includes('ohm') || topLower.includes('electric') || topLower.includes('magnet')) {
+      matchedTitle = 'Electromagnetism & Circuit Dynamics';
+      matchedId = 'lesson-phy-2';
+    } else if (topLower.includes('calculus') || topLower.includes('derivative') || topLower.includes('gradient')) {
+      matchedTitle = 'Calculus: Derivatives, Gradients & Optimization';
+      matchedId = 'lesson-math-2';
+    }
+
+    // Dynamic rationale formulation exactly according to the quiz performance
     let whyThisMsg = '';
-    if (scorePct >= 80) {
-      whyThisMsg = `🎯 Score Mastery (${scorePct}%): Excellent work on ${topicName}! You have demonstrated strong conceptual understanding. We recommend advancing to high-velocity category sorters and Boss Review challenges.`;
-    } else if (scorePct >= 50) {
-      whyThisMsg = `⚡ Progress Alert (${scorePct}%): Solid attempt on ${topicName}! Review the step-by-step misconception notes above and retake the assessment to reach 80%+ mastery.`;
+    if (missedCount === 0 || percentage === 100) {
+      whyThisMsg = `You achieved 100% mastery on your ${attemptTopic} assessment (${score}/${total} correct)! You have demonstrated comprehensive understanding. We recommend advancing to "${matchedTitle}" next to master practical extensions and complex problem solving.`;
+    } else if (missedCount === 1) {
+      whyThisMsg = `You missed only 1 question about ${attemptTopic} in your diagnostic (Score: ${score}/${total}, ${percentage}%). Your preferred interest is ${userInterest}. Try this illustrated lesson on "${matchedTitle}" next to perfect your understanding.`;
     } else {
-      whyThisMsg = `💡 Learning Recovery Focus (${scorePct}%): ${topicName} needs targeted review. Watch the step-by-step video lesson below and try the interactive matching game to lock in key definitions.`;
+      const countWord = missedCount === 2 ? 'two' : missedCount === 3 ? 'three' : `${missedCount}`;
+      whyThisMsg = `You missed ${countWord} questions about ${attemptTopic} in your diagnostic (Score: ${score}/${total}, ${percentage}%), and your preferred interest is ${userInterest}. Try this illustrated lesson on "${matchedTitle}" next to strengthen core concepts.`;
     }
 
     if (!navigator.onLine) {
       return {
-        lessonId: 'lesson-1',
-        lessonTitle: topicName,
+        lessonId: matchedId,
+        lessonTitle: matchedTitle,
         whyThis: whyThisMsg,
         isAIGenerated: true,
         isOffline: true
@@ -786,11 +840,16 @@ export const api = {
       });
       if (!res.ok) throw new Error('Network recommend call failed');
       const data = await res.json();
-      return { whyThis: whyThisMsg, ...data };
+      return {
+        lessonId: data?.lessonId || matchedId,
+        lessonTitle: data?.lessonTitle || matchedTitle,
+        ...data,
+        whyThis: whyThisMsg
+      };
     } catch (err) {
       return {
-        lessonId: 'lesson-1',
-        lessonTitle: topicName,
+        lessonId: matchedId,
+        lessonTitle: matchedTitle,
         whyThis: whyThisMsg,
         isAIGenerated: true,
         isOffline: true
