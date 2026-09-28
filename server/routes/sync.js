@@ -6,13 +6,22 @@ import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// POST /api/sync/queue
-router.post('/queue', protect, async (req, res) => {
+// GET /api/sync/queue or /api/sync
+router.get(['/queue', '/', ''], (req, res) => {
+  res.json({
+    success: true,
+    message: 'Sync queue endpoint is active and ready to receive offline quiz attempts.',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// POST /api/sync/queue or /api/sync
+router.post(['/queue', '/', ''], protect, async (req, res) => {
   try {
     const { offlineAttempts } = req.body;
 
     if (!offlineAttempts || !Array.isArray(offlineAttempts) || offlineAttempts.length === 0) {
-      return res.json({ syncedCount: 0, message: 'No pending items to sync.' });
+      return res.json({ success: true, syncedCount: 0, message: 'No pending items to sync.' });
     }
 
     let syncedCount = 0;
