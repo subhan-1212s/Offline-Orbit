@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
     if (!saved) return null;
     try {
       const parsed = JSON.parse(saved);
+      if (!parsed || typeof parsed !== 'object') return null;
       const dynamicStreak = getDynamicStreak(parsed._id || parsed.email);
       return { ...parsed, streakDays: dynamicStreak };
     } catch (e) {

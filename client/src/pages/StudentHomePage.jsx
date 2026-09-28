@@ -12,6 +12,100 @@ import {
   TrendingUp, Key, Users, Check, Gamepad2, Layers, Filter, Compass, BrainCircuit, Target, Star
 } from 'lucide-react';
 
+// Rich Default Dataset for Multi-Level STEM Curriculum
+const DEFAULT_CURRICULUM_LESSONS = [
+  {
+    _id: 'lesson-cs-1',
+    title: 'Computer Science: Algorithms, Big O & Python',
+    subject: 'Computer Science',
+    topic: 'Algorithms & Complexity',
+    level: 'Beginner',
+    status: 'mastered',
+    summary: 'Learn essential computer science principles: algorithmic thinking, computational complexity (Big O notation), linear vs binary search, and Python data structures.',
+    sizeKB: 420
+  },
+  {
+    _id: 'lesson-cs-2',
+    title: 'Artificial Intelligence & Neural Networks',
+    subject: 'Computer Science',
+    topic: 'Machine Learning',
+    level: 'Intermediate',
+    status: 'practising',
+    summary: 'Explore deep learning architectures, perceptrons, backpropagation gradients, computer vision, and neural network training parameters.',
+    sizeKB: 580
+  },
+  {
+    _id: 'lesson-math-1',
+    title: 'Algebra: Two-Step Linear Equations & Functions',
+    subject: 'Mathematics',
+    topic: 'Algebra & Functions',
+    level: 'Beginner',
+    status: 'needs_review',
+    summary: 'Master solving linear equations step by step, applying inverse operations, coordinate geometry slope-intercept forms, and algebraic word problems.',
+    sizeKB: 390
+  },
+  {
+    _id: 'lesson-math-2',
+    title: 'Calculus: Derivatives, Gradients & Optimization',
+    subject: 'Mathematics',
+    topic: 'Calculus',
+    level: 'Advanced',
+    status: 'practising',
+    summary: 'Understand rates of change, power rule differentiation, partial derivatives, and optimization techniques used in physical systems.',
+    sizeKB: 510
+  },
+  {
+    _id: 'lesson-phy-1',
+    title: 'Newtonian Physics & Force Vectors',
+    subject: 'Physics',
+    topic: 'Classical Mechanics',
+    level: 'Intermediate',
+    status: 'mastered',
+    summary: 'Analyze Newton laws of motion, free body vector diagrams, friction dynamics, momentum conservation, and kinetic energy transformations.',
+    sizeKB: 460
+  },
+  {
+    _id: 'lesson-phy-2',
+    title: 'Electromagnetism & Circuit Dynamics',
+    subject: 'Physics',
+    topic: 'Electricity & Magnetism',
+    level: 'Advanced',
+    status: 'practising',
+    summary: 'Calculate Ohm law resistance, Kirchhoff current laws, magnetic flux induction, electromagnetic wave frequencies, and circuit diagrams.',
+    sizeKB: 630
+  },
+  {
+    _id: 'lesson-bio-1',
+    title: 'Cellular Biology, DNA Replication & Genetics',
+    subject: 'Biology',
+    topic: 'Cell Biology',
+    level: 'Beginner',
+    status: 'mastered',
+    summary: 'Discover cell organelles, ATP mitochondria cellular respiration, DNA double helix transcription into RNA, and Mendelian inheritance genetics.',
+    sizeKB: 480
+  },
+  {
+    _id: 'lesson-bio-2',
+    title: 'Molecular Genetics & CRISPR Gene Editing',
+    subject: 'Biology',
+    topic: 'Genomics',
+    level: 'Advanced',
+    status: 'practising',
+    summary: 'Explore Cas9 enzyme target recognition, guide RNA synthesis, DNA double-strand break repair mechanisms, and bioethical applications.',
+    sizeKB: 540
+  },
+  {
+    _id: 'lesson-chem-1',
+    title: 'Chemical Reactions, Stoichiometry & Periodic Table',
+    subject: 'Chemistry',
+    topic: 'General Chemistry',
+    level: 'Intermediate',
+    status: 'needs_review',
+    summary: 'Balance chemical equations, calculate molar mass stoichiometry ratios, electron orbital configurations, and periodic element trends.',
+    sizeKB: 410
+  }
+];
+
 export const StudentHomePage = ({ 
   onNavigateToLesson, 
   onNavigateToQuiz, 
@@ -151,9 +245,9 @@ export const StudentHomePage = ({
 
   const interest = user?.interestDomain || 'Computer Science';
   const primaryLesson = (lessons || []).find(l => 
-    l.subject?.toLowerCase().includes(interest.toLowerCase()) || 
-    l.topic?.toLowerCase().includes(interest.toLowerCase())
-  ) || lessons[0];
+    l?.subject?.toLowerCase().includes(interest.toLowerCase()) || 
+    l?.topic?.toLowerCase().includes(interest.toLowerCase())
+  ) || lessons?.[0] || DEFAULT_CURRICULUM_LESSONS[0] || {};
 
   const masteredCount = lessons.filter(l => l.status === 'mastered').length || (progress?.topicMastery?.filter(t => t.status === 'mastered').length) || 1;
   const practisingCount = lessons.filter(l => l.status === 'practising').length || (progress?.topicMastery?.filter(t => t.status === 'practising').length) || 1;
@@ -391,22 +485,22 @@ export const StudentHomePage = ({
                 <Play className="w-3.5 h-3.5 fill-[#F95738]" /> Adaptive Next Step Lesson
               </span>
               <span className="text-xs font-semibold text-[#89909E] bg-[#FAF9F6] border border-[#E5E2DA] px-2.5 py-1 rounded-full">
-                {primaryLesson.subject} • {primaryLesson.level || 'Intermediate'}
+                {primaryLesson?.subject || 'STEM'} • {primaryLesson?.level || 'Intermediate'}
               </span>
             </div>
 
             <h3 className="text-2xl font-extrabold text-[#1E2229] tracking-tight">
-              {primaryLesson.title}
+              {primaryLesson?.title || 'Interactive Lesson'}
             </h3>
             <p className="text-xs text-[#5A606C] mt-2 leading-relaxed">
-              {primaryLesson.summary}
+              {primaryLesson?.summary || 'Interactive offline and low-bandwidth curriculum module.'}
             </p>
           </div>
 
           <div className="mt-6 pt-4 border-t border-[#E5E2DA] flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2 flex-wrap">
               <button
-                onClick={() => onNavigateToLesson(primaryLesson._id)}
+                onClick={() => onNavigateToLesson(primaryLesson?._id || 'lesson-cs-1')}
                 className="btn-coral text-xs py-2.5 px-4 shadow-sm"
               >
                 <Play className="w-4 h-4" />
@@ -414,7 +508,7 @@ export const StudentHomePage = ({
               </button>
 
               <button
-                onClick={() => onNavigateToQuiz(primaryLesson._id)}
+                onClick={() => onNavigateToQuiz(primaryLesson?._id || 'lesson-cs-1')}
                 className="btn-outline text-xs py-2.5 px-4 bg-white hover:bg-[#FAF9F6]"
               >
                 <Target className="w-4 h-4 text-[#F95738]" />
@@ -433,12 +527,12 @@ export const StudentHomePage = ({
             </div>
 
             <button
-              onClick={(e) => handleDownloadPack(e, primaryLesson._id)}
-              disabled={downloadingId === primaryLesson._id}
+              onClick={(e) => handleDownloadPack(e, primaryLesson?._id || 'lesson-cs-1')}
+              disabled={downloadingId === primaryLesson?._id}
               className="text-xs text-[#89909E] hover:text-[#1E2229] font-bold flex items-center gap-1.5"
             >
-              <Download className={`w-3.5 h-3.5 ${downloadingId === primaryLesson._id ? 'animate-bounce text-[#F95738]' : ''}`} />
-              <span>{downloadingId === primaryLesson._id ? 'Saving Offline...' : 'Save Pack'}</span>
+              <Download className={`w-3.5 h-3.5 ${downloadingId === primaryLesson?._id ? 'animate-bounce text-[#F95738]' : ''}`} />
+              <span>{downloadingId === primaryLesson?._id ? 'Saving Offline...' : 'Save Pack'}</span>
             </button>
           </div>
         </div>
@@ -723,96 +817,3 @@ export const StudentHomePage = ({
   );
 };
 
-// Rich Default Dataset for Multi-Level STEM Curriculum
-const DEFAULT_CURRICULUM_LESSONS = [
-  {
-    _id: 'lesson-cs-1',
-    title: 'Computer Science: Algorithms, Big O & Python',
-    subject: 'Computer Science',
-    topic: 'Algorithms & Complexity',
-    level: 'Beginner',
-    status: 'mastered',
-    summary: 'Learn essential computer science principles: algorithmic thinking, computational complexity (Big O notation), linear vs binary search, and Python data structures.',
-    sizeKB: 420
-  },
-  {
-    _id: 'lesson-cs-2',
-    title: 'Artificial Intelligence & Neural Networks',
-    subject: 'Computer Science',
-    topic: 'Machine Learning',
-    level: 'Intermediate',
-    status: 'practising',
-    summary: 'Explore deep learning architectures, perceptrons, backpropagation gradients, computer vision, and neural network training parameters.',
-    sizeKB: 580
-  },
-  {
-    _id: 'lesson-math-1',
-    title: 'Algebra: Two-Step Linear Equations & Functions',
-    subject: 'Mathematics',
-    topic: 'Algebra & Functions',
-    level: 'Beginner',
-    status: 'needs_review',
-    summary: 'Master solving linear equations step by step, applying inverse operations, coordinate geometry slope-intercept forms, and algebraic word problems.',
-    sizeKB: 390
-  },
-  {
-    _id: 'lesson-math-2',
-    title: 'Calculus: Derivatives, Gradients & Optimization',
-    subject: 'Mathematics',
-    topic: 'Calculus',
-    level: 'Advanced',
-    status: 'practising',
-    summary: 'Understand rates of change, power rule differentiation, partial derivatives, and optimization techniques used in physical systems.',
-    sizeKB: 510
-  },
-  {
-    _id: 'lesson-phy-1',
-    title: 'Newtonian Physics & Force Vectors',
-    subject: 'Physics',
-    topic: 'Classical Mechanics',
-    level: 'Intermediate',
-    status: 'mastered',
-    summary: 'Analyze Newton laws of motion, free body vector diagrams, friction dynamics, momentum conservation, and kinetic energy transformations.',
-    sizeKB: 460
-  },
-  {
-    _id: 'lesson-phy-2',
-    title: 'Electromagnetism & Circuit Dynamics',
-    subject: 'Physics',
-    topic: 'Electricity & Magnetism',
-    level: 'Advanced',
-    status: 'practising',
-    summary: 'Calculate Ohm law resistance, Kirchhoff current laws, magnetic flux induction, electromagnetic wave frequencies, and circuit diagrams.',
-    sizeKB: 630
-  },
-  {
-    _id: 'lesson-[#lesson-bio-1]',
-    title: 'Cellular Biology, DNA Replication & Genetics',
-    subject: 'Biology',
-    topic: 'Cell Biology',
-    level: 'Beginner',
-    status: 'mastered',
-    summary: 'Discover cell organelles, ATP mitochondria cellular respiration, DNA double helix transcription into RNA, and Mendelian inheritance genetics.',
-    sizeKB: 480
-  },
-  {
-    _id: 'lesson-bio-2',
-    title: 'Molecular Genetics & CRISPR Gene Editing',
-    subject: 'Biology',
-    topic: 'Genomics',
-    level: 'Advanced',
-    status: 'practising',
-    summary: 'Explore Cas9 enzyme target recognition, guide RNA synthesis, DNA double-strand break repair mechanisms, and bioethical applications.',
-    sizeKB: 540
-  },
-  {
-    _id: 'lesson-chem-1',
-    title: 'Chemical Reactions, Stoichiometry & Periodic Table',
-    subject: 'Chemistry',
-    topic: 'General Chemistry',
-    level: 'Intermediate',
-    status: 'needs_review',
-    summary: 'Balance chemical equations, calculate molar mass stoichiometry ratios, electron orbital configurations, and periodic element trends.',
-    sizeKB: 410
-  }
-];
