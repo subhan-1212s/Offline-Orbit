@@ -139,10 +139,23 @@ export const StudentHomePage = ({
 
   useEffect(() => {
     loadData();
+
+    // Listen for live quiz completions or offline telemetry sync
+    const handleTelemetryUpdate = () => {
+      loadData(false);
+    };
+
+    window.addEventListener('storage', handleTelemetryUpdate);
+    window.addEventListener('orbit_telemetry_updated', handleTelemetryUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleTelemetryUpdate);
+      window.removeEventListener('orbit_telemetry_updated', handleTelemetryUpdate);
+    };
   }, []);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (showLoader = true) => {
+    if (showLoader) setLoading(true);
     try {
       const fetchedLessons = await api.getLessons();
       const fetchedProgress = await api.getStudentProgress();
@@ -161,7 +174,7 @@ export const StudentHomePage = ({
       console.warn('Error loading learner home data:', err);
       setLessons(DEFAULT_CURRICULUM_LESSONS);
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   };
 
@@ -199,7 +212,7 @@ export const StudentHomePage = ({
     setDownloadingId(lessonId);
     try {
       await api.downloadLessonPack(lessonId);
-      await loadData();
+      await loadData(false);
     } catch (err) {
       console.error('Download pack failed:', err);
     } finally {
@@ -208,11 +221,169 @@ export const StudentHomePage = ({
   };
 
   const handleAnalyticsCardClick = (status) => {
-    setActiveMasteryFilter(status);
+    if (activeMasteryFilter === status) {
+      // Toggle off back to all if clicked again
+      setActiveMasteryFilter('all');
+    } else {
+      setActiveMasteryFilter(status);
+    }
     if (curriculumRef.current) {
       curriculumRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  // Extract combined real quiz attempts from both localStorage and progress API
+  const combinedQuizAttempts = React.useMemo(() => {
+    let localAttempts = [];
+    try {
+      localAttempts = JSON.parse(localStorage.getItem('orbit_quiz_history') || '[]');
+    } catch {
+      localAttempts = [];
+    }
+
+    const seen = new Set();
+    const list = [];
+    const all = [...(localAttempts || []), ...(progress?.quizAttempts || [])];
+    for (const q of all) {
+      if (!q) continue;
+      const key = q.id || `${q.quizId || q.topic}-${q.completedAt || q.timestamp || ''}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        list.push(q);
+      }
+    }
+    return list;
+  }, [progress]);
+
+  // Topic performance mapping built dynamically from actual student quiz telemetry
+  const topicPerformanceMap = React.useMemo(() => {
+    const map = {};
+
+    // 1. Initial baseline from progress.topicMastery if present
+    if (progress?.topicMastery && Array.isArray(progress.topicMastery)) {
+      for (const tm of progress.topicMastery) {
+        if (tm?.topic) {
+          map[tm.topic.toLowerCase().trim()] = {
+            status: tm.status,
+            scoreAvg: tm.scoreAvg || 75
+          };
+        }
+      }
+    }
+
+    // 2. Real quiz attempts calculation (scores & mastery thresholds)
+    const attemptScoresByTopic = {};
+    for (const q of combinedQuizAttempts) {
+      const topicKey = (q.topic || q.quizTitle || '').toLowerCase().trim();
+      if (!topicKey) continue;
+      if (!attemptScoresByTopic[topicKey]) attemptScoresByTopic[topicKey] = [];
+      const pct = typeof q.percentage === 'number'
+        ? q.percentage
+        : Math.round(((q.score || 0) / (q.total || 1)) * 100);
+      attemptScoresByTopic[topicKey].push(pct);
+    }
+
+    for (const [topicKey, scores] of Object.entries(attemptScoresByTopic)) {
+      const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+      const status = avg >= 80 ? 'mastered' : avg >= 60 ? 'practising' : 'needs_review';
+      map[topicKey] = { status, scoreAvg: avg };
+    }
+
+    return map;
+  }, [progress, combinedQuizAttempts]);
+
+  // Unified single source of truth for resolving a lesson's student mastery status
+  const getLessonStatus = (lesson) => {
+    if (!lesson) return 'practising';
+
+    const lessonTopic = (lesson.topic || '').toLowerCase().trim();
+    if (lessonTopic && topicPerformanceMap[lessonTopic]) {
+      return topicPerformanceMap[lessonTopic].status;
+    }
+
+    const lessonTitle = (lesson.title || '').toLowerCase().trim();
+    if (lessonTitle && topicPerformanceMap[lessonTitle]) {
+      return topicPerformanceMap[lessonTitle].status;
+    }
+
+    // Match against quiz attempts by lesson ID or title match
+    const matchingAttempt = combinedQuizAttempts.find(q =>
+      (q.quizId && (q.quizId === lesson._id || q.quizId === `quiz-${lesson._id}`)) ||
+      (q.topic && lessonTopic.includes(q.topic.toLowerCase().trim())) ||
+      (q.quizTitle && lessonTitle.includes(q.quizTitle.toLowerCase().trim()))
+    );
+    if (matchingAttempt) {
+      const pct = typeof matchingAttempt.percentage === 'number'
+        ? matchingAttempt.percentage
+        : Math.round(((matchingAttempt.score || 0) / (matchingAttempt.total || 1)) * 100);
+      return pct >= 80 ? 'mastered' : pct >= 60 ? 'practising' : 'needs_review';
+    }
+
+    // Fall back to predefined status on lesson or 'practising'
+    return lesson.status || 'practising';
+  };
+
+  // Real-time metric counts derived consistently
+  const totalCount = lessons.length;
+  const masteredCount = lessons.filter(l => getLessonStatus(l) === 'mastered').length;
+  const practisingCount = lessons.filter(l => getLessonStatus(l) === 'practising').length;
+  const reviewCount = lessons.filter(l => getLessonStatus(l) === 'needs_review').length;
+  const reviewLessons = lessons.filter(l => getLessonStatus(l) === 'needs_review');
+
+  // Overall student mastery percentage calculation
+  const overallMastery = combinedQuizAttempts.length > 0
+    ? Math.round(combinedQuizAttempts.reduce((acc, q) => acc + (typeof q.percentage === 'number' ? q.percentage : Math.round(((q.score || 0) / (q.total || 1)) * 100)), 0) / combinedQuizAttempts.length)
+    : (progress?.topicMastery && progress.topicMastery.length > 0
+        ? Math.round(progress.topicMastery.reduce((acc, t) => acc + (t.scoreAvg || 0), 0) / progress.topicMastery.length)
+        : 82);
+
+  const totalQuizzesTaken = combinedQuizAttempts.length;
+  const avgQuizScore = overallMastery;
+  const highestScore = combinedQuizAttempts.length > 0
+    ? Math.max(...combinedQuizAttempts.map(q => typeof q.percentage === 'number' ? q.percentage : Math.round(((q.score || 0) / (q.total || 1)) * 100)))
+    : 88;
+  const masteryRate = Math.round((masteredCount / Math.max(totalCount, 1)) * 100);
+
+  // Dynamic Learning Trend Chart Dataset
+  const learningTrendData = React.useMemo(() => {
+    if (combinedQuizAttempts && combinedQuizAttempts.length > 0) {
+      const sorted = [...combinedQuizAttempts].sort((a, b) => {
+        const tA = new Date(a.completedAt || a.timestamp || 0).getTime();
+        const tB = new Date(b.completedAt || b.timestamp || 0).getTime();
+        return tA - tB;
+      });
+
+      return sorted.map((q, idx) => {
+        const d = q.completedAt || q.timestamp;
+        const formattedDate = d
+          ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          : `Quiz ${idx + 1}`;
+        const scoreVal = typeof q.percentage === 'number'
+          ? q.percentage
+          : Math.round(((q.score || 0) / (q.total || 1)) * 100);
+        return {
+          date: formattedDate,
+          score: Math.min(100, Math.max(0, scoreVal)),
+          label: q.quizTitle || q.topic || `Assessment ${idx + 1}`
+        };
+      });
+    }
+
+    // Default starter baseline curve before quiz submissions
+    return [
+      { date: 'Diagnostic Baseline', score: 68, label: 'Diagnostic Assessment' },
+      { date: 'Topic Check 1', score: 76, label: 'Algorithms Practice' },
+      { date: 'Topic Check 2', score: 84, label: 'Classical Mechanics' },
+      { date: 'Topic Check 3', score: 92, label: 'Photosynthesis Mastery' }
+    ];
+  }, [combinedQuizAttempts]);
+
+  // Dynamic Topic Mastery Chart Dataset
+  const topicMasteryData = React.useMemo(() => [
+    { name: 'Mastered', count: masteredCount, color: '#0D9488' },
+    { name: 'Practising', count: practisingCount, color: '#4F46E5' },
+    { name: 'Needs Review', count: reviewCount, color: '#F95738' }
+  ], [masteredCount, practisingCount, reviewCount]);
 
   if (loading) {
     return (
@@ -225,9 +396,9 @@ export const StudentHomePage = ({
 
   // Filter lessons based on active filters
   const filteredLessons = lessons.filter(l => {
-    // Mastery filter
+    // Mastery filter using dynamic status
     if (activeMasteryFilter !== 'all') {
-      const status = l.status || (l._id.includes('1') ? 'mastered' : l._id.includes('2') ? 'practising' : 'needs_review');
+      const status = getLessonStatus(l);
       if (status !== activeMasteryFilter) return false;
     }
     // Level filter
@@ -248,16 +419,6 @@ export const StudentHomePage = ({
     l?.subject?.toLowerCase().includes(interest.toLowerCase()) || 
     l?.topic?.toLowerCase().includes(interest.toLowerCase())
   ) || lessons?.[0] || DEFAULT_CURRICULUM_LESSONS[0] || {};
-
-  const masteredCount = lessons.filter(l => l.status === 'mastered').length || (progress?.topicMastery?.filter(t => t.status === 'mastered').length) || 1;
-  const practisingCount = lessons.filter(l => l.status === 'practising').length || (progress?.topicMastery?.filter(t => t.status === 'practising').length) || 1;
-  const reviewCount = lessons.filter(l => l.status === 'needs_review').length || (progress?.topicMastery?.filter(t => t.status === 'needs_review').length) || 0;
-
-  const overallMastery = progress?.quizAttempts && progress.quizAttempts.length > 0
-    ? Math.round(progress.quizAttempts.reduce((acc, q) => acc + (q.percentage || 0), 0) / progress.quizAttempts.length)
-    : (progress?.topicMastery && progress.topicMastery.length > 0
-        ? Math.round(progress.topicMastery.reduce((acc, t) => acc + (t.scoreAvg || 0), 0) / progress.topicMastery.length)
-        : 82);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
@@ -330,11 +491,22 @@ export const StudentHomePage = ({
 
       {/* 3. Interactive Analytics & Filter Redirection Dashboard */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-extrabold text-[#1E2229] tracking-tight flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-[#F95738]" /> Interactive Analytics Summary
-          </h3>
-          <span className="text-xs font-semibold text-[#89909E]">Click any card to filter & jump to topics</span>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h3 className="text-xl font-extrabold text-[#1E2229] tracking-tight flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-[#F95738]" /> Interactive Analytics Summary
+            </h3>
+            <p className="text-xs text-[#5A606C] mt-0.5">Click any card to filter curriculum or click again to toggle off</p>
+          </div>
+          {activeMasteryFilter !== 'all' && (
+            <button
+              onClick={() => setActiveMasteryFilter('all')}
+              className="text-xs font-bold px-3 py-1 rounded-full bg-[#FAF9F6] border border-[#E5E2DA] hover:border-[#F95738] text-[#5A606C] hover:text-[#F95738] transition-all flex items-center gap-1.5 shadow-2xs"
+            >
+              <span>Reset filter ({activeMasteryFilter === 'practising' ? 'In Progress' : activeMasteryFilter.replace('_', ' ')})</span>
+              <span className="font-extrabold">✕</span>
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -344,8 +516,8 @@ export const StudentHomePage = ({
             onClick={() => handleAnalyticsCardClick('all')}
             className={`p-5 rounded-2xl border transition-all cursor-pointer shadow-xs ${
               activeMasteryFilter === 'all' 
-                ? 'bg-white border-[#F95738] ring-2 ring-[#F95738]/20 shadow-md' 
-                : 'bg-white border-[#E5E2DA] hover:border-[#F95738]/50'
+                ? 'bg-white border-[#1E2229] ring-2 ring-[#1E2229]/20 shadow-md' 
+                : 'bg-white border-[#E5E2DA] hover:border-[#1E2229]/40'
             }`}
           >
             <div className="flex items-center justify-between mb-2">
@@ -354,9 +526,9 @@ export const StudentHomePage = ({
                 <BookOpen className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-3xl font-extrabold text-[#1E2229]">{lessons.length}</div>
+            <div className="text-3xl font-extrabold text-[#1E2229]">{totalCount}</div>
             <p className="text-[11px] text-[#5A606C] mt-1 font-semibold flex items-center gap-1">
-              <span>View all available topics</span> <ArrowRight className="w-3 h-3 text-[#F95738]" />
+              <span>{activeMasteryFilter === 'all' ? 'Currently viewing all modules' : 'Click to view all modules'}</span> <ArrowRight className="w-3 h-3 text-[#1E2229]" />
             </p>
           </div>
 
@@ -365,7 +537,7 @@ export const StudentHomePage = ({
             onClick={() => handleAnalyticsCardClick('mastered')}
             className={`p-5 rounded-2xl border transition-all cursor-pointer shadow-xs ${
               activeMasteryFilter === 'mastered' 
-                ? 'bg-[#EEFDFB] border-[#0D9488] ring-2 ring-[#0D9488]/20 shadow-md' 
+                ? 'bg-[#EEFDFB] border-[#0D9488] ring-2 ring-[#0D9488]/30 shadow-md' 
                 : 'bg-white border-[#E5E2DA] hover:border-[#0D9488]/50'
             }`}
           >
@@ -377,7 +549,7 @@ export const StudentHomePage = ({
             </div>
             <div className="text-3xl font-extrabold text-[#0D9488]">{masteredCount}</div>
             <p className="text-[11px] text-[#0D9488] mt-1 font-semibold flex items-center gap-1">
-              <span>Click to view completed mastered content</span> <ArrowRight className="w-3 h-3" />
+              <span>{activeMasteryFilter === 'mastered' ? 'Active filter • Click to toggle off' : 'Click to filter mastered content'}</span> <ArrowRight className="w-3 h-3" />
             </p>
           </div>
 
@@ -386,7 +558,7 @@ export const StudentHomePage = ({
             onClick={() => handleAnalyticsCardClick('practising')}
             className={`p-5 rounded-2xl border transition-all cursor-pointer shadow-xs ${
               activeMasteryFilter === 'practising' 
-                ? 'bg-[#EEF2FF] border-[#4F46E5] ring-2 ring-[#4F46E5]/20 shadow-md' 
+                ? 'bg-[#EEF2FF] border-[#4F46E5] ring-2 ring-[#4F46E5]/30 shadow-md' 
                 : 'bg-white border-[#E5E2DA] hover:border-[#4F46E5]/50'
             }`}
           >
@@ -398,7 +570,7 @@ export const StudentHomePage = ({
             </div>
             <div className="text-3xl font-extrabold text-[#4F46E5]">{practisingCount}</div>
             <p className="text-[11px] text-[#4F46E5] mt-1 font-semibold flex items-center gap-1">
-              <span>Click to view active practising topics</span> <ArrowRight className="w-3 h-3" />
+              <span>{activeMasteryFilter === 'practising' ? 'Active filter • Click to toggle off' : 'Click to filter in-progress topics'}</span> <ArrowRight className="w-3 h-3" />
             </p>
           </div>
 
@@ -407,7 +579,7 @@ export const StudentHomePage = ({
             onClick={() => handleAnalyticsCardClick('needs_review')}
             className={`p-5 rounded-2xl border transition-all cursor-pointer shadow-xs ${
               activeMasteryFilter === 'needs_review' 
-                ? 'bg-[#FFF0ED] border-[#F95738] ring-2 ring-[#F95738]/20 shadow-md' 
+                ? 'bg-[#FFF0ED] border-[#F95738] ring-2 ring-[#F95738]/30 shadow-md' 
                 : 'bg-white border-[#E5E2DA] hover:border-[#F95738]/50'
             }`}
           >
@@ -419,7 +591,7 @@ export const StudentHomePage = ({
             </div>
             <div className="text-3xl font-extrabold text-[#F95738]">{reviewCount}</div>
             <p className="text-[11px] text-[#F95738] mt-1 font-semibold flex items-center gap-1">
-              <span>Click to view topics needing practice</span> <ArrowRight className="w-3 h-3" />
+              <span>{activeMasteryFilter === 'needs_review' ? 'Active filter • Click to toggle off' : 'Click to filter review topics'}</span> <ArrowRight className="w-3 h-3" />
             </p>
           </div>
 
@@ -428,51 +600,129 @@ export const StudentHomePage = ({
 
       {/* 4. Analytics Visual Charts Component */}
       <div className="bg-white border border-[#E5E2DA] rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
-        <div className="flex items-center justify-between border-b border-[#E5E2DA] pb-4 flex-wrap gap-2">
+        <div className="flex items-center justify-between border-b border-[#E5E2DA] pb-5 flex-wrap gap-4">
           <div>
             <h3 className="text-xl font-extrabold text-[#1E2229] tracking-tight flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-[#F95738]" /> Detailed Mastery & Progress Analytics
             </h3>
             <p className="text-xs text-[#5A606C] mt-0.5">Track your real-time score trajectory and skill growth across key subjects.</p>
           </div>
+
+          {/* Real-time Telemetry Metric Badges */}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="bg-[#FAF9F6] border border-[#E5E2DA] rounded-xl px-3 py-1.5 flex items-center gap-2 shadow-2xs">
+              <Target className="w-4 h-4 text-[#F95738]" />
+              <div>
+                <span className="text-[9px] uppercase font-extrabold text-[#89909E] block leading-none">Avg Score</span>
+                <span className="text-xs font-extrabold text-[#1E2229]">{avgQuizScore}%</span>
+              </div>
+            </div>
+
+            <div className="bg-[#EEFDFB] border border-[#0D9488]/30 rounded-xl px-3 py-1.5 flex items-center gap-2 shadow-2xs">
+              <Award className="w-4 h-4 text-[#0D9488]" />
+              <div>
+                <span className="text-[9px] uppercase font-extrabold text-[#0D9488] block leading-none">Mastery Rate</span>
+                <span className="text-xs font-extrabold text-[#0D9488]">{masteryRate}% ({masteredCount}/{totalCount})</span>
+              </div>
+            </div>
+
+            <div className="bg-[#EEF2FF] border border-[#4F46E5]/30 rounded-xl px-3 py-1.5 flex items-center gap-2 shadow-2xs">
+              <Zap className="w-4 h-4 text-[#4F46E5]" />
+              <div>
+                <span className="text-[9px] uppercase font-extrabold text-[#4F46E5] block leading-none">Quizzes Logged</span>
+                <span className="text-xs font-extrabold text-[#4F46E5]">{totalQuizzesTaken} Attempt{totalQuizzesTaken === 1 ? '' : 's'}</span>
+              </div>
+            </div>
+
+            <div className="bg-[#FAF9F6] border border-[#E5E2DA] rounded-xl px-3 py-1.5 flex items-center gap-2 shadow-2xs hidden sm:flex">
+              <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+              <div>
+                <span className="text-[9px] uppercase font-extrabold text-[#89909E] block leading-none">Personal Best</span>
+                <span className="text-xs font-extrabold text-[#1E2229]">{highestScore}%</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          <div className="space-y-2">
-            <h4 className="text-xs font-extrabold text-[#5A606C] uppercase tracking-wider">Score Performance Curve</h4>
-            <LearningTrendChart />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-extrabold text-[#5A606C] uppercase tracking-wider flex items-center gap-1.5">
+                <TrendingUp className="w-3.5 h-3.5 text-[#F95738]" /> Score Performance Curve
+              </h4>
+              <span className="text-[11px] font-semibold text-[#89909E]">
+                {totalQuizzesTaken > 0 ? `${totalQuizzesTaken} assessments recorded` : 'Diagnostic baseline'}
+              </span>
+            </div>
+            <LearningTrendChart data={learningTrendData} />
           </div>
 
-          <div className="space-y-2">
-            <h4 className="text-xs font-extrabold text-[#5A606C] uppercase tracking-wider">Topic Mastery Breakdown</h4>
-            <TopicMasteryChart />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-extrabold text-[#5A606C] uppercase tracking-wider flex items-center gap-1.5">
+                <BrainCircuit className="w-3.5 h-3.5 text-[#4F46E5]" /> Topic Mastery Breakdown
+              </h4>
+              <span className="text-[11px] font-semibold text-[#89909E]">
+                {totalCount} Total Modules
+              </span>
+            </div>
+            <TopicMasteryChart data={topicMasteryData} />
           </div>
         </div>
       </div>
 
       {/* 5. AI Misconception Diagnostic Remediation Alert */}
-      <div className="bg-[#FFF0ED] border border-[#F95738]/30 rounded-3xl p-6 shadow-sm flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-start gap-3.5 max-w-2xl">
-          <div className="p-2.5 bg-white text-[#F95738] rounded-2xl border border-[#F95738]/20 shrink-0 shadow-xs">
-            <AlertTriangle className="w-6 h-6" />
+      {reviewLessons.length > 0 ? (
+        <div className="bg-[#FFF0ED] border border-[#F95738]/30 rounded-3xl p-6 shadow-sm flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5 max-w-2xl">
+            <div className="p-2.5 bg-white text-[#F95738] rounded-2xl border border-[#F95738]/20 shrink-0 shadow-xs">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold text-[#F95738] uppercase tracking-wider block">AI Adaptive Diagnostic Alert</span>
+              <h4 className="font-extrabold text-[#1E2229] text-base mt-0.5">
+                {reviewLessons[0].title} — Review Recommended
+              </h4>
+              <p className="text-xs text-[#5A606C] mt-1 leading-relaxed">
+                Quiz analysis recommends reviewing step-by-step concepts for {reviewLessons[0].topic} to elevate this module into mastered status.
+              </p>
+            </div>
           </div>
-          <div>
-            <span className="text-[10px] font-extrabold text-[#F95738] uppercase tracking-wider block">AI Adaptive Diagnostic Alert</span>
-            <h4 className="font-extrabold text-[#1E2229] text-base mt-0.5">Algorithmic Complexity & Linear Algebra Gap Detected</h4>
-            <p className="text-xs text-[#5A606C] mt-1 leading-relaxed">
-              Quiz analysis suggests reviewing step-by-step logic for time complexity (Big O) to achieve full topic mastery.
-            </p>
-          </div>
-        </div>
 
-        <button 
-          onClick={onNavigateToDiagnostic}
-          className="btn-coral text-xs py-2.5 px-5 shadow-sm"
-        >
-          <Zap className="w-4 h-4" />
-          <span>Launch AI Diagnostic Remediation</span>
-        </button>
-      </div>
+          <button 
+            onClick={onNavigateToDiagnostic}
+            className="btn-coral text-xs py-2.5 px-5 shadow-sm"
+          >
+            <Zap className="w-4 h-4" />
+            <span>Launch AI Diagnostic Remediation</span>
+          </button>
+        </div>
+      ) : (
+        <div className="bg-[#EEFDFB] border border-[#0D9488]/30 rounded-3xl p-6 shadow-sm flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5 max-w-2xl">
+            <div className="p-2.5 bg-white text-[#0D9488] rounded-2xl border border-[#0D9488]/20 shrink-0 shadow-xs">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold text-[#0D9488] uppercase tracking-wider block">All Concepts On Track</span>
+              <h4 className="font-extrabold text-[#1E2229] text-base mt-0.5">
+                Outstanding Performance across STEM Modules!
+              </h4>
+              <p className="text-xs text-[#5A606C] mt-1 leading-relaxed">
+                You have 0 modules in needs review! Continue practising intermediate and advanced modules to maintain your high score.
+              </p>
+            </div>
+          </div>
+
+          <button 
+            onClick={onNavigateToDiagnostic}
+            className="btn-outline text-xs py-2.5 px-5 bg-white text-[#0D9488] border-[#0D9488]/30 hover:bg-[#EEFDFB] shadow-xs"
+          >
+            <Zap className="w-4 h-4" />
+            <span>Practice Knowledge Challenge</span>
+          </button>
+        </div>
+      )}
 
       {/* 6. Featured Recommendation & Topic-Linked Quiz/Games Portal */}
       <div className="grid lg:grid-cols-3 gap-6">
@@ -580,18 +830,30 @@ export const StudentHomePage = ({
         {/* Header & Controls */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-2xl font-extrabold text-[#1E2229] tracking-tight">
                 STEM Curriculum Modules
               </h3>
               {activeMasteryFilter !== 'all' && (
-                <span className="bg-[#FFF0ED] text-[#F95738] border border-[#F95738]/30 text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                  Filtered: {activeMasteryFilter.replace('_', ' ')}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                    activeMasteryFilter === 'mastered' ? 'bg-[#EEFDFB] text-[#0D9488] border border-[#0D9488]/30' :
+                    activeMasteryFilter === 'practising' ? 'bg-[#EEF2FF] text-[#4F46E5] border border-[#4F46E5]/30' :
+                    'bg-[#FFF0ED] text-[#F95738] border border-[#F95738]/30'
+                  }`}>
+                    Filtered: {activeMasteryFilter === 'practising' ? 'In Progress' : activeMasteryFilter.replace('_', ' ')}
+                  </span>
+                  <button
+                    onClick={() => setActiveMasteryFilter('all')}
+                    className="text-xs font-bold text-[#89909E] hover:text-[#F95738] underline flex items-center gap-0.5"
+                  >
+                    Clear Filter
+                  </button>
+                </div>
               )}
             </div>
             <p className="text-xs text-[#5A606C] mt-0.5">
-              Personalized according to your skill level ({user?.subLevel || 'Beginner/Intermediate'}) and selected topics.
+              Showing {filteredLessons.length} of {totalCount} modules • Personalized according to your skill level ({user?.subLevel || 'Beginner/Intermediate'}).
             </p>
           </div>
 
@@ -670,10 +932,9 @@ export const StudentHomePage = ({
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredLessons.map((lesson, idx) => {
-              const statusMap = ['mastered', 'practising', 'needs_review'];
-              const currentStatus = lesson.status || statusMap[idx % 3];
-              const level = lesson.level || (idx % 3 === 0 ? 'Beginner' : idx % 3 === 1 ? 'Intermediate' : 'Advanced');
+            {filteredLessons.map((lesson) => {
+              const currentStatus = getLessonStatus(lesson);
+              const level = lesson.level || 'Intermediate';
 
               return (
                 <div 
@@ -701,7 +962,7 @@ export const StudentHomePage = ({
                         currentStatus === 'mastered' ? 'badge-mastered' :
                         currentStatus === 'practising' ? 'badge-practising' : 'badge-review'
                       }>
-                        {currentStatus === 'mastered' ? 'Mastered' : currentStatus === 'practising' ? 'Practising' : 'Needs Review'}
+                        {currentStatus === 'mastered' ? 'Mastered' : currentStatus === 'practising' ? 'In Progress' : 'Needs Review'}
                       </span>
                     </div>
 
