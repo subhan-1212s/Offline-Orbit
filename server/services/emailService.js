@@ -34,6 +34,11 @@ export const sendBrevoEmail = async ({ toEmail, toName, subject, htmlContent }) 
     return { success: true, simulated: true, message: 'Email simulated locally.' };
   }
 
+  // Always use the Brevo-verified sender address
+  const senderEmail = (process.env.SENDER_EMAIL && !process.env.SENDER_EMAIL.includes('offlineorbit.edu'))
+    ? process.env.SENDER_EMAIL
+    : 'mohamedsubhan155@gmail.com';
+
   try {
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
@@ -43,10 +48,11 @@ export const sendBrevoEmail = async ({ toEmail, toName, subject, htmlContent }) 
         'content-type': 'application/json'
       },
       body: JSON.stringify({
-        sender: { name: 'Offline Orbit Platform', email: process.env.SENDER_EMAIL || 'noreply@offlineorbit.edu' },
+        sender: { name: 'Offline Orbit Platform', email: senderEmail },
         to: [{ email: toEmail, name: toName || 'Learner / Educator' }],
         subject,
-        htmlContent
+        htmlContent,
+        tags: ['password-reset', 'offline-orbit']
       })
     });
 
@@ -54,7 +60,7 @@ export const sendBrevoEmail = async ({ toEmail, toName, subject, htmlContent }) 
       const errText = await response.text();
       console.warn('Brevo API response error:', errText);
       let parsed = {};
-      try { parsed = JSON.parse(errText); } catch(e) {}
+      try { parsed = JSON.parse(errText); } catch (e) {}
       
       const isUnrecognisedIp = errText.includes('unrecognised IP address');
       const ipMatch = errText.match(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/);
@@ -79,7 +85,8 @@ export const sendBrevoEmail = async ({ toEmail, toName, subject, htmlContent }) 
 };
 
 export const sendPasswordResetEmail = async ({ recipientEmail, userName, resetCode }) => {
-  const subject = `🔐 Offline Orbit: Password Reset Verification Code`;
+  const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const subject = `🔐 Offline Orbit: Password Reset Code #${resetCode} (${timeStr})`;
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; background-color: #FAF9F6; padding: 24px; color: #1E2229;">
       <div style="max-width: 500px; margin: 0 auto; background: #ffffff; border: 1px solid #E5E2DA; border-radius: 16px; padding: 32px; text-align: center;">

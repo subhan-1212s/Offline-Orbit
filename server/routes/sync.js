@@ -17,27 +17,28 @@ router.post('/queue', protect, async (req, res) => {
 
     let syncedCount = 0;
     const syncedRecords = [];
+    const userId = req.user?._id || 'user-student-1';
 
     for (const attempt of offlineAttempts) {
       const syncedAttempt = {
-        quizId: attempt.quizId,
+        quizId: attempt.quizId || `quiz-${Date.now()}`,
         quizTitle: attempt.quizTitle || 'Offline Quiz Attempt',
         topic: attempt.topic || 'General Topic',
-        score: attempt.score,
-        total: attempt.total,
-        percentage: Math.round((attempt.score / attempt.total) * 100),
+        score: Number(attempt.score || 0),
+        total: Number(attempt.total || 1),
+        percentage: attempt.total ? Math.round((Number(attempt.score || 0) / Number(attempt.total || 1)) * 100) : 100,
         completedAt: attempt.timestamp || new Date(),
         offlineSynced: true,
         syncTimestamp: new Date()
       };
 
       if (isUsingMongoDB) {
-        let progress = await Progress.findOne({ userId: req.user._id, subject: attempt.subject || 'Science' });
+        let progress = await Progress.findOne({ userId, subject: attempt.subject || 'Science' });
         if (!progress) {
           progress = new Progress({
-            userId: req.user._id,
+            userId,
             subject: attempt.subject || 'Science',
-            topicMastery: [{ topic: attempt.topic, status: 'mastered', scoreAvg: syncedAttempt.percentage, lastPracticed: new Date() }],
+            topicMastery: [{ topic: attempt.topic || 'General Topic', status: 'mastered', scoreAvg: syncedAttempt.percentage, lastPracticed: new Date() }],
             quizAttempts: [syncedAttempt]
           });
           await progress.save();
@@ -45,7 +46,7 @@ router.post('/queue', protect, async (req, res) => {
           syncedRecords.push(syncedAttempt);
         } else {
           // Check for duplicate attempt by quizId & completion time
-          const isDuplicate = progress.quizAttempts.some(q => 
+          const isDuplicate = (progress.quizAttempts || []).some(q => 
             q.quizId === syncedAttempt.quizId && 
             Math.abs(new Date(q.completedAt).getTime() - new Date(syncedAttempt.completedAt).getTime()) < 60000
           );
@@ -57,12 +58,12 @@ router.post('/queue', protect, async (req, res) => {
           }
         }
       } else {
-        let userProg = initialSeedData.progressData.find(p => p.userId === req.user._id);
+        let userProg = initialSeedData.progressData.find(p => p.userId === userId);
         if (!userProg) {
           userProg = {
-            userId: req.user._id,
+            userId,
             subject: attempt.subject || 'Science',
-            topicMastery: [{ topic: attempt.topic, status: 'mastered', scoreAvg: syncedAttempt.percentage, lastPracticed: new Date().toISOString() }],
+            topicMastery: [{ topic: attempt.topic || 'General Topic', status: 'mastered', scoreAvg: syncedAttempt.percentage, lastPracticed: new Date().toISOString() }],
             quizAttempts: []
           };
           initialSeedData.progressData.push(userProg);

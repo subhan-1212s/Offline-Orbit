@@ -7,34 +7,41 @@ export const syncOfflineProgress = async () => {
 
   const pendingItems = await getPendingSyncAttempts();
   if (!pendingItems || pendingItems.length === 0) {
-    return { success: true, syncedCount: 0, message: 'No pending items to sync.' };
+    return { success: true, syncedCount: 0, message: 'All offline progress is already synchronized.' };
   }
 
   try {
     const token = localStorage.getItem('orbit_token');
+    const userStr = localStorage.getItem('orbit_user');
+    let userRole = 'student';
+    try {
+      if (userStr) userRole = JSON.parse(userStr).role || 'student';
+    } catch (e) {}
+
     const res = await fetch('/api/sync/queue', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : '',
-        'x-demo-role': 'student'
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        'x-demo-role': userRole
       },
       body: JSON.stringify({ offlineAttempts: pendingItems })
     });
 
+    const data = await res.json().catch(() => ({}));
+
     if (!res.ok) {
-      throw new Error('Sync server failed');
+      throw new Error(data.message || `Server returned HTTP status ${res.status}`);
     }
 
-    const data = await res.json();
     await clearPendingSyncAttempts();
     return {
       success: true,
-      syncedCount: pendingItems.length,
-      message: data.message || `Synced ${pendingItems.length} item(s) successfully!`
+      syncedCount: data.syncedCount ?? pendingItems.length,
+      message: data.message || `Successfully synced ${pendingItems.length} quiz attempt(s) with MongoDB!`
     };
   } catch (err) {
-    console.warn('Sync failed:', err.message);
+    console.warn('Sync attempt warning:', err.message);
     return { success: false, syncedCount: 0, message: `Sync failed: ${err.message}` };
   }
 };
