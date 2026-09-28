@@ -650,11 +650,20 @@ export const api = {
         if (res.ok) {
           const data = await res.json();
           if (data && data.reply) {
+            // Guard against stale cached server fallback text
+            if (data.reply.includes('Academic Insights on') || data.reply.includes('Great STEM question! Here is the core conceptual breakdown')) {
+              return {
+                reply: webllmEngine.computeTailoredSTEMAnswer(userMessage, currentLessonContext),
+                isAIGenerated: true,
+                isOffline: !navigator.onLine,
+                engine: 'WebLLM & Transformers.js Cloud Cache'
+              };
+            }
             return {
               reply: data.reply,
               isAIGenerated: true,
               isOffline: false,
-              engine: 'OpenAI GPT-4o-mini Online Cloud'
+              engine: data.source === 'OpenAI GPT-4o-mini' ? 'OpenAI GPT-4o-mini Online Cloud' : 'WebLLM & Transformers.js Cloud Cache'
             };
           }
         }

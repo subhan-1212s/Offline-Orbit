@@ -218,7 +218,75 @@ class WebLLMEngine {
 
   // 7. Comprehensive STEM Question Solving & Step-by-Step Mathematical Solver
   computeTailoredSTEMAnswer(query, lessonContext = '') {
-    const q = (query || '').toLowerCase().trim();
+    const rawQ = (query || '').trim();
+    const cleanQ = rawQ.toLowerCase().replace(/[?!.,]/g, '').trim();
+
+    // =========================================================================
+    // SECTION 0: GREETINGS, CONVERSATION & GENERAL KNOWLEDGE INTENT
+    // =========================================================================
+
+    // 0A. Greetings (hi, hello, hey, etc.)
+    if (/^(hi|hello|hey|heya|hola|namaste|good morning|good afternoon|good evening|howdy|sup|yo|greetings)$/i.test(cleanQ) || cleanQ === 'hi' || cleanQ === 'hello') {
+      return `👋 **Hello! Welcome to Orbit AI.**\n\nI am your personal AI study companion, available 24/7 both online and 100% offline directly on your device.\n\nHere are some things you can ask me:\n• **Mathematics:** "Solve 3x + 12 = 48" or "Explain quadratic formula"\n• **Physics:** "What is Newton's second law?" or "Calculate Ohm's law with 12V and 4Ω"\n• **Chemistry:** "Explain stoichiometry and the mole concept" or "What is pH?"\n• **Biology:** "How does photosynthesis work?" or "Explain DNA base pairing"\n• **Computer Science:** "How does binary search work?" or "Explain Big-O complexity"\n\nWhat would you like to explore or solve today?`;
+    }
+
+    // 0B. Status & Well-being
+    if (/how are (you|u|you doing)|how's it going|how is it going|what's up|whats up|how do you do/i.test(cleanQ)) {
+      return `⚡ **I'm doing great and fully energized!**\n\nAll my neural modules are loaded and ready—whether you need to solve an algebraic equation, balance a chemical reaction, understand circuit laws, or review your quiz progress.\n\nHow can I help you with your studies right now?`;
+    }
+
+    // 0C. Identity & Creator
+    if (/who (are you|are u|made you|created you)|what is your name|what are you|what is orbit ai/i.test(cleanQ)) {
+      return `🪐 **I am Orbit AI, your intelligent on-device STEM study coach!**\n\nI was built as part of the Offline Orbit educational platform to empower students everywhere—even in remote, low-bandwidth, and completely offline settings—with high-quality, step-by-step tutoring.\n\nI run with in-browser WebGPU acceleration and local cloud caching so you can learn anytime with zero latency!`;
+    }
+
+    // 0D. Capabilities & Help
+    if (/what can you do|help|how to use|commands|features/i.test(cleanQ)) {
+      return `💡 **Here is what I can do for you:**\n\n` +
+        `1. **Solve Equations Step-by-Step:** Linear, quadratic, fractions, percentages, and arithmetic with full verification.\n` +
+        `2. **Explain Physics Laws:** Kinematics, Newtonian dynamics, work/energy, electricity, and electromagnetism.\n` +
+        `3. **Break Down Chemical Principles:** Stoichiometry, balancing reactions, molar mass, and acid-base titrations.\n` +
+        `4. **Unpack Biological Systems:** Photosynthesis, respiration, DNA transcription, translation, and genetics.\n` +
+        `5. **Analyze Algorithms & Code:** Binary search, sorting algorithms, Big-O complexity, and Python code.\n` +
+        `6. **General Curiosity:** Ask science questions, riddles, or everyday phenomena!\n\n` +
+        `Try asking me: *"Solve 2x + 6 = 20"* or *"Why is the sky blue?"*`;
+    }
+
+    // 0E. Gratitude
+    if (/thank you|thanks|thx|thank u|appreciate it/i.test(cleanQ)) {
+      return `😊 **You're very welcome!**\n\nKeep up the great curiosity and hard work. Feel free to ask anytime you encounter a tough problem or tricky concept!`;
+    }
+
+    // 0F. Farewells
+    if (/^(bye|goodbye|see you|good night|cya|take care)$/i.test(cleanQ)) {
+      return `👋 **Goodbye! Great work today.**\n\nYour study progress, streak days, and points are safely saved in your local cache. Come back whenever you're ready to learn more! 🚀`;
+    }
+
+    // 0G. Jokes & Humor
+    if (/joke|tell me a joke|funny|make me laugh/i.test(cleanQ)) {
+      return `😄 **Here is a science joke for you:**\n\nWhy can't you trust atoms?\n**Because they make up everything!** ⚛️\n\nAnd here's a math one:\nWhy was the equal sign so humble?\n**Because it knew it wasn't less than or greater than anyone else!** ⚖️`;
+    }
+
+    // 0H. Everyday science curiosities
+    if (cleanQ.includes('sky') && cleanQ.includes('blue')) {
+      return `☀️ **Why the Sky is Blue (Rayleigh Scattering):**\n\n` +
+        `1. **Solar Spectrum:** Sunlight looks white, but it is actually composed of all visible colors.\n` +
+        `2. **Atmospheric Gas Particles:** When sunlight enters Earth's atmosphere, it collides with tiny nitrogen and oxygen molecules.\n` +
+        `3. **Scattering Effect:** Shorter wavelengths of light (blue and violet) scatter in all directions much more strongly than longer red or yellow wavelengths.\n` +
+        `4. **Human Vision:** Because human eyes are much more sensitive to blue light than violet, the sky appears a brilliant blue to us during the daytime!`;
+    }
+
+    if (cleanQ.includes('pi') && (cleanQ.includes('what is') || cleanQ.length < 10)) {
+      return `🥧 **What is Pi (π)?**\n\n` +
+        `• **Definition:** Pi ($\\pi$) is the mathematical constant representing the ratio of a circle's circumference ($C$) to its diameter ($d$): **$\\pi = C / d$**.\n` +
+        `• **Value:** It is an irrational number approximately equal to **3.1415926535...** (its decimal digits continue infinitely without repeating).\n` +
+        `• **Key Formulas:**\n` +
+        `  - Circumference: $C = 2\\pi r$\n` +
+        `  - Circle Area: $A = \\pi r^2$\n` +
+        `  - Sphere Volume: $V = \\frac{4}{3}\\pi r^3$`;
+    }
+
+    const q = cleanQ;
 
     // =========================================================================
     // SECTION 1: DIRECT ARITHMETIC & NUMERICAL EXPRESSION SOLVER
@@ -561,26 +629,35 @@ class WebLLMEngine {
     }
 
     // =========================================================================
-    // SECTION 7: HIGH-DEPTH UNIVERSAL STEM CONCEPT SYNTHESIZER
+    // SECTION 7: UNIVERSAL INFORMATIVE & ACADEMIC RESPONSE
     // =========================================================================
-    // If no exact match is triggered, provides a rigorous, deep 5-pillar STEM breakdown
-    // rather than a short generic placeholder.
-    return `🪐 **Orbit AI Comprehensive STEM Analysis for "${query}":**\n\n` +
-      `### 1. Fundamental Principle & Scientific Definition\n` +
-      `This problem investigates the core interactions governing **${query}**. In physical and computational sciences, systems are analyzed by establishing rigorous boundary conditions, identifying invariants (conservation of mass, energy, momentum, or computational state), and establishing governing laws.\n\n` +
-      `### 2. Governing Mathematical Formulation\n` +
-      `The analytical model relies on establishing algebraic or differential relationships between parameters:\n` +
-      `$$\\mathbf{R = f(P_1, P_2, \\dots, P_n) \\quad \\text{subject to} \\quad \\Sigma\\,\\text{Invariants} = \\text{Constant}}$$\n` +
-      `• Identify independent input variables and normalize SI dimensional units (e.g. meters, seconds, kilograms, or computational steps).\n` +
-      `• Formulate the state transition or rate equation determining system behavior.\n\n` +
-      `### 3. Step-by-Step Analytical Breakdown\n` +
-      `1. **Deconstruct the Premises:** Clarify given variables, initial conditions, and target unknown parameters.\n` +
-      `2. **Apply First Principles:** Select the direct governing equation and isolate the target variable using inverse operations.\n` +
-      `3. **Dimensional Verification:** Ensure that left-hand side units precisely equal right-hand side units.\n\n` +
-      `### 4. Practical Engineering & Scientific Application\n` +
-      `Concepts related to **${query}** form the backbone of modern engineering—from digital signal processing in microcontrollers to aerodynamic fluid simulations and bio-molecular enzyme kinetics.\n\n` +
-      `### 5. Key Conceptual Pitfall to Avoid\n` +
-      `⚠️ *Common Mistake:* Do not confuse instantaneous values with time-averaged quantities, and always verify that algebraic signs conform to directional vector conventions.`;
+    const isSTEMQuery = /(force|energy|mass|velocity|speed|accelerat|gravity|orbit|light|wave|frequency|circuit|ohm|volt|amp|resistor|cell|organ|dna|rna|gene|protein|photo|respir|atom|mole|chem|reaction|acid|base|ph|element|electron|algebra|equation|calculus|deriv|integr|matrix|vector|algorithm|comput|code|data|struct|sort|search|binary|network|ai|learn)/i.test(rawQ);
+
+    if (isSTEMQuery) {
+      return `🪐 **Orbit AI Comprehensive STEM Analysis for "${rawQ}":**\n\n` +
+        `### 1. Fundamental Principle & Scientific Definition\n` +
+        `This topic investigates the core principles governing **${rawQ}**. Systems in STEM are understood by establishing boundary conditions, identifying invariants (conservation of mass, energy, momentum, or computational state), and applying governing physical or mathematical laws.\n\n` +
+        `### 2. Governing Analytical Formulation\n` +
+        `Quantitative models establish functional relationships between key parameters:\n` +
+        `$$\\mathbf{R = f(P_1, P_2, \\dots, P_n) \\quad \\text{subject to conservation laws}}$$\n` +
+        `• Identify independent input variables and normalize SI dimensional units (e.g., meters, seconds, kilograms, or operations).\n` +
+        `• Formulate the state transition or rate equations determining system dynamics.\n\n` +
+        `### 3. Step-by-Step Analytical Breakdown\n` +
+        `1. **Deconstruct the Problem:** Identify knowns, unknowns, and target parameters.\n` +
+        `2. **Apply Direct Formulas:** Substitute known values into the governing relationship and isolate the target variable.\n` +
+        `3. **Dimensional Verification:** Verify that units balance on both sides of the equation.\n\n` +
+        `### 4. Practical Real-World Application\n` +
+        `Principles of **${rawQ}** are applied across modern engineering, from embedded microcontroller processing and renewable energy grids to biomedical pharmaceuticals.\n\n` +
+        `### 5. Key Pitfall to Avoid\n` +
+        `⚠️ *Caution:* Always ensure consistent sign conventions and verify whether the system is under steady-state or dynamic conditions.`;
+    }
+
+    // General Non-STEM / Everyday Curiosity Question
+    return `🪐 **Orbit AI Study Analysis for "${rawQ}":**\n\n` +
+      `Here is a structured overview:\n\n` +
+      `• **Overview:** ${rawQ.length < 35 ? `Looking at "${rawQ}"` : 'Examining this topic'} involves understanding the key definitions, historical background, and underlying concepts.\n` +
+      `• **Analytical Perspective:** In systematic learning, breaking down any inquiry into its main components, observing cause-and-effect relationships, and testing with real-world examples leads to the deepest retention.\n` +
+      `• **Further Exploration:** Would you like a worked step-by-step example, a simpler explanation with analogies, or practice questions on this? Just let me know!`;
   }
 }
 
