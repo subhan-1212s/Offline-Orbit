@@ -418,18 +418,44 @@ export const api = {
       if (!res.ok) throw new Error('Quiz fetch failed');
       return await res.json();
     } catch (err) {
+      let targetSubject = 'Computer Science & AI';
+      if (lessonId.includes('math')) targetSubject = 'Mathematics';
+      else if (lessonId.includes('phy')) targetSubject = 'Physics';
+      else if (lessonId.includes('bio')) targetSubject = 'Biology';
+      else if (lessonId.includes('chem')) targetSubject = 'Chemistry';
+      else if (options.interestDomain) targetSubject = options.interestDomain;
+
+      const { generateCustomQuiz } = await import('./questionBank.js').catch(() => ({ generateCustomQuiz: null }));
+      if (generateCustomQuiz) {
+        const customQ = generateCustomQuiz({
+          subject: targetSubject,
+          educationLevel: options.subLevel || 'Intermediate',
+          subLevel: options.subLevel || 'Intermediate',
+          isRetake: options.retake,
+          seed: options.seed || Date.now()
+        });
+        customQ._id = `quiz-lesson-${lessonId}`;
+        customQ.lessonId = lessonId;
+        customQ.title = `${targetSubject} Topic Practice Quiz`;
+        return customQ;
+      }
+
       return {
         _id: `quiz-offline-${lessonId}-${Date.now()}`,
         title: 'Lesson Topic Practice Quiz',
-        lessonId,
         lessonId,
         topic: 'Plant Biology & Energy Flow',
         subject: 'Science',
         questions: [
           {
             id: 'q-off-1',
-            questionText: 'Why do plant leaves appear green under white light?',
-            options: ['Chlorophyll absorbs green light', 'Chlorophyll reflects green light wavelengths while absorbing red and blue', 'Stomata release green liquid', 'Cell sap turns green when wet'],
+            questionText: '1. Why do plant leaves appear green under white light?',
+            options: [
+              'Chlorophyll absorbs green light completely',
+              'Chlorophyll reflects green light wavelengths while absorbing blue and red',
+              'Stomata release green liquid during respiration',
+              'Cell sap turns green when wet'
+            ],
             correctAnswerIndex: 1,
             explanation: 'Chlorophyll reflects green light while absorbing blue and red.'
           }

@@ -8,70 +8,67 @@ import {
   PlusCircle, RefreshCw, FileText, ArrowRight, Eye, Copy, MessageSquare, Send, Film, Key,
   Star, Lock, ShieldCheck, Download, Award, Tag, Check, ExternalLink 
 } from 'lucide-react';
-import { UdemyCourseCheckoutModal } from '../components/UdemyCourseCheckoutModal';
+import { ByjusCourseCheckoutModal } from '../components/ByjusCourseCheckoutModal';
 
-const EDUCATOR_COURSES = [
+const BYJUS_LEARNING_PACKAGES = [
   {
-    id: 'stem-curriculum-bundle',
-    title: 'Complete STEM Curriculum & Diagnostic Toolkit for Educators',
-    subtitle: 'Master offline classroom management, automated Bloom\'s taxonomy diagnostics, and multilingual audio lessons.',
-    instructor: 'Dr. Sarah Vance, Senior STEM Pedagogist',
-    rating: 4.9,
-    ratingCount: '2,480 ratings',
-    studentsCount: '14,350 educators',
-    originalPrice: 3499,
-    discountPrice: 499,
-    bestseller: true,
-    badge: 'Bestseller',
-    badgeColor: 'bg-[#ECEB98] text-[#2D2F31]',
-    features: [
-      'Full Lifetime Access to 150+ Offline STEM Question Banks',
-      'Downloadable Animated WebM Video Lesson Packs (~400KB)',
-      'Automated Diagnostic Misconception PDF Report Card Generator',
-      '6-Digit Classroom Code Telemetry & Live Chat',
-      'Official Certificate of Completion for School Accreditation'
-    ]
-  },
-  {
-    id: 'ai-heuristic-diagnostic-suite',
-    title: 'Offline AI Diagnostic & Misconception Remediation Suite Pro',
-    subtitle: 'Deploy on-premise heuristic diagnostic engines, automated feedback generators, and personalized study planners without internet.',
-    instructor: 'Prof. Rajesh Sharma, AI in Education Lab',
-    rating: 4.95,
-    ratingCount: '1,890 ratings',
-    studentsCount: '9,420 educators',
+    id: 'byjus-stem-grade6-10',
+    title: 'BYJU\'S Comprehensive Class 6–10 STEM Learning Kit (Offline SD Card Ready)',
+    subtitle: '1,200+ concept 3D animated lessons, 300+ diagnostic chapter quizzes, formula vaults, and offline local sync.',
+    instructor: 'BYJU\'S Senior Academic Directorate',
+    rating: 4.92,
+    ratingCount: '28,450 ratings',
+    studentsCount: '185,000+ enrolled',
     originalPrice: 4999,
     discountPrice: 699,
-    bestseller: false,
-    badge: 'Highest Rated',
-    badgeColor: 'bg-[#A435F0] text-white',
+    badge: 'Most Popular',
+    badgeColor: 'bg-[#FFC107] text-[#1E2229]',
     features: [
-      'Pre-trained Lightweight Rule Engine & Diagnostic Parser',
-      'Offline Micro-Quiz Creator with Distractor Rationale',
-      'Bloom\'s Taxonomy Cognitive Mapping (Remembering to Creating)',
-      'Multi-Student Batch Progress Sync & Analytics Export',
-      '30-Day Money-Back Guarantee'
+      '100% Offline Compatible (Preloaded on Local Storage / SD Card)',
+      '1,200+ Animated Concept Visualizations (~400KB Lightweight Packs)',
+      '300+ Chapter-wise Diagnostic Quizzes with Misconception Analysis',
+      'NCERT / CBSE / ICSE Aligned Bloom\'s Taxonomy Cognitive Reports',
+      'Verified BYJU\'S Course Completion Certificate for Accreditation'
     ]
   },
   {
-    id: 'multi-campus-accreditation',
-    title: 'Multi-Campus Offline-Orbit Deployment & Institutional License',
-    subtitle: 'Step-by-step institutional licensing, mesh synchronization setup for remote schools, and administrative governance.',
-    instructor: 'Global Rural Education Council',
-    rating: 4.88,
-    ratingCount: '940 ratings',
-    studentsCount: '3,200 institutions',
-    originalPrice: 7999,
-    discountPrice: 1299,
-    bestseller: false,
-    badge: 'Institutional Pack',
+    id: 'byjus-jee-neet-diagnostic-booster',
+    title: 'BYJU\'S Classes: JEE & NEET Advanced Diagnostic Series & Mistake Book',
+    subtitle: '10+ Years Chapterwise Solved Question Bank, NCERT Exemplar Deep Dives, and AI Adaptive Mock Tests without internet.',
+    instructor: 'Aakash BYJU\'S Faculty & National Mentors',
+    rating: 4.95,
+    ratingCount: '34,120 ratings',
+    studentsCount: '120,000+ enrolled',
+    originalPrice: 7499,
+    discountPrice: 999,
+    badge: 'Exam Topper',
+    badgeColor: 'bg-[#6C227E] text-white',
+    features: [
+      'Adaptive Diagnostic Mock Test Simulator (100% Offline)',
+      '10+ Years Solved Papers with Step-by-Step Audio Explanations',
+      'Personalized Misconception Heatmap & Board Score Predictor',
+      'Physics, Chemistry, Biology & Math Formula Handbooks',
+      'Offline Orbit Diagnostic Rank Analyzer'
+    ]
+  },
+  {
+    id: 'byjus-k12-ai-innovator',
+    title: 'BYJU\'S K-12 Coding & AI Innovator Program (Zero-Internet Lab)',
+    subtitle: 'Hands-on Python logic, computational simulations, offline interactive sandboxes, and gamified streak quests.',
+    instructor: 'BYJU\'S Innovation & Future Tech Council',
+    rating: 4.89,
+    ratingCount: '19,780 ratings',
+    studentsCount: '74,000+ enrolled',
+    originalPrice: 3999,
+    discountPrice: 499,
+    badge: 'Future Innovator',
     badgeColor: 'bg-[#0D9488] text-white',
     features: [
-      'Multi-Classroom Unlimited Telemetry Sync',
-      'Offline Local Server (Raspberry Pi / Local PC) Image',
-      'Teacher Training Video Series (10 Hours On-Demand)',
-      'Verified School Accreditation Certificate',
-      'Dedicated Priority Pedagogical Support'
+      'Interactive Algorithm & Python Visual Simulations',
+      '50+ Real-world Logic Quests & Scratch-to-Python Labs',
+      'Gamified Daily Streak Multipliers & Offline Orbit Badges',
+      'Capstone Project Templates with Automated Heuristic Grader',
+      'Verified Digital Certificate & Global Credential'
     ]
   }
 ];
@@ -496,37 +493,40 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
         </div>
       </div>
 
-      {/* Udemy-Style Educator In-App Purchases Section */}
+      {/* BYJU'S Style Essential Learning Programs & Offline Curriculum Section */}
       <div className="bg-white border border-[#E5E2DA] rounded-3xl p-6 shadow-sm space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E5E2DA] pb-5">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#2D2F31] text-white flex items-center justify-center font-extrabold text-2xl shadow-md border border-gray-700">
-              <Award className="w-6 h-6 text-[#A435F0]" />
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6C227E] to-[#4C1258] text-white flex items-center justify-center font-black text-2xl shadow-md border-2 border-[#FFC107]">
+              <span className="text-[#FFC107]">B</span>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="bg-[#A435F0]/10 text-[#A435F0] text-[10px] font-black px-2.5 py-0.5 rounded uppercase tracking-wider">
-                  Educator & Org In-App Purchases
+                <span className="bg-[#6C227E]/10 text-[#6C227E] text-[10px] font-black px-2.5 py-0.5 rounded uppercase tracking-wider border border-[#6C227E]/20">
+                  BYJU'S Learning Programs & Essentials
+                </span>
+                <span className="bg-[#FFC107]/20 text-[#B4690E] text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
+                  ★ 4.9/5 Rating
                 </span>
               </div>
               <h3 className="text-xl font-black text-[#1E2229] mt-0.5">
-                Pro Pedagogical Toolkits & Masterclass Courses
+                BYJU'S Smart Learning Programs & Offline Preloaded Curriculum
               </h3>
               <p className="text-xs text-[#5A606C]">
-                Accredited institutional modules, curriculum question packs, and offline heuristic diagnostic engines. <em className="text-[#0D9488] font-bold not-italic">Students learn 100% free.</em>
+                Comprehensive K-12 STEM, Board Booster & Diagnostic Exam Packs. Preloaded 3D concept animations, formula vaults, and offline practice suites.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 bg-[#F7F9FA] px-4 py-2.5 rounded-2xl border border-[#E5E2DA] self-start md:self-auto text-xs font-semibold text-[#5A606C]">
+          <div className="flex items-center gap-3 bg-[#FAF5FF] px-4 py-2.5 rounded-2xl border border-[#E9D5FF] self-start md:self-auto text-xs font-semibold text-[#6C227E]">
             <ShieldCheck className="w-4 h-4 text-[#0D9488]" />
-            <span>30-Day Money-Back Guarantee • Lifetime Access</span>
+            <span>100% Offline Compatible • Preloaded SD Card / Local Cache</span>
           </div>
         </div>
 
-        {/* 3 Course Cards Grid */}
+        {/* 3 BYJU'S Course Packages Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {EDUCATOR_COURSES.map((course) => {
+          {BYJUS_LEARNING_PACKAGES.map((course) => {
             const isPurchased = purchasedCourseIds.includes(course.id);
             return (
               <div 
@@ -540,7 +540,7 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
                       {course.badge}
                     </span>
                     <div className="flex items-center gap-1 text-xs text-[#B4690E] font-bold">
-                      <Star className="w-3.5 h-3.5 fill-[#B4690E]" />
+                      <Star className="w-3.5 h-3.5 fill-[#FFC107] text-[#FFC107]" />
                       <span>{course.rating}</span>
                       <span className="text-[#89909E] font-normal">({course.ratingCount})</span>
                     </div>
@@ -553,7 +553,7 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
                     <p className="text-xs text-[#5A606C] mt-1.5 line-clamp-2">
                       {course.subtitle}
                     </p>
-                    <span className="text-[11px] font-semibold text-[#89909E] block mt-1">
+                    <span className="text-[11px] font-semibold text-[#6C227E] block mt-1">
                       By {course.instructor}
                     </span>
                   </div>
@@ -562,7 +562,9 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
                   <div className="pt-2 border-t border-[#E5E2DA]/60 flex items-baseline gap-2">
                     <span className="text-xl font-black text-[#1E2229]">₹{course.discountPrice}</span>
                     <span className="text-xs text-[#89909E] line-through font-semibold">₹{course.originalPrice}</span>
-                    <span className="text-xs font-black text-[#A435F0]">86% off</span>
+                    <span className="text-xs font-black text-[#6C227E] bg-purple-100 px-2 py-0.5 rounded">
+                      86% off
+                    </span>
                   </div>
 
                   {/* Checklist */}
@@ -585,8 +587,8 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
                         <span>Enrolled & Active Access</span>
                       </div>
                       <button
-                        onClick={() => alert(`Accessing ${course.title} resources: Toolkit and Question Banks loaded into your offline workspace cache.`)}
-                        className="w-full py-2 bg-[#2D2F31] hover:bg-black text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5"
+                        onClick={() => alert(`Accessing ${course.title} resources: 1,200+ Animated Concept Visualizations and Question Banks loaded into your offline cache.`)}
+                        className="w-full py-2 bg-[#6C227E] hover:bg-[#521661] text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5"
                       >
                         <Download className="w-3.5 h-3.5" />
                         <span>Open Toolkit / Downloads</span>
@@ -595,10 +597,10 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
                   ) : (
                     <button
                       onClick={() => setSelectedCourseForCheckout(course)}
-                      className="w-full py-2.5 bg-[#A435F0] hover:bg-[#8710D8] text-white text-xs font-extrabold rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                      className="w-full py-2.5 bg-gradient-to-r from-[#6C227E] to-[#4C1258] hover:opacity-95 text-white text-xs font-extrabold rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
                     >
                       <Lock className="w-3.5 h-3.5" />
-                      <span>Enroll Now (In-App Purchase)</span>
+                      <span>Enroll Now (Instant Offline Access)</span>
                     </button>
                   )}
                 </div>
@@ -608,8 +610,8 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
         </div>
       </div>
 
-      {/* Udemy Checkout Modal */}
-      <UdemyCourseCheckoutModal
+      {/* BYJU'S Course Checkout & Paytm Payment Modal */}
+      <ByjusCourseCheckoutModal
         isOpen={!!selectedCourseForCheckout}
         onClose={() => setSelectedCourseForCheckout(null)}
         courseItem={selectedCourseForCheckout}

@@ -67,16 +67,23 @@ router.get('/lesson/:lessonId', async (req, res) => {
 // POST /api/quizzes/submit
 router.post('/submit', protect, async (req, res) => {
   try {
-    const { quizId, answers, isOfflineSync } = req.body;
+    const { quizId, answers, isOfflineSync, questions: submittedQuestions, quizTitle, topic } = req.body;
     let quiz;
 
-    if (isUsingMongoDB) {
+    if (submittedQuestions && Array.isArray(submittedQuestions) && submittedQuestions.length > 0) {
+      quiz = {
+        _id: quizId || `quiz-${Date.now()}`,
+        title: quizTitle || 'Assessment',
+        topic: topic || 'STEM Practice',
+        questions: submittedQuestions
+      };
+    } else if (isUsingMongoDB) {
       quiz = await Quiz.findById(quizId);
     } else {
       quiz = initialSeedData.quizzes.find(q => q._id === quizId) || initialSeedData.quizzes[0];
     }
 
-    if (!quiz) {
+    if (!quiz || !quiz.questions) {
       return res.status(404).json({ message: 'Quiz not found' });
     }
 

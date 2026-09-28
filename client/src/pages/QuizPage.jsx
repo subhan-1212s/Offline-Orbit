@@ -600,14 +600,25 @@ export const QuizPage = ({
                 key={idx}
                 disabled={isAnswered}
                 onClick={() => handleSelectOption(idx)}
-                className={`w-full text-left p-4 rounded-xl border text-xs font-semibold transition-all flex items-center justify-between ${optionStyle}`}
+                className={`w-full text-left p-4 rounded-xl border text-xs font-semibold transition-all flex items-center justify-between gap-3 ${optionStyle}`}
               >
-                <span>{optionText}</span>
+                <div className="flex items-center gap-3 flex-1">
+                  <span className={`w-7 h-7 rounded-lg font-bold text-xs flex items-center justify-center shrink-0 border ${
+                    selectedOption === idx 
+                      ? 'bg-[#F95738] text-white border-[#F95738]' 
+                      : isAnswered && idx === currentQ.correctAnswerIndex
+                        ? 'bg-[#0D9488] text-white border-[#0D9488]'
+                        : 'bg-white text-[#5A606C] border-[#E5E2DA]'
+                  }`}>
+                    {['A', 'B', 'C', 'D'][idx] || idx + 1}
+                  </span>
+                  <span className="leading-relaxed">{optionText}</span>
+                </div>
                 {isAnswered && idx === currentQ.correctAnswerIndex && (
-                  <CheckCircle2 className="w-4 h-4 text-[#0D9488]" />
+                  <CheckCircle2 className="w-5 h-5 text-[#0D9488] shrink-0" />
                 )}
                 {isAnswered && selectedOption === idx && !isCorrect && (
-                  <XCircle className="w-4 h-4 text-[#F95738]" />
+                  <XCircle className="w-5 h-5 text-[#F95738] shrink-0" />
                 )}
               </button>
             );

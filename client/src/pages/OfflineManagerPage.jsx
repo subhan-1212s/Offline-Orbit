@@ -9,7 +9,7 @@ import {
 } from '../services/indexedDB';
 import { 
   HardDrive, Download, Trash2, RefreshCw, Wifi, WifiOff, 
-  CheckCircle2, ShieldCheck, PlayCircle, Video, Info, HelpCircle, Film, Radio, Share2, Sparkles, Smartphone 
+  CheckCircle2, ShieldCheck, PlayCircle, Video, Info, HelpCircle, Film, Sparkles, X, Play
 } from 'lucide-react';
 
 export const OfflineManagerPage = ({ onNavigateToLesson }) => {
@@ -19,10 +19,9 @@ export const OfflineManagerPage = ({ onNavigateToLesson }) => {
   const [pendingQueue, setPendingQueue] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // P2P Offline Mesh Sync State
-  const [isP2PScanning, setIsP2PScanning] = useState(false);
-  const [nearbyPeers, setNearbyPeers] = useState([]);
-  const [p2pTransferStatus, setP2PTransferStatus] = useState(null);
+  // Offline Video Player Modal State
+  const [activePlayingVideo, setActivePlayingVideo] = useState(null);
+  const [playingVideoUrl, setPlayingVideoUrl] = useState(null);
 
   useEffect(() => {
     loadOfflineData();
@@ -44,35 +43,6 @@ export const OfflineManagerPage = ({ onNavigateToLesson }) => {
     }
   };
 
-  const handleScanLocalP2P = () => {
-    setIsP2PScanning(true);
-    setNearbyPeers([]);
-    setP2PTransferStatus(null);
-
-    setTimeout(() => {
-      setIsP2PScanning(false);
-      setNearbyPeers([
-        { id: 'peer-1', name: "Rahul's Tablet", distance: '2 meters', packName: 'Photosynthesis Pack', status: 'Ready to Share' },
-        { id: 'peer-2', name: "Priya's Laptop", distance: '4 meters', packName: 'Linear Equations Pack', status: 'Ready to Share' }
-      ]);
-    }, 1500);
-  };
-
-  const handleP2PTransfer = (peerName, packName) => {
-    setP2PTransferStatus({ peerName, packName, progress: 20 });
-    const interval = setInterval(() => {
-      setP2PTransferStatus(prev => {
-        if (!prev) return null;
-        if (prev.progress >= 100) {
-          clearInterval(interval);
-          loadOfflineData();
-          return { ...prev, progress: 100, completed: true };
-        }
-        return { ...prev, progress: prev.progress + 25 };
-      });
-    }, 400);
-  };
-
   const handleRemovePack = async (packId) => {
     await deleteDownloadedPack(packId);
     await loadOfflineData();
@@ -87,6 +57,24 @@ export const OfflineManagerPage = ({ onNavigateToLesson }) => {
   const handleSyncNow = async () => {
     await triggerSync();
     await loadOfflineData();
+  };
+
+  const handlePlayDownloadedVideo = (video) => {
+    if (video.blob) {
+      const url = URL.createObjectURL(video.blob);
+      setPlayingVideoUrl(url);
+      setActivePlayingVideo(video);
+    } else if (onNavigateToLesson) {
+      onNavigateToLesson(video.lessonId || 'lesson-1');
+    }
+  };
+
+  const handleCloseVideoModal = () => {
+    if (playingVideoUrl) {
+      URL.revokeObjectURL(playingVideoUrl);
+    }
+    setPlayingVideoUrl(null);
+    setActivePlayingVideo(null);
   };
 
   const handlePlayOfflineVideo = (pack) => {
@@ -119,7 +107,7 @@ export const OfflineManagerPage = ({ onNavigateToLesson }) => {
             <h2 className="text-2xl font-extrabold text-[#1E2229]">Offline Download & Sync Manager</h2>
           </div>
           <p className="text-xs text-[#5A606C] mt-1">
-            Manage downloaded lesson packs, video files, and peer-to-peer local device transfers without internet.
+            Manage downloaded lesson packs, standalone video files, and offline progress synchronization.
           </p>
         </div>
 
@@ -150,79 +138,6 @@ export const OfflineManagerPage = ({ onNavigateToLesson }) => {
         </div>
       </div>
 
-      {/* UNPRECEDENTED FEATURE: Peer-to-Peer Local Mesh Offline Sharing */}
-      <div className="bg-gradient-to-r from-white via-[#EEFDFB] to-white border border-[#0D9488]/30 rounded-2xl p-6 shadow-sm space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-2">
-            <Radio className="w-5 h-5 text-[#0D9488] animate-pulse" />
-            <div>
-              <h3 className="text-base font-extrabold text-[#1E2229]">Peer-to-Peer Local Device Mesh Share (Zero Data)</h3>
-              <p className="text-xs text-[#5A606C]">Share downloaded lesson packs directly with nearby student devices over local Wi-Fi or hotspot without any internet connection!</p>
-            </div>
-          </div>
-
-          <button
-            onClick={handleScanLocalP2P}
-            disabled={isP2PScanning}
-            className="btn-coral text-xs py-2 px-4 bg-[#0D9488] hover:bg-[#0B7A70] shadow-sm flex items-center gap-2"
-          >
-            <Share2 className="w-4 h-4" />
-            <span>{isP2PScanning ? 'Scanning Nearby Devices...' : 'Scan Nearby Devices (P2P)'}</span>
-          </button>
-        </div>
-
-        {isP2PScanning && (
-          <div className="p-4 bg-white rounded-xl border border-[#0D9488]/30 text-center">
-            <RefreshCw className="w-5 h-5 text-[#0D9488] animate-spin mx-auto mb-2" />
-            <p className="text-xs font-bold text-[#1E2229]">Broadcasting Local Mesh Beacon...</p>
-            <p className="text-[11px] text-[#5A606C]">Searching for nearby Offline Orbit devices on local Wi-Fi / hotspot...</p>
-          </div>
-        )}
-
-        {nearbyPeers.length > 0 && !isP2PScanning && (
-          <div className="space-y-2 pt-2">
-            <h4 className="text-xs font-bold text-[#0D9488] uppercase tracking-wider">Discovered Nearby Devices:</h4>
-            <div className="grid sm:grid-cols-2 gap-3">
-              {nearbyPeers.map(peer => (
-                <div key={peer.id} className="p-3.5 bg-white border border-[#0D9488]/30 rounded-xl flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <Smartphone className="w-5 h-5 text-[#0D9488]" />
-                    <div>
-                      <h5 className="font-bold text-xs text-[#1E2229]">{peer.name}</h5>
-                      <span className="text-[10px] text-[#5A606C]">{peer.distance} • Has {peer.packName}</span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleP2PTransfer(peer.name, peer.packName)}
-                    className="bg-[#EEFDFB] hover:bg-[#0D9488] hover:text-white text-[#0D9488] border border-[#0D9488]/40 text-[11px] font-bold px-2.5 py-1 rounded-lg transition-colors"
-                  >
-                    Beam Pack
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {p2pTransferStatus && (
-          <div className="p-3 bg-white border border-[#0D9488]/40 rounded-xl text-xs space-y-1">
-            <div className="flex items-center justify-between font-bold text-[#1E2229]">
-              <span>Direct Device Beam: {p2pTransferStatus.packName}</span>
-              <span>{p2pTransferStatus.progress}%</span>
-            </div>
-            <div className="w-full bg-[#E5E2DA] h-2 rounded-full overflow-hidden">
-              <div className="bg-[#0D9488] h-full transition-all duration-300" style={{ width: `${p2pTransferStatus.progress}%` }} />
-            </div>
-            {p2pTransferStatus.completed && (
-              <span className="text-emerald-600 font-extrabold text-[11px] block mt-1">
-                ✅ Pack transferred directly from {p2pTransferStatus.peerName} without internet! Saved to IndexedDB.
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-
       {/* How to Watch Videos Offline Instruction Banner */}
       <div className="bg-[#EEF2FF] border border-[#4F46E5]/30 rounded-2xl p-5 shadow-xs space-y-2">
         <div className="flex items-center gap-2 text-[#4F46E5]">
@@ -230,24 +145,27 @@ export const OfflineManagerPage = ({ onNavigateToLesson }) => {
           <h3 className="font-extrabold text-sm text-[#1E2229]">How to Watch Lesson Videos Offline</h3>
         </div>
         <p className="text-xs text-[#374151] leading-relaxed">
-          1. Download any lesson pack or standalone video file by choosing your preferred language (English, Hindi, Spanish, Tamil, Telugu).<br />
-          2. When disconnected or offline, open this <strong>Offline Downloads</strong> page or any lesson.<br />
-          3. The video player loads the locally stored video Blob from IndexedDB and plays it with <strong>FULL PICTURE AND SOUND</strong> 100% offline!
+          1. Download any 2-minute lesson video with English audio narration while online.<br />
+          2. When disconnected or offline, open this <strong>Offline Downloads</strong> page or any saved lesson.<br />
+          3. Tap <strong>"Play Video"</strong> on any downloaded item below to play the video with <strong>FULL PICTURE AND AUDIO</strong> 100% offline!
         </p>
       </div>
 
-      {/* Downloaded Multilingual Videos Section */}
+      {/* Downloaded Videos Section with Play Video Option */}
       <div className="bg-white border border-[#E5E2DA] rounded-2xl p-6 shadow-sm">
-        <h3 className="text-lg font-extrabold text-[#1E2229] mb-4 flex items-center gap-2">
-          <Film className="w-5 h-5 text-[#F95738]" />
-          <span>Downloaded Multilingual Video Files in IndexedDB</span>
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-extrabold text-[#1E2229] flex items-center gap-2">
+            <Film className="w-5 h-5 text-[#F95738]" />
+            <span>Downloaded Videos in IndexedDB</span>
+          </h3>
+          <span className="text-xs font-semibold text-[#89909E]">English Audio (02:00)</span>
+        </div>
 
         {downloadedVideos.length === 0 ? (
           <div className="p-8 text-center bg-[#FAF9F6] border border-dashed border-[#E5E2DA] rounded-xl">
             <Film className="w-8 h-8 text-[#89909E] mx-auto mb-2" />
             <p className="text-xs font-bold text-[#1E2229]">No offline video files downloaded yet.</p>
-            <p className="text-[11px] text-[#5A606C] mt-1">Click "Download Video File" inside any lesson video player to store complete video files for offline viewing.</p>
+            <p className="text-[11px] text-[#5A606C] mt-1">Click "Download Video File" inside any lesson video player to store complete 2-minute video files for offline viewing.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -255,8 +173,11 @@ export const OfflineManagerPage = ({ onNavigateToLesson }) => {
               <div key={video.videoId} className="p-4 rounded-xl border border-[#E5E2DA] bg-[#FAF9F6] flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-[#1E2229] text-sm">{video.topicTitle || 'Multilingual Video'}</h4>
-                    <span className="badge-mastered">{video.langName || 'Multilingual'}</span>
+                    <h4 className="font-bold text-[#1E2229] text-sm">{video.topicTitle || '2-Minute English Lesson Video'}</h4>
+                    <span className="badge-mastered">English Audio</span>
+                    <span className="text-[10px] bg-[#EEF2FF] text-[#4F46E5] font-extrabold px-2 py-0.5 rounded-full border border-[#4F46E5]/20">
+                      02:00 Min
+                    </span>
                   </div>
                   <p className="text-xs text-[#5A606C] mt-0.5">
                     Standalone Video Blob • Size: {video.sizeMB || '2.4 MB'} • Saved: {new Date(video.downloadedAt || Date.now()).toLocaleDateString()}
@@ -265,12 +186,20 @@ export const OfflineManagerPage = ({ onNavigateToLesson }) => {
 
                 <div className="flex items-center gap-2">
                   <button
+                    onClick={() => handlePlayDownloadedVideo(video)}
+                    className="btn-coral text-xs py-2 px-3.5 shadow-sm flex items-center gap-1.5 bg-[#0D9488] hover:bg-[#0B7A70]"
+                  >
+                    <PlayCircle className="w-4 h-4" />
+                    <span>Play Video</span>
+                  </button>
+
+                  <button
                     onClick={() => handleRemoveVideo(video.videoId)}
                     className="p-2 text-[#F95738] hover:bg-[#FFF0ED] rounded-lg transition-colors text-xs font-bold flex items-center gap-1 border border-[#E5E2DA]"
                     title="Remove video file from IndexedDB"
                   >
                     <Trash2 className="w-4 h-4" />
-                    <span>Delete File</span>
+                    <span>Delete</span>
                   </button>
                 </div>
               </div>
@@ -331,7 +260,7 @@ export const OfflineManagerPage = ({ onNavigateToLesson }) => {
       <div className="bg-white border border-[#E5E2DA] rounded-2xl p-6 shadow-sm">
         <h3 className="text-lg font-extrabold text-[#1E2229] mb-1">Offline Pending Sync Queue</h3>
         <p className="text-xs text-[#5A606C] mb-4">
-          Quiz attempts completed while offline. Saved locally on this device and waiting to sync with MongoDB Atlas.
+          Quiz attempts completed while offline. Saved locally on this device and waiting to sync with database.
         </p>
 
         {pendingQueue.length === 0 ? (
@@ -358,8 +287,55 @@ export const OfflineManagerPage = ({ onNavigateToLesson }) => {
         )}
       </div>
 
+      {/* Offline Video Player Modal */}
+      {activePlayingVideo && playingVideoUrl && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-[#E5E2DA] space-y-4 p-6 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between border-b border-[#E5E2DA] pb-3">
+              <div className="flex items-center gap-2">
+                <Film className="w-5 h-5 text-[#0D9488]" />
+                <div>
+                  <h3 className="font-extrabold text-base text-[#1E2229]">
+                    {activePlayingVideo.topicTitle || 'Offline Lesson Video'}
+                  </h3>
+                  <span className="text-[11px] font-bold text-[#0D9488]">
+                    100% Offline Playback • English Audio Narration (02:00 Duration)
+                  </span>
+                </div>
+              </div>
+              <button 
+                onClick={handleCloseVideoModal}
+                className="p-2 text-[#89909E] hover:text-[#1E2229] rounded-xl hover:bg-[#FAF9F6]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Native Video Element with full offline picture and sound */}
+            <div className="rounded-2xl overflow-hidden bg-black aspect-video flex items-center justify-center border border-black/10 relative">
+              <video
+                src={playingVideoUrl}
+                controls
+                autoPlay
+                className="w-full h-full object-contain"
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+              <span className="text-xs text-[#5A606C]">
+                Loaded directly from IndexedDB local storage • No internet required
+              </span>
+              <button
+                onClick={handleCloseVideoModal}
+                className="btn-coral text-xs py-2 px-5 bg-[#1E2229] hover:bg-[#333A48]"
+              >
+                Close Video
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
-
-
