@@ -849,7 +849,7 @@ export const AuthPage = ({ onAuthSuccess }) => {
               {resetStep === 1 ? (
                 <form onSubmit={handleForgotPassword} className="space-y-4">
                   <p className="text-xs text-[#5A606C] leading-relaxed">
-                    Enter your email address below and we will send a 6-digit verification code to your email via Brevo.
+                    Enter your registered email address below to reset your password.
                   </p>
                   <div>
                     <label className="block text-xs font-bold text-[#1E2229] mb-1">Email Address</label>
@@ -863,7 +863,7 @@ export const AuthPage = ({ onAuthSuccess }) => {
                     />
                   </div>
                   <button type="submit" disabled={loading} className="w-full btn-coral text-xs py-3.5 shadow-md justify-center">
-                    <span>{loading ? 'Sending Verification Code...' : 'Send Verification Code via Brevo'}</span>
+                    <span>{loading ? 'Processing...' : 'Reset Password'}</span>
                   </button>
                 </form>
               ) : (

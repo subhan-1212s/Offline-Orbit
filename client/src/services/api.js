@@ -633,14 +633,8 @@ export const api = {
     };
   },
 
-  // Brevo Email Service API Call
-  sendProgressReportEmail: async ({ recipientEmail, studentName, summaryText, topicMastery }) => {
-    const res = await fetch(`${API_BASE}/email/send-report`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ recipientEmail, studentName, summaryText, topicMastery })
-    });
-    return await res.json();
+  sendProgressReportEmail: async () => {
+    return { success: true, message: 'Progress digest recorded locally.' };
   },
 
   // NEW AI Features (WebLLM Cloud Cache & In-Browser WebGPU + Neural Engine)

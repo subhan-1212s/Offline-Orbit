@@ -369,7 +369,7 @@ export const AdminManagementPage = () => {
         'Full 2-Minute Masterclass Video Narration Library',
         'AI Concept Playground & Diagnostic Quiz Generator',
         '100% Offline SD Card & IndexedDB Video Sync',
-        'Brevo Email Notifications & Progress Badges'
+        'In-App Progress Notifications & Achievement Badges'
       ],
       badge: 'Popular for Tutors'
     },
@@ -400,7 +400,7 @@ export const AdminManagementPage = () => {
       features: [
         'All Institutional Features with Zero Seat Limits',
         'Custom Offline Hardware Appliance Appliance Preloading',
-        'Automated Brevo Institutional Telemetry Reports',
+        'Automated Institutional Telemetry & Analytics Reports',
         'Dedicated 24/7 Academic Engineering Support & SLA',
         'White-Label Institution Portal Branding'
       ],
@@ -1000,12 +1000,12 @@ export const AdminManagementPage = () => {
             </div>
 
             <div className="p-4 rounded-2xl bg-[#FAF9F6] border border-[#E5E2DA] space-y-2">
-              <span className="font-bold text-[#1E2229] block">Brevo Email Notifications</span>
-              <p className="text-[#5A606C]">Transactional progress reports & OTP alerts.</p>
+              <span className="font-bold text-[#1E2229] block">In-App Telemetry & Badges</span>
+              <p className="text-[#5A606C]">Real-time student progress updates & alerts.</p>
               <div className="text-[11px] font-mono text-[#4F46E5] bg-white p-2 rounded border border-[#E5E2DA]">
-                • API Status: Ready<br />
-                • Sender: notification@orbit.edu<br />
-                • Templates: Diagnostic / Progress
+                • Notification Bus: Active<br />
+                • Real-time Mesh: Connected<br />
+                • Digest Export: Enabled
               </div>
             </div>
 

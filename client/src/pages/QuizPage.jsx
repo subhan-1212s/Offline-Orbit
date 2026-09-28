@@ -145,16 +145,6 @@ export const QuizPage = ({
           localStorage.setItem('orbit_notifications', JSON.stringify([newNotif, ...prevNotifs]));
         } catch (e) {}
 
-        // Send Email Notification Report via Brevo API
-        api.sendProgressReportEmail({
-          recipientEmail: user?.email || 'learner@orbit.edu',
-          studentName: user?.name || 'Learner',
-          summaryText: `Completed ${quiz?.title || 'STEM Assessment'} with score ${res.percentage}% (${res.score}/${res.total}). Active streak: ${realStreak} days.`,
-          topicMastery: [
-            { topic: quiz?.topic || 'STEM Practice', scoreAvg: res.percentage, status: res.percentage >= 80 ? 'mastered' : 'practising' }
-          ]
-        }).catch(e => console.warn('Email dispatch notice:', e.message));
-
         // Earn Badge Celebration trigger
         if (res.percentage >= 60) {
           confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 } });
