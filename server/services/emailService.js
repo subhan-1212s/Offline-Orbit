@@ -1,4 +1,33 @@
+import nodemailer from 'nodemailer';
+
 export const sendBrevoEmail = async ({ toEmail, toName, subject, htmlContent }) => {
+  // Option 1: Direct SMTP via Gmail or Custom SMTP (bypasses Brevo IP restrictions)
+  const smtpPass = process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS;
+  const smtpUser = process.env.SMTP_USER || process.env.SENDER_EMAIL || 'mohamedsubhan155@gmail.com';
+  
+  if (smtpPass && smtpPass.trim() !== '') {
+    try {
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: smtpUser,
+          pass: smtpPass
+        }
+      });
+      const info = await transporter.sendMail({
+        from: `"Offline Orbit Platform" <${smtpUser}>`,
+        to: toEmail,
+        subject,
+        html: htmlContent
+      });
+      console.log('✅ Email sent successfully via Gmail SMTP to', toEmail, info.messageId);
+      return { success: true, messageId: info.messageId, provider: 'smtp' };
+    } catch (smtpErr) {
+      console.warn('Gmail SMTP dispatch failed, attempting Brevo REST API fallback:', smtpErr.message);
+    }
+  }
+
+  // Option 2: Brevo REST API
   const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey || apiKey.trim() === '' || apiKey.includes('xxxxxxxx')) {
     console.log('ℹ️  Brevo API key missing. Email simulated locally.');
@@ -41,8 +70,8 @@ export const sendBrevoEmail = async ({ toEmail, toName, subject, htmlContent }) 
     }
 
     const data = await response.json();
-    console.log('✅ Email sent successfully via Brevo API:', data.messageId);
-    return { success: true, messageId: data.messageId };
+    console.log('✅ Email sent successfully via Brevo API to', toEmail, data.messageId);
+    return { success: true, messageId: data.messageId, provider: 'brevo' };
   } catch (error) {
     console.error('Brevo Email dispatch failed:', error.message);
     return { success: false, error: error.message };

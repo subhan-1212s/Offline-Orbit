@@ -35,6 +35,7 @@ export const AuthPage = ({ onAuthSuccess }) => {
   const [newPassword, setNewPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [resetStep, setResetStep] = useState(1); // 1: Email, 2: Code & New Password
+  const [authIpData, setAuthIpData] = useState(null);
 
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -180,15 +181,20 @@ export const AuthPage = ({ onAuthSuccess }) => {
     if (e && e.preventDefault) e.preventDefault();
     setLoading(true);
     setMessage('');
+    setAuthIpData(null);
 
     try {
       const res = await api.forgotPassword({ email });
-      if (res.resetCode) {
-        setResetCode(res.resetCode);
-      }
-      setMessage(res.message || `Password reset 6-digit code dispatched to ${email}!`);
+      setResetCode(''); // Clean code state so user must check their inbox
+      setMessage(res.message || `A 6-digit verification code has been dispatched to ${email}. Please check your email inbox.`);
       setResetStep(2);
     } catch (err) {
+      if (err.unrecognisedIp || err.message?.includes('Brevo Security Alert') || err.message?.includes('authorised_ips')) {
+        setAuthIpData({
+          ip: err.ip || '122.186.158.146',
+          authUrl: err.authUrl || 'https://app.brevo.com/security/authorised_ips'
+        });
+      }
       setMessage(err.message || 'Failed to send reset code. Please check your email address.');
     } finally {
       setLoading(false);
@@ -822,11 +828,33 @@ export const AuthPage = ({ onAuthSuccess }) => {
           {/* Form 4: Forgot Password Flow */}
           {activeMode === 'forgot-password' && (
             <div>
+              {/* Brevo IP Authorization Notice if blocked */}
+              {authIpData && (
+                <div className="p-3.5 mb-4 rounded-2xl bg-[#FFFBEB] border border-[#FDE68A] text-xs text-[#92400E] space-y-2">
+                  <div className="font-bold flex items-center gap-1.5 text-[#B45309]">
+                    <ShieldCheck className="w-4 h-4 text-[#B45309]" />
+                    <span>Brevo Security: IP Authorization Required</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed">
+                    Brevo security blocked email delivery because server IP <strong>{authIpData.ip}</strong> is not yet authorized. Click below to add it in Brevo Security Settings (or click the email link Brevo sent to your registered admin address):
+                  </p>
+                  <a
+                    href={authIpData.authUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#B45309] text-white font-bold text-xs hover:bg-[#92400E] transition-all shadow-sm"
+                  >
+                    <span>Authorize IP in Brevo</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              )}
+
               {resetStep === 1 ? (
                 <form onSubmit={handleForgotPassword} className="space-y-4">
                   <div className="p-3 rounded-2xl bg-[#FFF8F6] border border-[#F95738]/20 flex items-start gap-2.5 text-xs text-[#8C3A27]">
                     <KeyRound className="w-4 h-4 text-[#F95738] shrink-0 mt-0.5" />
-                    <span>Enter your registered email address. We will generate and dispatch a 6-digit verification code to reset your account password.</span>
+                    <span>Enter your registered email address. We will send an actual 6-digit verification code to your email inbox to reset your password.</span>
                   </div>
 
                   <div>
@@ -845,7 +873,7 @@ export const AuthPage = ({ onAuthSuccess }) => {
                   </div>
 
                   <button type="submit" disabled={loading} className="w-full btn-coral text-xs py-3.5 shadow-md justify-center">
-                    <span>{loading ? 'Sending Code...' : 'Send Verification Code'}</span>
+                    <span>{loading ? 'Dispatching Email...' : 'Send Verification Code to Email'}</span>
                     <ArrowRight className="w-4 h-4 ml-1" />
                   </button>
                 </form>
@@ -855,7 +883,7 @@ export const AuthPage = ({ onAuthSuccess }) => {
                   <div className="p-3 rounded-2xl bg-[#F0FDF4] border border-[#10B981]/25 flex items-center justify-between text-xs text-[#166534]">
                     <div className="flex items-center gap-2 truncate">
                       <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0" />
-                      <span className="truncate">Code sent to: <strong className="font-semibold">{email}</strong></span>
+                      <span className="truncate">Verification code sent to: <strong className="font-semibold">{email}</strong></span>
                     </div>
                     <button
                       type="button"
@@ -866,22 +894,9 @@ export const AuthPage = ({ onAuthSuccess }) => {
                     </button>
                   </div>
 
-                  {/* Demo / Sandbox Code Badge */}
-                  {resetCode && (
-                    <div className="p-2.5 rounded-xl bg-[#FFFBEB] border border-[#FDE68A] text-[11px] text-[#92400E] flex items-center justify-between">
-                      <span>🔑 Verification Code: <strong className="font-mono text-xs tracking-wider">{resetCode}</strong></span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (navigator.clipboard) navigator.clipboard.writeText(resetCode);
-                          setMessage('Code copied to clipboard!');
-                        }}
-                        className="font-bold underline text-[#B45309]"
-                      >
-                        Copy
-                      </button>
-                    </div>
-                  )}
+                  <p className="text-[11px] text-[#5A606C] leading-relaxed">
+                    Please open your email inbox (or spam folder) for <strong>{email}</strong> and enter the 6-digit code below:
+                  </p>
 
                   <div>
                     <label className="block text-xs font-bold text-[#1E2229] mb-1">6-Digit Verification Code</label>
@@ -930,14 +945,7 @@ export const AuthPage = ({ onAuthSuccess }) => {
                       disabled={loading}
                       className="text-[#5A606C] hover:text-[#1E2229] underline text-[11px]"
                     >
-                      Resend code
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setResetCode('123456')}
-                      className="text-[#94A3B8] hover:text-[#5A606C] text-[11px]"
-                    >
-                      Use test code (123456)
+                      Resend code to email
                     </button>
                   </div>
                 </form>

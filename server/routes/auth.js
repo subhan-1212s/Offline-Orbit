@@ -238,7 +238,7 @@ router.post('/forgot-password', async (req, res) => {
       user
     });
 
-    // Send email via Brevo
+    // Send email via Brevo or SMTP
     let emailResult = { success: false };
     try {
       emailResult = await sendPasswordResetEmail({
@@ -247,19 +247,44 @@ router.post('/forgot-password', async (req, res) => {
         resetCode
       });
     } catch (mailErr) {
-      console.warn('Brevo reset email dispatch warning:', mailErr.message);
+      console.warn('Reset email dispatch error:', mailErr.message);
+      emailResult = { success: false, error: mailErr.message };
     }
 
-    console.log(`[AUTH] Password reset requested for ${cleanEmail}. Verification Code: ${resetCode}`);
+    // Check if email dispatch succeeded
+    if (emailResult.success && !emailResult.simulated) {
+      console.log(`[AUTH] Verification email dispatched to ${cleanEmail} via ${emailResult.provider || 'email service'}.`);
+      return res.json({
+        success: true,
+        message: `A 6-digit verification code has been dispatched to your email address (${cleanEmail}). Please check your inbox and spam folder.`,
+        email: cleanEmail,
+        emailDispatched: true
+      });
+    }
 
-    res.json({
-      success: true,
-      message: emailResult?.success && !emailResult?.simulated
-        ? `A 6-digit password reset code has been sent to ${cleanEmail}. (Code: ${resetCode})`
-        : `Verification code generated: ${resetCode}. Enter this code to set your new password.`,
-      resetCode,
-      email: cleanEmail,
-      emailDispatched: !!emailResult?.success
+    // If Brevo security blocked due to unrecognised IP address:
+    if (emailResult.unrecognisedIp) {
+      console.warn(`[AUTH] Brevo IP Authorization required for ${emailResult.ip}: ${emailResult.authUrl}`);
+      return res.status(403).json({
+        success: false,
+        unrecognisedIp: true,
+        ip: emailResult.ip,
+        authUrl: emailResult.authUrl,
+        message: `Brevo Security Alert: Your server IP ${emailResult.ip} is not yet authorized in Brevo. Please authorize IP ${emailResult.ip} at https://app.brevo.com/security/authorised_ips or click the notification email sent by Brevo to enable inbox delivery.`
+      });
+    }
+
+    // If simulated or other error
+    if (emailResult.simulated) {
+      return res.status(500).json({
+        success: false,
+        message: 'Email service is currently unconfigured or simulated. Please ensure Brevo API key is authorized or configure Gmail SMTP in server/.env.'
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: `Failed to deliver email to ${cleanEmail}: ${emailResult.error || 'Email delivery failed'}.`
     });
   } catch (err) {
     console.error('Forgot password error:', err);
