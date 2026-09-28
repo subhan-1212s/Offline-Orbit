@@ -1384,6 +1384,44 @@ export const api = {
       if (res.ok) return await res.json();
     } catch (e) {}
     return { success: true, transactions: [] };
+  },
+
+  // Interactive AI Study Coach / Chatbot (Online Cloud + 100% Offline WebLLM Engine)
+  aiTutorChat: async ({ userMessage, conversationHistory = [], currentLessonContext = '' }) => {
+    // 1. If online, attempt server POST /api/ai/tutor-chat
+    if (navigator.onLine) {
+      try {
+        const res = await fetch(`${API_BASE}/ai/tutor-chat`, {
+          method: 'POST',
+          headers: getHeaders('student'),
+          body: JSON.stringify({ userMessage, conversationHistory, currentLessonContext })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // Filter out any stale legacy robotic template
+          if (data?.reply && !data.reply.includes('Orbit AI Study Analysis for') && !data.reply.includes('Orbit AI Academic Insights on')) {
+            return {
+              reply: data.reply,
+              engine: data.source || 'Orbit AI Cloud Engine'
+            };
+          }
+        }
+      } catch (err) {
+        console.warn('Online AI chat fallback to in-browser engine:', err.message);
+      }
+    }
+
+    // 2. In-Browser WebLLM, WebGPU & Cloud Cache Engine (100% Offline Guaranteed)
+    const offlineResult = await webllmEngine.generateResponse({
+      userMessage,
+      conversationHistory,
+      lessonContext: currentLessonContext
+    });
+
+    return {
+      reply: offlineResult.text,
+      engine: offlineResult.engine || 'WebLLM Cloud Cache (In-Browser)'
+    };
   }
 };
 

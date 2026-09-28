@@ -466,20 +466,64 @@ export const generateTutorChatResponse = async ({ userMessage, conversationHisto
   const q = rawQ.toLowerCase().replace(/[?!.,]/g, '').trim();
   let reply = '';
 
-  // 1. Greetings (hi, hello, hey, etc.)
-  if (/^(hi|hello|hey|heya|hola|namaste|good morning|good afternoon|good evening|howdy|sup|yo|greetings)$/i.test(q) || q === 'hi' || q === 'hello') {
+  // 1. Questions about its day / life / how things are going
+  if (/how'?s (your |the |this )?day|how (was|is|has been) (your |the )?day|your day|how is your day going|how is it going today/i.test(q)) {
+    reply = `😊 **My day has been wonderful, thank you for asking!**\n\nI've been helping students break down math equations, understand physics laws, and explore science concepts.\n\nHow is your day going? Are you working on any interesting study topics or homework today, or just taking a quick break?`;
+  }
+  // 2. Greetings (hi, hello, hey, etc.)
+  else if (/^(hi|hello|hey|heya|hola|namaste|good morning|good afternoon|good evening|howdy|sup|yo|greetings|hi orbit|hello orbit|hey orbit)(\s.*)?$/i.test(q) || q === 'hi' || q === 'hello') {
     reply = `👋 **Hello! Welcome to Orbit AI.**\n\nI am your personal AI study companion, available 24/7 both online and 100% offline directly on your device.\n\nHere are some things you can ask me:\n• **Mathematics:** "Solve 3x + 12 = 48" or "Explain quadratic formula"\n• **Physics:** "What is Newton's second law?" or "Calculate Ohm's law with 12V and 4Ω"\n• **Chemistry:** "Explain stoichiometry and the mole concept" or "What is pH?"\n• **Biology:** "How does photosynthesis work?" or "Explain DNA base pairing"\n• **Computer Science:** "How does binary search work?" or "Explain Big-O complexity"\n\nWhat would you like to explore or solve today?`;
   }
-  // 2. Status & Well-being
-  else if (/how are (you|u|you doing)|how's it going|how is it going|what's up|whats up/i.test(q)) {
-    reply = `⚡ **I'm doing great and fully energized!**\n\nAll my neural modules are loaded and ready—whether you need to solve an algebraic equation, balance a chemical reaction, understand circuit laws, or review your quiz progress.\n\nHow can I help you with your studies right now?`;
+  // 3. Status & Well-being
+  else if (/how are (you|u|ya|you doing)|how's it going|how is it going|what's up|whats up|how do you do|how have you been|how are things|hows everything/i.test(q)) {
+    reply = `⚡ **I'm doing great, feeling energized and ready to help!**\n\nAll my reasoning modules are loaded and ready—whether you need to solve an algebraic equation, balance a chemical reaction, understand circuit laws, or review your quiz progress.\n\nHow can I help you with your studies right now?`;
   }
-  // 3. Identity & Creator
+  // 4. Casual acknowledgments / short chatter
+  else if (/^(ok|okay|k|cool|nice|awesome|great|sure|alright|fine|sounds good|got it|yep|yeah|yes|nope|no|nothing|not much|just chilling)$/i.test(q)) {
+    reply = `👍 **Sounds good!** Whenever you run into a tricky homework question, need an equation solved step-by-step, or want a fun science riddle, just let me know!`;
+  }
+  // 5. User sharing mood or feelings
+  else if (/^(i'?m good|doing well|im fine|all good|i'?m fine|pretty good|good)$/i.test(q) || (q.includes('good') && q.length < 15)) {
+    reply = `🌟 **Awesome to hear that!** Having a positive mindset makes learning and problem-solving so much easier. What's on your mind today?`;
+  }
+  else if (/i'?m (tired|exhausted|sleepy)|so tired|need (sleep|rest)/i.test(q)) {
+    reply = `☕ **Make sure to get some rest!** Studying when you're fatigued is tough. Research shows that taking a short 10-minute break or power nap can boost memory retention by over 40%. Don't push yourself too hard! Whenever you feel refreshed, we can continue.`;
+  }
+  else if (/i'?m (bored|boring)|so bored|bored/i.test(q)) {
+    reply = `💡 **Let's banish that boredom!** Did you know that a single teaspoon of a neutron star would weigh about 6 billion tons on Earth? Or would you prefer a quick math puzzle or a science riddle to test your brain?`;
+  }
+  else if (/i'?m (stressed|worried|overwhelmed|anxious)|too hard|so hard|so much (homework|study)/i.test(q)) {
+    reply = `🤝 **Don't worry, we're in this together!** Complex topics often feel overwhelming when viewed all at once. The secret is breaking any problem down into tiny, simple steps. Share whatever problem or concept is bothering you, and we'll solve it together step by step!`;
+  }
+  else if (/i'?m (sad|unhappy|depressed)|feel sad/i.test(q)) {
+    reply = `💙 **I'm really sorry to hear you're feeling down.** Take a deep breath and be kind to yourself today. Remember that learning is a gradual journey, not a race. If you want to talk, take a breather, or hear an interesting science story to lift your spirits, I'm here!`;
+  }
+  // 6. Chat & companionship requests
+  else if (/can we (chat|talk)|let'?s talk|talk to me|just (chat|talk)|want to (chat|talk)/i.test(q)) {
+    reply = `🗣️ **I would love to chat!** We can talk about science, space, technology, school, or whatever curiosity is on your mind. What would you like to talk about?`;
+  }
+  else if (/what (are you|r u) doing|what are you up to|what'?re you doing/i.test(q)) {
+    reply = `📚 **Right now, I'm here ready to brainstorm and learn with you!** I can break down equations, explain biological systems, diagram algorithms, or just have an engaging conversation. What are you up to today?`;
+  }
+  // 7. Identity & Creator
   else if (/who (are you|are u|made you|created you)|what is your name|what are you|what is orbit ai/i.test(q)) {
     reply = `🪐 **I am Orbit AI, your intelligent on-device STEM study coach!**\n\nI was built as part of the Offline Orbit educational platform to empower students everywhere—even in remote, low-bandwidth, and completely offline settings—with high-quality, step-by-step tutoring.\n\nI run with in-browser WebGPU acceleration and local cloud caching so you can learn anytime with zero latency!`;
   }
-  // 4. Capabilities & Help
-  else if (/what can you do|help|how to use|commands|features/i.test(q)) {
+  else if (/are you (real|human|ai|a bot|a robot|alive)/i.test(q)) {
+    reply = `🤖 **I am an AI study coach!** I run directly in your browser using neural networks, WebGPU acceleration, and smart offline reasoning. While I don't have human feelings, I am dedicated to making STEM learning fun, simple, and accessible for you everywhere!`;
+  }
+  else if (/where (do you live|are you from)|do you sleep|do you eat/i.test(q)) {
+    reply = `⚡ **I live right inside your browser!** Because I run on local WebLLM technology, I don't need sleep, food, or even an active internet connection. I'm always here whenever you're ready to study.`;
+  }
+  else if (/favorite (subject|topic|food|color)/i.test(q)) {
+    reply = `🌌 **My favorite subject is Astrophysics and Quantum Mechanics!** The idea that mathematical equations can predict the movement of galaxies billions of light years away is simply mind-blowing. What's your favorite subject to study?`;
+  }
+  // 8. Platform info
+  else if (/what is (offline )?orbit|about (offline )?orbit/i.test(q)) {
+    reply = `🚀 **Offline Orbit is an equitable, low-bandwidth, edge-first digital learning platform.**\n\nIt allows learners in rural, remote, or connectivity-limited schools to access interactive STEM lessons, diagnostics, and AI tutoring—even with zero internet—using local peer-to-peer sync and on-device intelligence.`;
+  }
+  // 9. Capabilities & Help
+  else if (/what can you do|help|how to use|commands|features|what can i ask/i.test(q)) {
     reply = `💡 **Here is what I can do for you:**\n\n` +
       `1. **Solve Equations Step-by-Step:** Linear, quadratic, fractions, percentages, and arithmetic with full verification.\n` +
       `2. **Explain Physics Laws:** Kinematics, Newtonian dynamics, work/energy, electricity, and electromagnetism.\n` +
@@ -489,19 +533,39 @@ export const generateTutorChatResponse = async ({ userMessage, conversationHisto
       `6. **General Curiosity:** Ask science questions, riddles, or everyday phenomena!\n\n` +
       `Try asking me: *"Solve 2x + 6 = 20"* or *"Why is the sky blue?"*`;
   }
-  // 5. Gratitude
+  // 10. Study suggestions
+  else if (/what should i (study|learn)|recommend( a)? lesson|where should i start|give me a problem|quiz me/i.test(q)) {
+    reply = `🎯 **Here are 3 great study recommendations:**\n\n` +
+      `1. **Algebra:** Linear equations & fractions — essential foundation for high school math.\n` +
+      `2. **Physics:** Newton's Laws & kinematics — connect everyday movement to mathematics.\n` +
+      `3. **Computer Science:** Binary search & Big-O complexity — learn how computers process billions of items in milliseconds.\n\n` +
+      `Which one would you like to dive into? Just say *"Solve 2x + 6 = 20"* or *"Explain binary search"* to get started!`;
+  }
+  // 11. Compliments & Gratitude
   else if (/thank you|thanks|thx|thank u|appreciate it/i.test(q)) {
     reply = `😊 **You're very welcome!**\n\nKeep up the great curiosity and hard work. Feel free to ask anytime you encounter a tough problem or tricky concept!`;
   }
-  // 6. Farewells
-  else if (/^(bye|goodbye|see you|good night|cya|take care)$/i.test(q)) {
+  else if (/you (are|r) (smart|awesome|cool|great|the best)|good job|nice work|i love you/i.test(q)) {
+    reply = `💙 **Thank you so much! That really means a lot.** My goal is to make learning enjoyable and empowering for you. Let's keep exploring and learning together!`;
+  }
+  // 12. Farewells
+  else if (/^(bye|goodbye|see you|good night|cya|take care|have a good day|have a nice day)$/i.test(q)) {
     reply = `👋 **Goodbye! Great work today.**\n\nYour study progress, streak days, and points are safely saved in your local cache. Come back whenever you're ready to learn more! 🚀`;
   }
-  // 7. Jokes & Humor
+  // 13. Jokes, Riddles & Stories
   else if (/joke|tell me a joke|funny|make me laugh/i.test(q)) {
     reply = `😄 **Here is a science joke for you:**\n\nWhy can't you trust atoms?\n**Because they make up everything!** ⚛️\n\nAnd here's a math one:\nWhy was the equal sign so humble?\n**Because it knew it wasn't less than or greater than anyone else!** ⚖️`;
   }
-  // 8. Everyday science curiosities
+  else if (/riddle|give me a riddle/i.test(q)) {
+    reply = `🧩 **Here is a science riddle for you:**\n\n*I have no weight, but you can see me. Put me in a bucket, and I make it lighter. What am I?*\n\n**Answer:** A hole! 🕳️\n\nWant another one, or ready for a math challenge?`;
+  }
+  else if (/tell me a story|story/i.test(q)) {
+    reply = `🍎 **The Garden of Woolsthorpe (1665):**\n\nWhen Cambridge University temporarily closed during the Great Plague, a 23-year-old Isaac Newton retreated to his family farm. While sitting under an apple tree, he watched an apple fall straight to the ground.\n\nHe didn't just watch it—he wondered: *Does the same force pulling this apple also keep the Moon orbiting the Earth?*\n\nThat single question led him to develop universal gravitation, the laws of motion, and calculus. Great discoveries always start with simple curiosity!`;
+  }
+  else if (/tell me something (interesting|cool|new)|fun fact|interesting fact|fact/i.test(q)) {
+    reply = `✨ **Did you know?**\n\nIf you could fold a standard piece of paper in half **42 times**, its thickness would reach all the way from the Earth to the Moon! (This demonstrates the immense power of **exponential growth**, $2^{42}$).`;
+  }
+  // 11. Everyday science curiosities
   else if (q.includes('sky') && q.includes('blue')) {
     reply = `☀️ **Why the Sky is Blue (Rayleigh Scattering):**\n\n` +
       `1. **Solar Spectrum:** Sunlight looks white, but it is actually composed of all visible colors.\n` +
@@ -518,7 +582,10 @@ export const generateTutorChatResponse = async ({ userMessage, conversationHisto
       `  - Circle Area: $A = \\pi r^2$\n` +
       `  - Sphere Volume: $V = \\frac{4}{3}\\pi r^3$`;
   }
-  // 9. Photosynthesis
+  else if (q.includes('speed of light')) {
+    reply = `⚡ **The Speed of Light ($c$):**\n\nIn a vacuum, light travels at approximately **299,792,458 meters per second** (~$3.0 \\times 10^8\\,\\text{m/s}$ or about **186,282 miles per second**).\n\nAt this speed, light can travel around the entire Earth 7.5 times in a single second!`;
+  }
+  // 12. Photosynthesis
   else if (q.includes('photo') || q.includes('plant') || q.includes('stomata') || q.includes('chlorophyll')) {
     reply = `🌿 **Photosynthesis Explained:**\n\n` +
       `Plants absorb solar light energy through green chlorophyll pigments inside chloroplasts. They convert carbon dioxide (CO₂) from the air and water (H₂O) from roots into chemical glucose (C₆H₁₂O₆) energy while releasing oxygen (O₂) into the atmosphere.\n\n` +
@@ -526,7 +593,7 @@ export const generateTutorChatResponse = async ({ userMessage, conversationHisto
       `6 CO₂ + 6 H₂O + Sunlight ➔ C₆H₁₂O₆ + 6 O₂\n\n` +
       `💡 **Key Mechanism:** Water photolysis occurs in the thylakoid membranes (light reaction), while glucose sugar is synthesized in the stroma during the Calvin cycle.`;
   }
-  // 10. Algorithms & Big-O
+  // 13. Algorithms & Big-O
   else if (q.includes('binary') || q.includes('search') || q.includes('sort') || q.includes('algorithm') || q.includes('big o')) {
     reply = `💻 **Algorithm & Computational Complexity:**\n\n` +
       `• **Binary Search** operates exclusively on sorted arrays by repeatedly dividing the search space in half. Its time complexity is **O(log n)**, dramatically outperforming O(n) linear scan.\n` +
@@ -543,7 +610,7 @@ export const generateTutorChatResponse = async ({ userMessage, conversationHisto
       `    return -1\n` +
       `\`\`\``;
   }
-  // 11. Equations & Math
+  // 14. Equations & Math
   else if (q.includes('solve') || q.includes('equation') || q.includes('math') || q.includes('x =') || q.includes('+') || q.includes('=')) {
     reply = `📐 **Step-by-Step Algebraic Solution:**\n\n` +
       `To solve linear equations (e.g. *ax + b = c*):\n` +
@@ -555,7 +622,7 @@ export const generateTutorChatResponse = async ({ userMessage, conversationHisto
       `• Step 2: x = 24 / 4 ➔ **x = 6**\n` +
       `• Verification: 4(6) + 8 = 24 + 8 = 32 ✓`;
   }
-  // 12. Newton's Laws & Physics
+  // 15. Newton's Laws & Physics
   else if (q.includes('newton') || q.includes('force') || q.includes('gravity') || q.includes('velocity') || q.includes('physics')) {
     reply = `⚡ **Newton's Laws & Mechanics:**\n\n` +
       `• **1st Law (Inertia):** An object remains at rest or in uniform motion unless acted upon by a net external force.\n` +
@@ -563,20 +630,20 @@ export const generateTutorChatResponse = async ({ userMessage, conversationHisto
       `• **3rd Law (Action-Reaction):** For every action force, there is an equal and opposite reaction force.\n\n` +
       `🎯 **Kinematic Formula:** Velocity = Initial Velocity + (Acceleration × Time) ➔ *v = u + at*.`;
   }
-  // 13. Chemistry & Stoichiometry
+  // 16. Chemistry & Stoichiometry
   else if (q.includes('stoich') || q.includes('reaction') || q.includes('chem') || q.includes('acid') || q.includes('atom')) {
     reply = `⚗️ **Chemical Reactions & Stoichiometry:**\n\n` +
       `• **Conservation of Mass:** Atoms are neither created nor destroyed in a chemical reaction; equations must be strictly balanced on both sides.\n` +
       `• **The Mole Concept:** 1 mole = 6.022 × 10²³ particles (Avogadro's Number). Mass (g) = Moles × Molar Mass (g/mol).\n` +
       `• **pH Scale:** pH = -log[H⁺]. Values < 7 are acidic (excess H⁺), values > 7 are basic (excess OH⁻), and pH 7 is neutral (pure H₂O).`;
   }
-  // 14. Universal Informative Response (No Robotic Fallback)
+  // 17. Study / Exam Advice
+  else if (q.includes('exam') || q.includes('test') || q.includes('study')) {
+    reply = `🎯 **Effective Study Strategy:**\n\nWhen preparing for exams or homework, try these 3 proven techniques:\n• **Active Recall:** Test yourself by solving practice questions without checking the notes first.\n• **Feynman Technique:** Explain the concept in simple terms as if teaching a younger student.\n• **Pomodoro Focus:** Study in 25-minute focused bursts followed by a 5-minute breather.\n\nWhat subject are you working on? We can do a quick quiz or step-by-step problem together!`;
+  }
+  // 18. Natural Conversational Fallback (Zero Robotic Template)
   else {
-    reply = `🪐 **Orbit AI Study Analysis for "${rawQ}":**\n\n` +
-      `Here is the key breakdown:\n\n` +
-      `• **Core Concept:** ${rawQ.length < 30 ? `Understanding "${rawQ}"` : 'Analyzing this problem'} involves looking at the fundamental laws, definitions, and relationships that govern the topic.\n` +
-      `• **Key Insight:** In academic study, breaking down the problem into smaller parts—identifying what is given, what is asked, and what formulas or mechanisms connect them—is the fastest way to master it.\n` +
-      `• **Next Steps:** Would you like a worked step-by-step example, a formula breakdown, or practice quiz questions on this topic? Just let me know!`;
+    reply = `👋 **I hear you!**\n\nWhether you'd like to work through a challenging homework question, understand how a science concept works in everyday life, practice for an assessment, or just have a chat about technology and learning—I'm right here with you.\n\nWhat would you like to explore or focus on next?`;
   }
 
   return {
