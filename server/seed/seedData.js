@@ -60,6 +60,24 @@ export const initialSeedData = {
       points: 1200,
       streakDays: 12,
       badges: []
+    },
+    {
+      _id: 'user-super-admin',
+      name: 'Super Admin',
+      email: 'admin@offline-orbit.edu',
+      password: '$2a$10$e7Ww0Bw8/s9Nl4C...password123hash',
+      plainPassword: 'password123',
+      role: 'admin',
+      grade: 'Root Administrator',
+      subjects: ['System Security', 'Classroom Telemetry', 'User Governance'],
+      preferredLanguage: 'en',
+      goals: ['System Administration', 'Telemetry Monitoring'],
+      classIds: [],
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
+      masteredTopicsCount: 12,
+      points: 9999,
+      streakDays: 30,
+      badges: []
     }
   ],
 

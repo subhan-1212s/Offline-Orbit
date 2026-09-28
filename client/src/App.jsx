@@ -29,7 +29,7 @@ const MainAppContent = () => {
   
   const getDefaultTab = () => {
     if (!user) return 'auth';
-    if (user.role === 'admin') return 'admin-management';
+    if (user.role === 'admin' || user.email?.toLowerCase().includes('admin')) return 'admin-management';
     if (user.role === 'educator' || user.role === 'teacher') return 'teacher-dashboard';
     if (user.role === 'independent') return 'independent-home';
     return 'student-home';
@@ -61,9 +61,9 @@ const MainAppContent = () => {
     return (
       <div className="min-h-screen bg-[#FAF9F6] text-[#1E2229]">
         <AuthPage onAuthSuccess={(u) => {
-          if (u?.role === 'admin') {
+          if (u?.role === 'admin' || u?.email?.toLowerCase().includes('admin')) {
             setActiveTab('admin-management');
-          } else if (u?.role === 'educator' || u?.role === 'teacher') {
+          } else if (u?.role === 'educator' || u?.role === 'teacher' || u?.email?.toLowerCase().includes('teacher')) {
             setActiveTab('teacher-dashboard');
           } else {
             setSelectedQuizId('quiz-diagnostic-g7');

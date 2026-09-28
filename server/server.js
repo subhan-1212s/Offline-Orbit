@@ -19,6 +19,7 @@ import aiRoutes from './routes/ai.js';
 import syncRoutes from './routes/sync.js';
 import emailRoutes from './routes/email.js';
 import classRoutes from './routes/classes.js';
+import paytmRoutes from './routes/paytm.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -56,6 +57,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/classes', classRoutes);
+app.use('/api/paytm', paytmRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

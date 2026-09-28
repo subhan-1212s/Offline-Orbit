@@ -1,110 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useOffline } from '../context/OfflineContext';
 import { generateSampleVideoBlob } from '../services/sampleMediaGenerator';
-import { saveDownloadedVideo, getDownloadedVideo, deleteDownloadedVideo, getAllDownloadedVideos } from '../services/indexedDB';
+import { saveDownloadedVideo, deleteDownloadedVideo, getAllDownloadedVideos } from '../services/indexedDB';
+import { getTopicSlides, speechNarrationEngine } from '../services/videoContentLibrary';
 import { 
   Play, Pause, Volume2, VolumeX, CheckCircle2, 
-  Film, RotateCcw, Sparkles, Download, Trash2, HardDrive, AlertCircle, RefreshCw, Clock
+  Film, RotateCcw, Download, Trash2, HardDrive, RefreshCw, Clock
 } from 'lucide-react';
-
-const ENGLISH_SLIDES = [
-  {
-    sec: 0,
-    title: '1. Introduction & Overview',
-    headline: 'Photosynthesis: Cellular Solar Energy Conversion',
-    narration: 'Welcome to the STEM Masterclass on Photosynthesis. Plants capture solar photons to convert carbon dioxide and water into glucose energy and oxygen gas.',
-    formula: 'Sunlight + 6 CO₂ + 6 H₂O ➔ C₆H₁₂O₆ + 6 O₂',
-    icon: '🌿'
-  },
-  {
-    sec: 10,
-    title: '2. Chemical Stoichiometry',
-    headline: 'The Balanced Reaction & Thermodynamics',
-    narration: 'The overall process is endothermic, absorbing 2870 kilojoules of solar energy per mole of glucose synthesized.',
-    formula: 'ΔG° = +2870 kJ/mol (Solar Energy Stored as Glucose)',
-    icon: '⚗️'
-  },
-  {
-    sec: 20,
-    title: '3. Cellular Anatomy',
-    headline: 'Chloroplasts & Thylakoid Architecture',
-    narration: 'Photosynthesis takes place within double-membraned chloroplasts. Thylakoid discs form stacks called grana, surrounded by stroma fluid.',
-    formula: 'Thylakoids (Light Stage) + Stroma (Dark Stage)',
-    icon: '🔬'
-  },
-  {
-    sec: 30,
-    title: '4. Pigment Absorption',
-    headline: 'Chlorophyll Spectral Absorption Peaks',
-    narration: 'Chlorophyll-a and chlorophyll-b absorb blue and red light wavelengths, reflecting green light back to human eyes.',
-    formula: 'Absorption Peaks: 430nm (Blue) & 660nm (Red)',
-    icon: '🌈'
-  },
-  {
-    sec: 40,
-    title: '5. Light-Dependent Stage',
-    headline: 'Photolysis of Water in Photosystem II',
-    narration: 'In Photosystem II, water molecules are split by light energy, releasing electrons, protons, and oxygen gas as a vital byproduct.',
-    formula: '2 H₂O ➔ 4 H⁺ + 4 e⁻ + O₂ ↑',
-    icon: '⚡'
-  },
-  {
-    sec: 50,
-    title: '6. Energy Synthesis',
-    headline: 'Electron Transport Chain & ATP Synthase',
-    narration: 'Energetic electrons flow down cytochrome complexes, pumping hydrogen protons into the thylakoid lumen to power ATP synthase.',
-    formula: 'ADP + Pi ➔ ATP & NADP⁺ + H⁺ ➔ NADPH',
-    icon: '🔋'
-  },
-  {
-    sec: 60,
-    title: '7. Light-Independent Stage',
-    headline: 'The Calvin Cycle in the Stroma',
-    narration: 'The Calvin cycle uses ATP and NADPH produced in the light reactions to convert atmospheric carbon dioxide into carbohydrates.',
-    formula: '3 CO₂ + 9 ATP + 6 NADPH ➔ 1 G3P Sugar Molecule',
-    icon: '🔄'
-  },
-  {
-    sec: 70,
-    title: '8. Enzymatic Catalysis',
-    headline: 'RuBisCO: Earth\'s Crucial Carbon Enzyme',
-    narration: 'RuBisCO fixes carbon dioxide onto ribulose-1,5-bisphosphate molecules, initiating sugar synthesis.',
-    formula: 'RuBP + CO₂ ➔ 2 Phosphoglycerate (PGA)',
-    icon: '🧬'
-  },
-  {
-    sec: 80,
-    title: '9. Gas Regulation',
-    headline: 'Stomata & Guard Cell Osmotic Turgor',
-    narration: 'Microscopic stomata on leaves open and close using guard cell turgor pressure to admit carbon dioxide while preventing desiccation.',
-    formula: 'Potassium (K⁺) Influx Regulates Transpiration',
-    icon: '🍃'
-  },
-  {
-    sec: 90,
-    title: '10. Kinetic Factors',
-    headline: 'Limiting Factors: Light, CO₂, and Temperature',
-    narration: 'The rate of photosynthesis increases with light intensity and carbon dioxide until reaching enzymatic saturation around 25 degrees Celsius.',
-    formula: 'Blackman\'s Law of Limiting Factors',
-    icon: '📈'
-  },
-  {
-    sec: 100,
-    title: '11. Biosphere Role',
-    headline: 'Planetary Food Webs & Carbon Balance',
-    narration: 'Photosynthesis forms the fundamental foundation of terrestrial food chains and acts as the primary atmospheric carbon sink.',
-    formula: '> 100 Billion Metric Tons of Carbon Fixed Annually',
-    icon: '🌍'
-  },
-  {
-    sec: 110,
-    title: '12. Masterclass Summary',
-    headline: 'Lesson Complete: Ready for Adaptive Quiz',
-    narration: 'You have completed the 2-minute masterclass! Test your recall with the adaptive topic quiz to solidify your understanding.',
-    formula: '02:00 Complete • Proceed to Diagnostic Quiz',
-    icon: '🎓'
-  }
-];
 
 export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant Energy" }) => {
   const { isOnline } = useOffline();
@@ -114,6 +16,9 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const totalDuration = 120; // Exactly 2 minutes (02:00)
 
+  // Dynamic slides for this specific STEM topic
+  const slides = useMemo(() => getTopicSlides(topicTitle), [topicTitle]);
+
   // Download & Video Blob State
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
@@ -121,7 +26,6 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
   const [videoBlobUrl, setVideoBlobUrl] = useState(null);
 
   const videoRef = useRef(null);
-
   const videoId = `${topicTitle}_en`;
 
   // Refresh local downloaded video status from IndexedDB
@@ -148,19 +52,13 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
     refreshVideoStatus();
     return () => {
       if (videoBlobUrl) URL.revokeObjectURL(videoBlobUrl);
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      speechNarrationEngine.cancel();
     };
   }, [topicTitle]);
 
-  // Audio speech narration sync
+  // Audio speech narration helper
   const speakCurrentNarration = (text) => {
-    if ('speechSynthesis' in window && !isMuted) {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'en-US';
-      u.rate = playbackSpeed * 0.95;
-      window.speechSynthesis.speak(u);
-    }
+    speechNarrationEngine.speak(text, { speed: playbackSpeed, isMuted });
   };
 
   // Playback timer (runs when playing and not using native video)
@@ -171,10 +69,11 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
         setCurrentTime(prev => {
           if (prev >= totalDuration) {
             setIsPlaying(false);
+            speechNarrationEngine.cancel();
             return totalDuration;
           }
           const nextSec = prev + 1;
-          const currentSlide = ENGLISH_SLIDES[Math.min(Math.floor(nextSec / 10), ENGLISH_SLIDES.length - 1)];
+          const currentSlide = slides[Math.min(Math.floor(nextSec / 10), slides.length - 1)];
           if (nextSec % 10 === 0 && currentSlide) {
             speakCurrentNarration(currentSlide.narration);
           }
@@ -183,14 +82,88 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
       }, 1000 / playbackSpeed);
     }
     return () => clearInterval(timer);
-  }, [isPlaying, playbackSpeed, videoBlobUrl, isMuted]);
+  }, [isPlaying, playbackSpeed, videoBlobUrl, isMuted, slides]);
+
+  // Native video event listeners (syncs speech narration with downloaded WebM video)
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    if (!videoEl || !videoBlobUrl) return;
+
+    let lastIdx = -1;
+
+    const handlePlay = () => {
+      const currentIdx = Math.min(Math.floor(videoEl.currentTime / 10), slides.length - 1);
+      lastIdx = currentIdx;
+      speechNarrationEngine.speak(slides[currentIdx]?.narration, {
+        speed: videoEl.playbackRate,
+        isMuted: videoEl.muted
+      });
+    };
+
+    const handlePause = () => {
+      speechNarrationEngine.cancel();
+    };
+
+    const handleTimeUpdate = () => {
+      const currentIdx = Math.min(Math.floor(videoEl.currentTime / 10), slides.length - 1);
+      if (currentIdx !== lastIdx) {
+        lastIdx = currentIdx;
+        speechNarrationEngine.speak(slides[currentIdx]?.narration, {
+          speed: videoEl.playbackRate,
+          isMuted: videoEl.muted
+        });
+      }
+    };
+
+    const handleSeeked = () => {
+      const currentIdx = Math.min(Math.floor(videoEl.currentTime / 10), slides.length - 1);
+      lastIdx = currentIdx;
+      speechNarrationEngine.speak(slides[currentIdx]?.narration, {
+        speed: videoEl.playbackRate,
+        isMuted: videoEl.muted
+      });
+    };
+
+    const handleEnded = () => {
+      speechNarrationEngine.cancel();
+    };
+
+    const handleVolumeChange = () => {
+      if (videoEl.muted) {
+        speechNarrationEngine.cancel();
+      } else {
+        const currentIdx = Math.min(Math.floor(videoEl.currentTime / 10), slides.length - 1);
+        speechNarrationEngine.speak(slides[currentIdx]?.narration, {
+          speed: videoEl.playbackRate,
+          isMuted: false
+        });
+      }
+    };
+
+    videoEl.addEventListener('play', handlePlay);
+    videoEl.addEventListener('pause', handlePause);
+    videoEl.addEventListener('timeupdate', handleTimeUpdate);
+    videoEl.addEventListener('seeked', handleSeeked);
+    videoEl.addEventListener('ended', handleEnded);
+    videoEl.addEventListener('volumechange', handleVolumeChange);
+
+    return () => {
+      speechNarrationEngine.cancel();
+      videoEl.removeEventListener('play', handlePlay);
+      videoEl.removeEventListener('pause', handlePause);
+      videoEl.removeEventListener('timeupdate', handleTimeUpdate);
+      videoEl.removeEventListener('seeked', handleSeeked);
+      videoEl.removeEventListener('ended', handleEnded);
+      videoEl.removeEventListener('volumechange', handleVolumeChange);
+    };
+  }, [videoBlobUrl, slides]);
 
   const handleTogglePlay = () => {
     if (!isPlaying) {
-      const currentSlide = ENGLISH_SLIDES[Math.min(Math.floor(currentTime / 10), ENGLISH_SLIDES.length - 1)];
-      speakCurrentNarration(currentSlide.narration);
+      const currentSlide = slides[Math.min(Math.floor(currentTime / 10), slides.length - 1)];
+      speakCurrentNarration(currentSlide?.narration);
     } else {
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      speechNarrationEngine.cancel();
     }
     setIsPlaying(!isPlaying);
   };
@@ -198,14 +171,14 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
   const handleRestart = () => {
     setCurrentTime(0);
     setIsPlaying(true);
-    speakCurrentNarration(ENGLISH_SLIDES[0].narration);
+    speakCurrentNarration(slides[0]?.narration);
   };
 
   const handleSeek = (e) => {
     const newTime = Number(e.target.value);
     setCurrentTime(newTime);
-    const currentSlide = ENGLISH_SLIDES[Math.min(Math.floor(newTime / 10), ENGLISH_SLIDES.length - 1)];
-    speakCurrentNarration(currentSlide.narration);
+    const currentSlide = slides[Math.min(Math.floor(newTime / 10), slides.length - 1)];
+    speakCurrentNarration(currentSlide?.narration);
   };
 
   // Handle Download of 2-Minute Standalone Video File
@@ -259,6 +232,7 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
 
   const handleDeleteVideo = async () => {
     try {
+      speechNarrationEngine.cancel();
       await deleteDownloadedVideo(videoId);
       if (videoBlobUrl) URL.revokeObjectURL(videoBlobUrl);
       setVideoBlobUrl(null);
@@ -275,8 +249,8 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
     return `${mins}:${secs}`;
   };
 
-  const activeSlideIndex = Math.min(Math.floor(currentTime / 10), ENGLISH_SLIDES.length - 1);
-  const activeSlide = ENGLISH_SLIDES[activeSlideIndex];
+  const activeSlideIndex = Math.min(Math.floor(currentTime / 10), slides.length - 1);
+  const activeSlide = slides[activeSlideIndex] || slides[0];
 
   return (
     <div className="bg-white border border-[#E5E2DA] rounded-3xl p-6 shadow-sm space-y-6">
@@ -326,7 +300,7 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
             {/* Top Bar with Chapter & Timer */}
             <div className="flex items-center justify-between text-xs">
               <span className="bg-[#F95738] text-white px-3 py-1 rounded-full font-extrabold uppercase tracking-wider text-[10px]">
-                {activeSlide.title} (Slide {activeSlideIndex + 1}/12)
+                {activeSlide?.title} (Slide {activeSlideIndex + 1}/{slides.length})
               </span>
 
               <div className="flex items-center gap-2 font-mono text-sm font-bold text-[#0D9488] bg-black/40 px-3 py-1 rounded-xl border border-white/10">
@@ -339,19 +313,21 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
             {/* Center Stage Animation & Content */}
             <div className="flex items-center gap-6 my-auto">
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-white/10 border border-white/20 flex items-center justify-center text-4xl sm:text-5xl shadow-xl shrink-0">
-                {activeSlide.icon}
+                {activeSlide?.icon || '🔬'}
               </div>
 
               <div className="space-y-2 max-w-xl">
                 <h4 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight leading-snug">
-                  {activeSlide.headline}
+                  {activeSlide?.headline}
                 </h4>
                 <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-                  {activeSlide.narration}
+                  {activeSlide?.narration}
                 </p>
-                <div className="inline-block bg-white/10 border border-white/20 rounded-xl px-3 py-1.5 font-mono text-xs font-bold text-[#4ADE80]">
-                  ⚡ {activeSlide.formula}
-                </div>
+                {activeSlide?.formula && (
+                  <div className="inline-block bg-white/10 border border-white/20 rounded-xl px-3 py-1.5 font-mono text-xs font-bold text-[#4ADE80]">
+                    ⚡ {activeSlide.formula}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -367,7 +343,7 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
               />
               <div className="flex items-center justify-between text-[11px] text-gray-400">
                 <span>00:00</span>
-                <span className="font-semibold text-white">{activeSlide.title}</span>
+                <span className="font-semibold text-white">{activeSlide?.title}</span>
                 <span>02:00</span>
               </div>
             </div>
@@ -402,7 +378,15 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
               </button>
 
               <button
-                onClick={() => setIsMuted(!isMuted)}
+                onClick={() => {
+                  const nextMuted = !isMuted;
+                  setIsMuted(nextMuted);
+                  if (nextMuted) {
+                    speechNarrationEngine.cancel();
+                  } else if (isPlaying) {
+                    speakCurrentNarration(activeSlide?.narration);
+                  }
+                }}
                 className={`p-3 border rounded-xl transition-colors text-xs font-bold flex items-center gap-1 ${
                   isMuted 
                     ? 'bg-red-50 text-red-600 border-red-200' 
@@ -431,7 +415,7 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
           {videoBlobUrl && (
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-[#0D9488] flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4" /> Playing Standalone 2-Min Video from IndexedDB
+                <CheckCircle2 className="w-4 h-4" /> Playing Standalone 2-Min Video with Synchronized English Audio
               </span>
             </div>
           )}
@@ -483,7 +467,7 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
         </h4>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 text-xs">
-          {ENGLISH_SLIDES.map((slide, idx) => (
+          {slides.map((slide, idx) => (
             <button
               key={idx}
               onClick={() => {

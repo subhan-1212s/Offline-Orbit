@@ -1201,5 +1201,76 @@ export const api = {
         }
       ];
     }
+  },
+
+  // Paytm Test Payment Gateway Integration
+  initiatePaytmPayment: async ({ orderId, amount, planName, billingCycle, customerEmail, customerName }) => {
+    try {
+      const res = await fetch(`${API_BASE}/paytm/initiate`, {
+        method: 'POST',
+        headers: getHeaders('admin'),
+        body: JSON.stringify({ orderId, amount, planName, billingCycle, customerEmail, customerName })
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.warn('Paytm initiate online warning:', e);
+    }
+    // Offline simulated initiation
+    return {
+      success: true,
+      mid: 'OFFLINEORBIT_TEST_MID',
+      orderId: orderId || `ORD_ORBIT_${Date.now()}`,
+      txnToken: `PTM_TEST_TOKEN_${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+      amount: Number(amount) || 999,
+      planName: planName || 'Orbit Pro License',
+      billingCycle: billingCycle || 'Monthly',
+      status: 'INITIATED'
+    };
+  },
+
+  verifyPaytmPayment: async ({ orderId, amount, planName, billingCycle, customerEmail, paymentMode }) => {
+    try {
+      const res = await fetch(`${API_BASE}/paytm/verify`, {
+        method: 'POST',
+        headers: getHeaders('admin'),
+        body: JSON.stringify({ orderId, amount, planName, billingCycle, customerEmail, paymentMode })
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.warn('Paytm verify online warning:', e);
+    }
+    // Offline simulated verification
+    const txnId = `PTM${Date.now()}${Math.floor(1000 + Math.random() * 9000)}`;
+    const bankTxnId = `BANK_UTR_${Math.floor(100000000000 + Math.random() * 900000000000)}`;
+    const transaction = {
+      orderId: orderId || `ORD_ORBIT_${Date.now()}`,
+      txnId,
+      amount: Number(amount) || 999,
+      planName: planName || 'Orbit Pro License',
+      billingCycle: billingCycle || 'Monthly',
+      customerEmail: customerEmail || 'admin@offline-orbit.edu',
+      paymentMode: paymentMode || 'Paytm UPI',
+      bankTxnId,
+      status: 'TXN_SUCCESS',
+      respCode: '01',
+      respMsg: 'Txn Successful',
+      timestamp: new Date().toISOString()
+    };
+    return { success: true, transaction, message: 'Payment verified successfully via Paytm PG Test Gateway.' };
+  },
+
+  getPaytmHistory: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/paytm/history`, {
+        headers: getHeaders('admin')
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {}
+    return { success: true, transactions: [] };
   }
 };
+

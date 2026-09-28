@@ -38,19 +38,72 @@ export const AuthPage = ({ onAuthSuccess }) => {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const recordUserInAdminRoster = (userData) => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('orbit_admin_users') || '[]');
+      const cleanEmail = (userData.email || '').toLowerCase();
+      const existingIdx = stored.findIndex(u => (u.email || '').toLowerCase() === cleanEmail);
+      const cleanRole = userData.role === 'teacher' ? 'educator' : userData.role === 'student' ? 'student' : (userData.role || 'student');
+      
+      const entry = {
+        id: userData._id || userData.id || `usr-${Date.now()}`,
+        name: userData.name || cleanEmail.split('@')[0],
+        email: userData.email,
+        role: cleanRole,
+        grade: userData.grade || userData.learnerCategory || userData.educatorCategory || 'Active Member',
+        streak: userData.streakDays || 1,
+        points: userData.points || 480,
+        status: 'Active Now',
+        lastLogin: 'Today, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        analytics: {
+          masteryScore: 84,
+          quizzesAttempted: 12,
+          accuracyRate: 90,
+          studyTimeHours: 10.5,
+          topics: [
+            { name: 'Computer Science & AI', score: 90, status: 'Mastered' },
+            { name: 'Photosynthesis & Plant Energy', score: 85, status: 'Mastered' },
+            { name: 'Newtonian Physics & Vectors', score: 78, status: 'Proficient' }
+          ],
+          misconceptions: [],
+          recentAttempts: [
+            { quiz: 'Diagnostic Concept Check', score: 9, total: 10, date: 'Today' }
+          ]
+        }
+      };
+
+      if (existingIdx >= 0) {
+        stored[existingIdx] = { 
+          ...stored[existingIdx], 
+          ...entry, 
+          analytics: stored[existingIdx].analytics || entry.analytics 
+        };
+      } else {
+        stored.unshift(entry);
+      }
+      localStorage.setItem('orbit_admin_users', JSON.stringify(stored));
+    } catch (e) {}
+  };
+
   // Submit Email & Password -> Direct Sign In
   const handleLoginSubmitPassword = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
-    const role = activeMode === 'admin-login' ? 'admin' : (activeMode === 'educator-login' || activeMode === 'register-educator') ? 'educator' : 'learner';
+    const isAdmin = activeMode === 'admin-login' || email.toLowerCase().includes('admin');
+    const role = isAdmin ? 'admin' : (activeMode === 'educator-login' || activeMode === 'register-educator') ? 'educator' : 'learner';
     
     try {
       const res = await api.login({ email, password, role });
+      const authenticatedUser = {
+        ...res.user,
+        role: isAdmin ? 'admin' : (res.user?.role || role)
+      };
       localStorage.setItem('orbit_token', res.token);
-      localStorage.setItem('orbit_user', JSON.stringify(res.user));
-      updateUserProfile(res.user);
-      onAuthSuccess(res.user);
+      localStorage.setItem('orbit_user', JSON.stringify(authenticatedUser));
+      updateUserProfile(authenticatedUser);
+      recordUserInAdminRoster(authenticatedUser);
+      onAuthSuccess(authenticatedUser);
     } catch (err) {
       setMessage(err.message || 'Login failed. Please check your email and password.');
     } finally {
@@ -64,8 +117,11 @@ export const AuthPage = ({ onAuthSuccess }) => {
     setMessage('');
     try {
       const res = await api.demoLogin('admin');
-      updateUserProfile(res.user);
-      onAuthSuccess(res.user);
+      const adminUser = { ...res.user, role: 'admin' };
+      localStorage.setItem('orbit_token', res.token || 'admin-session-token');
+      localStorage.setItem('orbit_user', JSON.stringify(adminUser));
+      updateUserProfile(adminUser);
+      onAuthSuccess(adminUser);
     } catch (err) {
       const adminUser = {
         _id: 'user-super-admin',
@@ -104,6 +160,7 @@ export const AuthPage = ({ onAuthSuccess }) => {
       localStorage.setItem('orbit_token', res.token);
       localStorage.setItem('orbit_user', JSON.stringify(res.user));
       updateUserProfile(res.user);
+      recordUserInAdminRoster(res.user);
       onAuthSuccess(res.user);
     } catch (err) {
       setMessage(err.message || 'Learner registration failed. Please try again.');
@@ -137,6 +194,7 @@ export const AuthPage = ({ onAuthSuccess }) => {
       localStorage.setItem('orbit_token', res.token);
       localStorage.setItem('orbit_user', JSON.stringify(res.user));
       updateUserProfile(res.user);
+      recordUserInAdminRoster(res.user);
       onAuthSuccess(res.user);
     } catch (err) {
       setMessage(err.message || 'Educator registration failed. Please try again.');

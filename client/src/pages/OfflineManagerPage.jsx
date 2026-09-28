@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useOffline } from '../context/OfflineContext';
 import { 
   getAllDownloadedPacks, 
@@ -7,6 +7,7 @@ import {
   getAllDownloadedVideos,
   deleteDownloadedVideo
 } from '../services/indexedDB';
+import { getTopicSlides, speechNarrationEngine } from '../services/videoContentLibrary';
 import { 
   HardDrive, Download, Trash2, RefreshCw, Wifi, WifiOff, 
   CheckCircle2, ShieldCheck, PlayCircle, Video, Info, HelpCircle, Film, Sparkles, X, Play
@@ -22,6 +23,14 @@ export const OfflineManagerPage = ({ onNavigateToLesson }) => {
   // Offline Video Player Modal State
   const [activePlayingVideo, setActivePlayingVideo] = useState(null);
   const [playingVideoUrl, setPlayingVideoUrl] = useState(null);
+  const modalVideoRef = useRef(null);
+  const lastSlideSpokenRef = useRef(-1);
+
+  useEffect(() => {
+    return () => {
+      speechNarrationEngine.cancel();
+    };
+  }, []);
 
   useEffect(() => {
     loadOfflineData();
@@ -64,12 +73,60 @@ export const OfflineManagerPage = ({ onNavigateToLesson }) => {
       const url = URL.createObjectURL(video.blob);
       setPlayingVideoUrl(url);
       setActivePlayingVideo(video);
+      lastSlideSpokenRef.current = -1;
     } else if (onNavigateToLesson) {
       onNavigateToLesson(video.lessonId || 'lesson-1');
     }
   };
 
+  const handleModalPlay = () => {
+    const videoEl = modalVideoRef.current;
+    if (!videoEl || !activePlayingVideo) return;
+    const slides = getTopicSlides(activePlayingVideo.topicTitle);
+    const idx = Math.min(Math.floor(videoEl.currentTime / 10), slides.length - 1);
+    lastSlideSpokenRef.current = idx;
+    speechNarrationEngine.speak(slides[idx]?.narration, {
+      speed: videoEl.playbackRate,
+      isMuted: videoEl.muted
+    });
+  };
+
+  const handleModalTimeUpdate = () => {
+    const videoEl = modalVideoRef.current;
+    if (!videoEl || !activePlayingVideo) return;
+    const slides = getTopicSlides(activePlayingVideo.topicTitle);
+    const idx = Math.min(Math.floor(videoEl.currentTime / 10), slides.length - 1);
+    if (idx !== lastSlideSpokenRef.current) {
+      lastSlideSpokenRef.current = idx;
+      speechNarrationEngine.speak(slides[idx]?.narration, {
+        speed: videoEl.playbackRate,
+        isMuted: videoEl.muted
+      });
+    }
+  };
+
+  const handleModalSeeked = () => {
+    const videoEl = modalVideoRef.current;
+    if (!videoEl || !activePlayingVideo) return;
+    const slides = getTopicSlides(activePlayingVideo.topicTitle);
+    const idx = Math.min(Math.floor(videoEl.currentTime / 10), slides.length - 1);
+    lastSlideSpokenRef.current = idx;
+    speechNarrationEngine.speak(slides[idx]?.narration, {
+      speed: videoEl.playbackRate,
+      isMuted: videoEl.muted
+    });
+  };
+
+  const handleModalPause = () => {
+    speechNarrationEngine.cancel();
+  };
+
+  const handleModalEnded = () => {
+    speechNarrationEngine.cancel();
+  };
+
   const handleCloseVideoModal = () => {
+    speechNarrationEngine.cancel();
     if (playingVideoUrl) {
       URL.revokeObjectURL(playingVideoUrl);
     }
@@ -314,9 +371,15 @@ export const OfflineManagerPage = ({ onNavigateToLesson }) => {
             {/* Native Video Element with full offline picture and sound */}
             <div className="rounded-2xl overflow-hidden bg-black aspect-video flex items-center justify-center border border-black/10 relative">
               <video
+                ref={modalVideoRef}
                 src={playingVideoUrl}
                 controls
                 autoPlay
+                onPlay={handleModalPlay}
+                onPause={handleModalPause}
+                onTimeUpdate={handleModalTimeUpdate}
+                onSeeked={handleModalSeeked}
+                onEnded={handleModalEnded}
                 className="w-full h-full object-contain"
               />
             </div>

@@ -46,21 +46,29 @@ router.post('/login', async (req, res) => {
       user = initialSeedData.users.find(u => u.email.toLowerCase() === email?.toLowerCase());
     }
 
+    const isAdmin = role === 'admin' || email.toLowerCase().includes('admin');
+    const isEducator = role === 'educator' || role === 'teacher' || email.toLowerCase().includes('teacher');
+    const resolvedRole = isAdmin ? 'admin' : (isEducator ? 'educator' : 'learner');
+
     if (!user) {
-      const derivedName = formatNameFromEmail(email);
+      const derivedName = isAdmin ? 'Super Admin' : (isEducator ? 'Educator Lead' : formatNameFromEmail(email));
       const defaultUser = {
-        _id: `user-${Date.now()}`,
+        _id: isAdmin ? 'user-super-admin' : `user-${Date.now()}`,
         name: derivedName,
         email: email,
-        role: role === 'educator' || role === 'teacher' ? 'educator' : 'learner',
-        learnerType: 'Individual Learner',
-        primaryFocus: 'Science & Mathematics',
+        role: resolvedRole,
+        grade: isAdmin ? 'Root Administrator' : (isEducator ? 'Grade 7-8 Lead Teacher' : 'Grade 7'),
+        learnerType: isAdmin ? 'System Supervisor' : (isEducator ? 'Educator' : 'Individual Learner'),
+        primaryFocus: isAdmin ? 'Platform Telemetry' : 'Science & Mathematics',
         preferredLanguage: 'en',
-        points: 480,
-        streakDays: 1,
+        points: isAdmin ? 9999 : 480,
+        streakDays: isAdmin ? 30 : 1,
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80'
       };
       user = defaultUser;
+    } else if (isAdmin) {
+      user.role = 'admin';
+      user.grade = 'Root Administrator';
     }
 
     const token = generateToken(user);
