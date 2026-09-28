@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
   avatar: { type: String, default: '' },
   masteredTopicsCount: { type: Number, default: 0 },
   points: { type: Number, default: 120 },
-  streakDays: { type: Number, default: 4 },
+  streakDays: { type: Number, default: 1 },
   lastActive: { type: Date, default: Date.now },
   badges: [{
     code: String,

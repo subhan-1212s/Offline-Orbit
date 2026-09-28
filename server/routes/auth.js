@@ -57,7 +57,7 @@ router.post('/login', async (req, res) => {
         primaryFocus: 'Science & Mathematics',
         preferredLanguage: 'en',
         points: 480,
-        streakDays: 5,
+        streakDays: 1,
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80'
       };
       user = defaultUser;
@@ -165,9 +165,9 @@ router.post('/verify-otp', async (req, res) => {
     sendLoginNotificationEmail({
       recipientEmail: user.email || email,
       userName: user.name,
-      streakDays: user.streakDays || 5,
+      streakDays: user.streakDays || 1,
       points: user.points || 480,
-      badgesCount: (user.badges || []).length || 3
+      badgesCount: (user.badges || []).length || 1
     }).catch(e => console.warn('Notification dispatch error:', e.message));
 
     res.json({
@@ -188,7 +188,7 @@ router.post('/verify-otp', async (req, res) => {
         preferredLanguage: user.preferredLanguage || 'en',
         goals: user.goals,
         points: user.points || 480,
-        streakDays: user.streakDays || 5,
+        streakDays: user.streakDays || 1,
         avatar: user.avatar
       }
     });

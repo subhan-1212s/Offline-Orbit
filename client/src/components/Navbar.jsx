@@ -9,34 +9,72 @@ export const Navbar = ({ activeTab, setActiveTab, onSignOut }) => {
   const { user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: '🏆 Badge Earned Successfully!',
-      text: 'You unlocked "Plant Scientist" badge for mastering Photosynthesis!',
-      time: '10 mins ago',
-      unread: true
-    },
-    {
-      id: 2,
-      title: '📝 Joined Classroom Room',
-      text: 'Connected to Grade 10 CS & AI Alpha Workspace (Code: 794201).',
-      time: '1 hour ago',
-      unread: true
-    },
-    {
-      id: 3,
-      title: '📧 Brevo Email Report Sent',
-      text: `Progress milestone email dispatched to ${user?.email || 'your email'}.`,
-      time: '2 hours ago',
-      unread: false
+  const [notifications, setNotifications] = useState(() => {
+    try {
+      const stored = localStorage.getItem('orbit_notifications');
+      if (stored) return JSON.parse(stored);
+    } catch (e) {}
+
+    const joinedRooms = JSON.parse(localStorage.getItem('orbit_joined_rooms') || '[]');
+    const activeRoom = joinedRooms.length > 0 ? joinedRooms[0] : null;
+
+    const notifs = [
+      {
+        id: 'welcome-1',
+        title: '🪐 Welcome to Offline-Orbit',
+        text: 'Personalized STEM adaptive curriculum is ready.',
+        time: 'Just now',
+        unread: false
+      }
+    ];
+
+    if (activeRoom) {
+      notifs.unshift({
+        id: `room-${activeRoom.code}`,
+        title: '📝 Joined Classroom Room',
+        text: `Connected to ${activeRoom.className} (Code: ${activeRoom.code}).`,
+        time: 'Active',
+        unread: false
+      });
     }
-  ]);
+
+    return notifs;
+  });
+
+  // Keep notifications in sync with real actions
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('orbit_notifications');
+      const joinedRooms = JSON.parse(localStorage.getItem('orbit_joined_rooms') || '[]');
+      const activeRoom = joinedRooms.length > 0 ? joinedRooms[0] : null;
+
+      let list = stored ? JSON.parse(stored) : [];
+      if (activeRoom && !list.some(n => n.text?.includes(activeRoom.code))) {
+        list.unshift({
+          id: `room-${activeRoom.code}`,
+          title: '📝 Joined Classroom Room',
+          text: `Connected to ${activeRoom.className} (Code: ${activeRoom.code}).`,
+          time: 'Active',
+          unread: false
+        });
+      }
+      if (list.length > 0) {
+        setNotifications(list);
+      }
+    } catch (e) {}
+  }, [showNotifications]);
 
   const unreadCount = notifications.filter(n => n.unread).length;
 
   const markAllRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+    try {
+      const stored = localStorage.getItem('orbit_notifications');
+      if (stored) {
+        const parsed = JSON.parse(stored).map(n => ({ ...n, unread: false }));
+        localStorage.setItem('orbit_notifications', JSON.stringify(parsed));
+      }
+    } catch (e) {}
   };
 
   const getNavLinks = () => {

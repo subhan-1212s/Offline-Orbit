@@ -20,7 +20,7 @@ let inMemoryClasses = [
     subject: 'Computer Science',
     code: '794201',
     teacherId: 'user-teacher-1',
-    studentIds: ['user-student-1', 'user-independent-1'],
+    studentIds: [],
     description: 'Interactive AI & Computer Science Workspace room for active progress tracking and video sharing.',
     cooperativeGoal: { title: 'Classroom 500 Questions Target', target: 500, current: 385 },
     messages: [
@@ -29,19 +29,10 @@ let inMemoryClasses = [
         senderId: 'user-teacher-1',
         senderName: 'Ms. Sarah Vance (Educator)',
         senderRole: 'educator',
-        text: 'Welcome to Grade 10 CS & AI Alpha Room! Watch the Binary Search & Data Structures lesson below.',
+        text: 'Welcome to the Classroom Room! Watch the Binary Search & Data Structures lesson below.',
         attachedVideoId: 'lesson-cs-1',
         attachedVideoTitle: 'Computer Science: Algorithms & Data Structures',
         timestamp: new Date(Date.now() - 3600000).toISOString()
-      },
-      {
-        id: 'msg-2',
-        senderId: 'user-student-1',
-        senderName: 'Maya Lin',
-        senderRole: 'learner',
-        text: 'Thank you Ms. Vance! I just completed the Binary Search quiz with 100% score.',
-        attachedVideoId: null,
-        timestamp: new Date(Date.now() - 1800000).toISOString()
       }
     ]
   }
@@ -60,7 +51,7 @@ router.get('/my', protect, async (req, res) => {
     }
 
     const rooms = inMemoryClasses.filter(c => 
-      isTeacher ? c.teacherId === userId || c.teacherId === 'user-teacher-1' : (c.studentIds.includes(userId) || true)
+      isTeacher ? (c.teacherId === userId || c.teacherId === 'user-teacher-1') : c.studentIds.includes(userId)
     );
     res.json(rooms);
   } catch (err) {
@@ -160,11 +151,43 @@ router.post('/join', protect, async (req, res) => {
     }
 
     const roomIndex = inMemoryClasses.findIndex(c => c.code === cleanCode || c.code === `ORBIT-${cleanCode}`);
-    if (roomIndex === -1 && cleanCode !== '794201' && cleanCode !== 'ORBIT-7A') {
-      return res.status(404).json({ message: 'Invalid 6-digit code. Please check code with your teacher.' });
+    let targetRoom;
+
+    if (roomIndex === -1) {
+      targetRoom = {
+        _id: `class-${cleanCode}`,
+        className: `STEM Workspace (${cleanCode})`,
+        grade: 'Active Grade',
+        subject: 'STEM',
+        code: cleanCode,
+        teacherId: 'teacher-dynamic',
+        studentIds: [userId],
+        description: `Classroom Workspace connected via 6-digit code ${cleanCode}`,
+        cooperativeGoal: { title: 'Classroom Target', target: 500, current: 0 },
+        messages: [
+          {
+            id: `msg-${Date.now()}`,
+            senderId: 'teacher-dynamic',
+            senderName: 'Educator',
+            senderRole: 'educator',
+            text: `Welcome to STEM Workspace! Share code ${cleanCode} with classmates.`,
+            timestamp: new Date().toISOString()
+          },
+          {
+            id: `msg-${Date.now() + 1}`,
+            senderId: userId,
+            senderName: req.user.name || 'Learner',
+            senderRole: 'learner',
+            text: `${req.user.name} joined the classroom room! 🎉`,
+            timestamp: new Date().toISOString()
+          }
+        ]
+      };
+      inMemoryClasses.push(targetRoom);
+      return res.json({ message: 'Successfully joined room!', room: targetRoom });
     }
 
-    const targetRoom = inMemoryClasses[roomIndex === -1 ? 0 : roomIndex];
+    targetRoom = inMemoryClasses[roomIndex];
     if (!targetRoom.studentIds.includes(userId)) {
       targetRoom.studentIds.push(userId);
       targetRoom.messages.push({

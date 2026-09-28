@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useOffline } from '../context/OfflineContext';
 import { BadgeCelebrationModal } from '../components/BadgeCelebrationModal';
+import { recordDailyActivity } from '../utils/streakTracker.js';
 import { 
   CheckCircle2, XCircle, HelpCircle, ArrowRight, RotateCcw, 
   Award, ShieldCheck, RefreshCw, Sparkles, WifiOff, AlertTriangle, 
@@ -121,10 +122,11 @@ export const QuizPage = ({
         const rec = await api.aiRecommend({ quizAttempts: [res] });
         setRecommendation(rec);
 
-        // Update streak and points
+        // Update streak dynamically and add points
+        const realStreak = recordDailyActivity(user?._id || user?.email);
         if (updateUserProfile) {
           updateUserProfile({
-            streakDays: (user?.streakDays || 1) + 1,
+            streakDays: realStreak,
             points: (user?.points || 480) + (res.percentage * 2)
           });
         }
@@ -133,7 +135,7 @@ export const QuizPage = ({
         const newNotif = {
           id: `notif-${Date.now()}`,
           title: isDiagnostic ? 'Diagnostic Assessment Complete' : 'STEM Assessment Complete',
-          message: `Scored ${res.percentage}% (${res.score}/${res.total}). Streak increased to ${(user?.streakDays || 1) + 1} days!`,
+          message: `Scored ${res.percentage}% (${res.score}/${res.total}). Active streak: ${realStreak} days!`,
           time: 'Just now',
           unread: true,
           type: 'achievement'
@@ -147,7 +149,7 @@ export const QuizPage = ({
         api.sendProgressReportEmail({
           recipientEmail: user?.email || 'learner@orbit.edu',
           studentName: user?.name || 'Learner',
-          summaryText: `Completed ${quiz?.title || 'STEM Assessment'} with score ${res.percentage}% (${res.score}/${res.total}). Active streak: ${(user?.streakDays || 1) + 1} days.`,
+          summaryText: `Completed ${quiz?.title || 'STEM Assessment'} with score ${res.percentage}% (${res.score}/${res.total}). Active streak: ${realStreak} days.`,
           topicMastery: [
             { topic: quiz?.topic || 'STEM Practice', scoreAvg: res.percentage, status: res.percentage >= 80 ? 'mastered' : 'practising' }
           ]

@@ -60,12 +60,22 @@ export const StudentHomePage = ({
       setRecommendation(rec);
       if (myRooms && myRooms.length > 0) {
         setJoinedRoom(myRooms[0]);
+      } else {
+        setJoinedRoom(null);
       }
     } catch (err) {
       console.warn('Error loading learner home data:', err);
       setLessons(DEFAULT_CURRICULUM_LESSONS);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLeaveRoom = (e) => {
+    e.stopPropagation();
+    if (window.confirm('Do you want to leave this classroom room?')) {
+      localStorage.removeItem('orbit_joined_rooms');
+      setJoinedRoom(null);
     }
   };
 
@@ -82,7 +92,7 @@ export const StudentHomePage = ({
         setShowJoinModal(false);
         setJoinStatusMsg(null);
         setJoinCodeInput('');
-      }, 2000);
+      }, 1500);
     } catch (err) {
       setJoinStatusMsg({ type: 'error', text: err.message || 'Invalid 6-digit code. Please try again.' });
     } finally {
@@ -163,10 +173,25 @@ export const StudentHomePage = ({
               <Zap className="w-3.5 h-3.5 fill-[#F95738]" /> {user?.streakDays || 1}-Day Active Streak
             </span>
 
-            {joinedRoom && (
-              <span className="bg-[#EEF2FF] text-[#4F46E5] border border-[#4F46E5]/30 text-xs font-bold px-3 py-0.5 rounded-full flex items-center gap-1.5">
+            {joinedRoom ? (
+              <span className="bg-[#EEF2FF] text-[#4F46E5] border border-[#4F46E5]/30 text-xs font-bold px-3 py-0.5 rounded-full flex items-center gap-1.5 shadow-2xs">
                 <Users className="w-3.5 h-3.5" /> Room: {joinedRoom.className} (Code: {joinedRoom.code})
+                <button
+                  onClick={handleLeaveRoom}
+                  title="Leave this classroom room"
+                  className="ml-1 text-[#89909E] hover:text-[#F95738] font-bold text-xs"
+                >
+                  ✕
+                </button>
               </span>
+            ) : (
+              <button 
+                onClick={() => setShowJoinModal(true)}
+                className="bg-[#FAF9F6] hover:bg-[#EEF2FF] text-[#5A606C] hover:text-[#4F46E5] border border-[#E5E2DA] hover:border-[#4F46E5]/40 text-xs font-bold px-3 py-0.5 rounded-full flex items-center gap-1.5 transition-all shadow-2xs"
+              >
+                <Users className="w-3.5 h-3.5 text-[#4F46E5]" />
+                <span>No Classroom Joined • Click to Enter 6-Digit Code</span>
+              </button>
             )}
           </div>
 

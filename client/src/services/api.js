@@ -6,6 +6,7 @@ import {
   getCachedLessonsList, 
   cacheLessonsList 
 } from './indexedDB.js';
+import { getDynamicStreak, recordDailyActivity } from '../utils/streakTracker.js';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -44,7 +45,7 @@ export const api = {
           role: role === 'educator' ? 'educator' : 'learner',
           grade: 'Grade 7',
           points: 480,
-          streakDays: 5,
+          streakDays: getDynamicStreak('user-offline'),
           isOfflineMode: true
         };
         return { token: 'offline-session-token', user: offlineUser };
@@ -140,8 +141,9 @@ export const api = {
       let demoUser = {};
 
       if (role === 'student-aarav' || role === 'student') {
+        const uid = 'user-student-aarav';
         demoUser = {
-          _id: 'user-student-aarav',
+          _id: uid,
           name: 'Aarav Sharma',
           email: 'aarav@orbit.edu',
           role: 'student',
@@ -156,12 +158,13 @@ export const api = {
             { topic: 'Linear Equations', score: 2, total: 3, percentage: 67 }
           ],
           points: 520,
-          streakDays: 6,
+          streakDays: getDynamicStreak(uid),
           isOfflineMode: true
         };
       } else if (role === 'student-priya') {
+        const uid = 'user-student-priya';
         demoUser = {
-          _id: 'user-student-priya',
+          _id: uid,
           name: 'Priya Patel',
           email: 'priya@orbit.edu',
           role: 'student',
@@ -176,12 +179,13 @@ export const api = {
             { topic: 'Python Data Structures', score: 2, total: 3, percentage: 67 }
           ],
           points: 440,
-          streakDays: 4,
+          streakDays: getDynamicStreak(uid),
           isOfflineMode: true
         };
       } else if (role === 'independent') {
+        const uid = 'user-independent-1';
         demoUser = {
-          _id: 'user-independent-1',
+          _id: uid,
           name: 'Alex Rivera',
           email: 'alex@orbit.edu',
           role: 'independent',
@@ -191,12 +195,13 @@ export const api = {
           interestDomain: 'Biotechnology & Chemistry',
           preferredLanguage: 'en',
           points: 680,
-          streakDays: 9,
+          streakDays: getDynamicStreak(uid),
           isOfflineMode: true
         };
       } else {
+        const uid = 'user-teacher-1';
         demoUser = {
-          _id: 'user-teacher-1',
+          _id: uid,
           name: 'Mr. Rajesh Kumar',
           email: 'teacher@orbit.edu',
           role: 'educator',
@@ -204,6 +209,7 @@ export const api = {
           subjects: ['Science', 'Mathematics', 'Computer Science'],
           preferredLanguage: 'en',
           points: 1200,
+          streakDays: getDynamicStreak(uid),
           isOfflineMode: true
         };
       }
@@ -843,81 +849,114 @@ export const api = {
   getMyClasses: async () => {
     try {
       const res = await fetch(`${API_BASE}/classes/my`, { headers: getHeaders() });
-      if (!res.ok) throw new Error('Fetch classes failed');
-      return await res.json();
-    } catch (err) {
-      return [
-        {
-          _id: 'class-7a',
-          className: 'Grade 10 CS & AI Alpha Room',
-          grade: 'Grade 10',
-          subject: 'Computer Science',
-          code: '794201',
-          teacherId: 'user-teacher-1',
-          studentIds: ['user-student-1'],
-          description: 'Interactive AI & Computer Science Workspace room for active progress tracking and video sharing.',
-          messages: [
-            {
-              id: 'msg-1',
-              senderId: 'user-teacher-1',
-              senderName: 'Ms. Sarah Vance (Educator)',
-              senderRole: 'educator',
-              text: 'Welcome to Grade 10 CS & AI Alpha Room! Watch the Binary Search & Data Structures video lesson below.',
-              attachedVideoId: 'lesson-cs-1',
-              attachedVideoTitle: 'Computer Science: Algorithms & Data Structures',
-              timestamp: new Date().toISOString()
-            }
-          ]
-        }
-      ];
+      if (res.ok) {
+        const rooms = await res.json();
+        return rooms;
+      }
+    } catch (err) {}
+
+    // Dynamic offline fallback based on current user role:
+    try {
+      const user = JSON.parse(localStorage.getItem('orbit_user') || '{}');
+      const isEducator = user.role === 'educator' || user.role === 'teacher';
+      if (isEducator) {
+        return JSON.parse(localStorage.getItem('orbit_teacher_rooms') || '[]');
+      } else {
+        return JSON.parse(localStorage.getItem('orbit_joined_rooms') || '[]');
+      }
+    } catch (e) {
+      return [];
     }
   },
 
   createClass: async ({ className, grade, subject, description }) => {
+    const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
     try {
       const res = await fetch(`${API_BASE}/classes`, {
         method: 'POST',
         headers: getHeaders('teacher'),
         body: JSON.stringify({ className, grade, subject, description })
       });
-      if (!res.ok) throw new Error('Create class room failed');
-      return await res.json();
-    } catch (err) {
-      const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-      return {
-        _id: `class-${Date.now()}`,
-        className: className || 'Interactive STEM Room',
-        grade: grade || 'All Grades',
-        subject: subject || 'STEM',
-        code: randomCode,
-        teacherId: 'user-teacher-1',
-        studentIds: [],
-        description,
+      if (res.ok) {
+        const room = await res.json();
+        const teacherRooms = JSON.parse(localStorage.getItem('orbit_teacher_rooms') || '[]');
+        localStorage.setItem('orbit_teacher_rooms', JSON.stringify([room, ...teacherRooms.filter(r => r._id !== room._id)]));
+        return room;
+      }
+    } catch (err) {}
+
+    const newRoom = {
+      _id: `class-${Date.now()}`,
+      className: className || 'Interactive STEM Room',
+      grade: grade || 'Grade 10',
+      subject: subject || 'STEM',
+      code: randomCode,
+      teacherId: 'user-teacher-1',
+      studentIds: [],
+      description: description || 'Interactive Educator Classroom Room',
+      messages: [
+        {
+          id: `msg-${Date.now()}`,
+          senderId: 'user-teacher-1',
+          senderName: 'Educator',
+          senderRole: 'educator',
+          text: `Room created! Share code ${randomCode} with your students to join.`,
+          timestamp: new Date().toISOString()
+        }
+      ]
+    };
+    const teacherRooms = JSON.parse(localStorage.getItem('orbit_teacher_rooms') || '[]');
+    localStorage.setItem('orbit_teacher_rooms', JSON.stringify([newRoom, ...teacherRooms.filter(r => r._id !== newRoom._id)]));
+    return newRoom;
+  },
+
+  joinClass: async (code) => {
+    const cleanCode = code ? code.toString().trim() : '';
+    if (!cleanCode) throw new Error('Please enter a valid 6-digit classroom code.');
+
+    try {
+      const res = await fetch(`${API_BASE}/classes/join`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ code: cleanCode })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const joinedRooms = JSON.parse(localStorage.getItem('orbit_joined_rooms') || '[]');
+        localStorage.setItem('orbit_joined_rooms', JSON.stringify([data.room, ...joinedRooms.filter(r => r._id !== data.room._id)]));
+        return data;
+      }
+    } catch (err) {}
+
+    // Offline / fallback room join
+    const teacherRooms = JSON.parse(localStorage.getItem('orbit_teacher_rooms') || '[]');
+    let targetRoom = teacherRooms.find(r => r.code === cleanCode);
+
+    if (!targetRoom) {
+      targetRoom = {
+        _id: `class-${cleanCode}`,
+        className: `STEM Workspace (Room ${cleanCode})`,
+        grade: 'Active Grade',
+        subject: 'STEM',
+        code: cleanCode,
+        teacherId: 'teacher-local',
+        studentIds: ['current-user'],
+        description: `Classroom Workspace connected via 6-digit code ${cleanCode}`,
         messages: [
           {
             id: `msg-${Date.now()}`,
-            senderId: 'user-teacher-1',
             senderName: 'Educator',
             senderRole: 'educator',
-            text: `Room created! Share code ${randomCode} with your students to join.`,
+            text: `Welcome to the classroom! Use this workspace for offline study and video lessons.`,
             timestamp: new Date().toISOString()
           }
         ]
       };
     }
-  },
 
-  joinClass: async (code) => {
-    const res = await fetch(`${API_BASE}/classes/join`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ code })
-    });
-    if (!res.ok) {
-      const errData = await res.json();
-      throw new Error(errData.message || 'Invalid class code');
-    }
-    return await res.json();
+    const joinedRooms = JSON.parse(localStorage.getItem('orbit_joined_rooms') || '[]');
+    localStorage.setItem('orbit_joined_rooms', JSON.stringify([targetRoom, ...joinedRooms.filter(r => r._id !== targetRoom._id)]));
+    return { message: 'Successfully joined room!', room: targetRoom };
   },
 
   sendRoomMessage: async (classId, { text, attachedVideoId, attachedVideoTitle }) => {

@@ -141,9 +141,18 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
 
   const loadMyRooms = async () => {
     try {
-      const myRooms = await api.getMyClasses();
+      let myRooms = await api.getMyClasses();
+      if (!myRooms || myRooms.length === 0) {
+        const initialRoom = await api.createClass({
+          className: `${user?.name || 'Educator'}'s STEM Workspace`,
+          grade: 'Grade 10',
+          subject: user?.subjectTaught || 'Computer Science & AI',
+          description: `Active STEM Classroom Workspace for ${user?.name || 'Educator'}`
+        });
+        myRooms = [initialRoom];
+      }
       setRooms(myRooms || []);
-      if (myRooms && myRooms.length > 0 && !activeRoomId) {
+      if (myRooms && myRooms.length > 0) {
         setActiveRoomId(myRooms[0]._id);
       }
     } catch (err) {
@@ -213,14 +222,10 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
     }
   };
 
-  const activeRoom = rooms.find(r => r._id === activeRoomId) || rooms[0] || {
-    _id: 'class-7a',
-    className: 'Grade 10 CS & AI Alpha Room',
-    code: '794201',
-    messages: []
-  };
+  const activeRoom = rooms.find(r => r._id === activeRoomId) || rooms[0] || null;
 
   const copyCodeToClipboard = () => {
+    if (!activeRoom?.code) return;
     navigator.clipboard.writeText(activeRoom.code);
     setCopiedCode(true);
     setTimeout(() => setCopiedCode(false), 3000);
@@ -413,7 +418,7 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
         <div className="bg-white border border-[#E5E2DA] rounded-2xl p-4 shadow-sm">
           <span className="text-[11px] font-bold text-[#89909E] uppercase tracking-wider">Students Enrolled</span>
           <div className="text-3xl font-extrabold text-[#4F46E5] mt-1">{activeRoom?.studentIds?.length || 1}</div>
-          <p className="text-[11px] text-[#5A606C] mt-1">Room {activeRoom?.code || '794201'} active roster</p>
+          <p className="text-[11px] text-[#5A606C] mt-1">Room {activeRoom?.code || 'Active'} active roster</p>
         </div>
 
         <div className="bg-white border border-[#E5E2DA] rounded-2xl p-4 shadow-sm">
@@ -624,7 +629,7 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Grade 10 CS & AI Alpha"
+                  placeholder="e.g. Grade 10 STEM Workspace"
                   value={newRoomName}
                   onChange={(e) => setNewRoomName(e.target.value)}
                   className="w-full bg-[#FAF9F6] border border-[#E5E2DA] rounded-xl p-2.5 text-xs font-semibold focus:outline-none focus:border-[#4F46E5]"
