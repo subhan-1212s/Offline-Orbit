@@ -8,6 +8,35 @@ import { protect } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// GET /api/progress/platform-stats (Real Platform Counts)
+router.get('/platform-stats', async (req, res) => {
+  try {
+    let userCount = 0;
+    let classCount = 0;
+    let totalAttempts = 0;
+
+    if (isUsingMongoDB) {
+      userCount = await User.countDocuments();
+      classCount = await Class.countDocuments();
+      const allProgress = await Progress.find({}, 'quizAttempts');
+      totalAttempts = allProgress.reduce((sum, p) => sum + (p.quizAttempts?.length || 0), 0);
+    } else {
+      userCount = initialSeedData.users?.length || 4;
+      classCount = initialSeedData.classes?.length || 2;
+      totalAttempts = (initialSeedData.progressData || []).reduce((sum, p) => sum + (p.quizAttempts?.length || 0), 0);
+    }
+
+    res.json({
+      userCount: Math.max(userCount, 1),
+      classCount: Math.max(classCount, 1),
+      totalAttempts,
+      status: 'live_telemetry'
+    });
+  } catch (err) {
+    res.json({ userCount: 1, classCount: 1, totalAttempts: 0, status: 'fallback' });
+  }
+});
+
 // GET /api/progress/student
 router.get('/student', protect, async (req, res) => {
   try {

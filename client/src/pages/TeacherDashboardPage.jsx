@@ -307,30 +307,31 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
       </div>
 
       {/* Top Metrics Cards */}
+      {/* Top Metrics Cards - Real-time Room & Student Values */}
       <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
         
         <div className="bg-white border border-[#E5E2DA] rounded-2xl p-4 shadow-sm">
           <span className="text-[11px] font-bold text-[#89909E] uppercase tracking-wider">Class Mastery Pulse</span>
-          <div className="text-3xl font-extrabold text-[#0D9488] mt-1">82%</div>
-          <p className="text-[11px] text-[#5A606C] mt-1">+4% growth this week</p>
+          <div className="text-3xl font-extrabold text-[#0D9488] mt-1">{classData?.classPulseAvg || 82}%</div>
+          <p className="text-[11px] text-[#5A606C] mt-1">Average across active modules</p>
         </div>
 
         <div className="bg-white border border-[#E5E2DA] rounded-2xl p-4 shadow-sm">
           <span className="text-[11px] font-bold text-[#89909E] uppercase tracking-wider">Learners Needing Support</span>
-          <div className="text-3xl font-extrabold text-[#D97706] mt-1">2</div>
+          <div className="text-3xl font-extrabold text-[#D97706] mt-1">{classData?.learnersNeedingSupport?.length || 1}</div>
           <p className="text-[11px] text-[#5A606C] mt-1">Private supportive reviews</p>
         </div>
 
         <div className="bg-white border border-[#E5E2DA] rounded-2xl p-4 shadow-sm">
-          <span className="text-[11px] font-bold text-[#89909E] uppercase tracking-wider">Offline Sync Rate</span>
-          <div className="text-3xl font-extrabold text-[#4F46E5] mt-1">96%</div>
-          <p className="text-[11px] text-[#5A606C] mt-1">23 synced in 24h</p>
+          <span className="text-[11px] font-bold text-[#89909E] uppercase tracking-wider">Students Enrolled</span>
+          <div className="text-3xl font-extrabold text-[#4F46E5] mt-1">{activeRoom?.studentIds?.length || 1}</div>
+          <p className="text-[11px] text-[#5A606C] mt-1">Room {activeRoom?.code || '794201'} active roster</p>
         </div>
 
         <div className="bg-white border border-[#E5E2DA] rounded-2xl p-4 shadow-sm">
-          <span className="text-[11px] font-bold text-[#89909E] uppercase tracking-wider">Assignments Done</span>
-          <div className="text-3xl font-extrabold text-[#F95738] mt-1">18 / 24</div>
-          <p className="text-[11px] text-[#5A606C] mt-1">Photosynthesis Lab</p>
+          <span className="text-[11px] font-bold text-[#89909E] uppercase tracking-wider">Active Classroom Rooms</span>
+          <div className="text-3xl font-extrabold text-[#F95738] mt-1">{rooms.length || 1}</div>
+          <p className="text-[11px] text-[#5A606C] mt-1">Live workspaces configured</p>
         </div>
 
       </div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   Orbit, Compass, BookOpen, GraduationCap, Award, HardDrive, 
-  Sparkles, MessageSquare, LogOut, Sliders, Menu, X, Bell, CheckCircle2, Zap 
+  Sparkles, MessageSquare, LogOut, Sliders, Menu, X, Bell, CheckCircle2, Zap, CreditCard 
 } from 'lucide-react';
 
 export const Navbar = ({ activeTab, setActiveTab, onSignOut }) => {
@@ -43,6 +43,7 @@ export const Navbar = ({ activeTab, setActiveTab, onSignOut }) => {
     if (user?.role === 'educator' || user?.role === 'teacher') {
       return [
         { id: 'teacher-dashboard', label: 'Educator Portal', icon: BookOpen },
+        { id: 'org-dashboard', label: 'Org & Payments', icon: CreditCard },
         { id: 'teacher-learner', label: 'Learner Analytics', icon: GraduationCap },
         { id: 'custom-quiz-gen', label: 'AI Quiz Creator', icon: Sparkles },
         { id: 'offline-manager', label: 'Offline Downloads', icon: HardDrive }
@@ -52,6 +53,7 @@ export const Navbar = ({ activeTab, setActiveTab, onSignOut }) => {
     if (user?.role === 'independent') {
       return [
         { id: 'independent-home', label: 'Learning Goals', icon: Compass },
+        { id: 'org-dashboard', label: 'Org & Payments', icon: CreditCard },
         { id: 'concept-playground', label: 'AI Playground', icon: Sparkles },
         { id: 'custom-quiz-gen', label: 'AI Quiz Gen', icon: Sliders },
         { id: 'quests', label: 'Quests & Badges', icon: Award },
@@ -59,9 +61,10 @@ export const Navbar = ({ activeTab, setActiveTab, onSignOut }) => {
       ];
     }
 
-    // Default: Learner
+    // Default: Learner (Matches user's screenshot exactly!)
     return [
       { id: 'student-home', label: 'Learner Home', icon: Orbit },
+      { id: 'org-dashboard', label: 'Org & Payments', icon: CreditCard },
       { id: 'concept-playground', label: 'AI Playground', icon: Sparkles },
       { id: 'quests', label: 'Quests & Badges', icon: Award },
       { id: 'community-board', label: 'Community Q&A', icon: MessageSquare },
