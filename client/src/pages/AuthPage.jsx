@@ -105,7 +105,7 @@ export const AuthPage = ({ onAuthSuccess }) => {
       localStorage.setItem('orbit_user', JSON.stringify(authenticatedUser));
       updateUserProfile(authenticatedUser);
       recordUserInAdminRoster(authenticatedUser);
-      onAuthSuccess(authenticatedUser);
+      onAuthSuccess(authenticatedUser, false); // Returning/logging-in user: DO NOT give quiz after login
     } catch (err) {
       setMessage(err.message || 'Login failed. Please check your email and password.');
     } finally {
@@ -134,7 +134,7 @@ export const AuthPage = ({ onAuthSuccess }) => {
       localStorage.setItem('orbit_user', JSON.stringify(res.user));
       updateUserProfile(res.user);
       recordUserInAdminRoster(res.user);
-      onAuthSuccess(res.user);
+      onAuthSuccess(res.user, true); // Brand new learner: ask diagnostic quiz once!
     } catch (err) {
       setMessage(err.message || 'Learner registration failed. Please try again.');
     } finally {
@@ -168,7 +168,7 @@ export const AuthPage = ({ onAuthSuccess }) => {
       localStorage.setItem('orbit_user', JSON.stringify(res.user));
       updateUserProfile(res.user);
       recordUserInAdminRoster(res.user);
-      onAuthSuccess(res.user);
+      onAuthSuccess(res.user, false);
     } catch (err) {
       setMessage(err.message || 'Educator registration failed. Please try again.');
     } finally {

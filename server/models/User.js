@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'independent', 'teacher'], 
     default: 'student' 
   },
-  grade: { type: String, default: 'Grade 7' },
+  grade: { type: String, default: 'Middle School' },
   subjects: [{ type: String }],
   preferredLanguage: { type: String, default: 'en' },
   goals: [{ type: String }],

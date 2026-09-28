@@ -48,7 +48,7 @@ export const QuizPage = ({
         retake: isRetakeCall,
         seed: Date.now(),
         interestDomain: user?.interestDomain || 'Computer Science & AI',
-        subLevel: user?.subLevel || user?.grade || 'Intermediate'
+        subLevel: user?.subLevel || user?.grade || user?.educationLevel || 'High School'
       };
 
       if (isDiagnostic) {
@@ -168,7 +168,7 @@ export const QuizPage = ({
       <div className="max-w-3xl mx-auto px-4 py-16 text-center space-y-3">
         <RefreshCw className="w-8 h-8 text-[#F95738] animate-spin mx-auto mb-3" />
         <h3 className="font-extrabold text-base text-[#1E2229]">Generating Tailored 10-Question Assessment...</h3>
-        <p className="text-xs text-[#5A606C]">Matching questions to {user?.interestDomain || 'Computer Science & AI'} ({user?.subLevel || 'Intermediate Tier'})...</p>
+        <p className="text-xs text-[#5A606C]">Matching questions to {user?.interestDomain || 'Computer Science & AI'} ({user?.subLevel || user?.educationLevel || user?.grade || 'High School'})...</p>
       </div>
     );
   }
@@ -177,7 +177,7 @@ export const QuizPage = ({
   const currentQ = questions[currentQuestionIndex];
   const userName = user?.name || 'Learner';
   const userInterest = user?.interestDomain || 'Computer Science & AI';
-  const userEducation = user?.subLevel || user?.grade || user?.learnerCategory || 'Intermediate';
+  const userEducation = user?.subLevel || user?.educationLevel || user?.grade || user?.learnerCategory || 'High School';
   const displayTitle = quiz?.title || `${userInterest} Assessment (${userEducation})`;
 
   // Calculate missed questions for Areas to Improve

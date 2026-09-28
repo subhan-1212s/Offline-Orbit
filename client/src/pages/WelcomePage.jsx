@@ -39,7 +39,7 @@ export const WelcomePage = ({ onGetStarted, onOpenDemo }) => {
             </div>
             <h3 className="text-xl font-bold text-[#1E2229]">School Student</h3>
             <p className="text-xs text-[#5A606C] mt-2 leading-relaxed">
-              Select your grade and subjects, complete teacher-assigned work, take diagnostic quizzes, and download offline lesson packs.
+              Select your education level and subjects, complete teacher-assigned work, take diagnostic quizzes, and download offline lesson packs.
             </p>
           </div>
           <div className="mt-6 flex items-center gap-2 text-xs font-bold text-[#F95738]">
@@ -104,7 +104,7 @@ export const WelcomePage = ({ onGetStarted, onOpenDemo }) => {
           </div>
           <div>
             <h4 className="text-sm font-bold text-[#1E2229]">Quick Demo Mode for Judges & Reviewers</h4>
-            <p className="text-xs text-[#5A606C]">Pre-populated with Grade 7 Science & Math demo content, sample diagnostic quiz, and offline sync queue.</p>
+            <p className="text-xs text-[#5A606C]">Pre-populated with Middle & High School Science & Math demo content, sample diagnostic quiz, and offline sync queue.</p>
           </div>
         </div>
         <button

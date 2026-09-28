@@ -10,7 +10,7 @@ export const DemoAccountsModal = ({ isOpen, onClose }) => {
   const accounts = [
     {
       role: 'student-aarav',
-      title: 'Learner A: Aarav Sharma (Grade 7)',
+      title: 'Learner A: Aarav Sharma (Middle School)',
       name: 'Interest: Physics & Mathematics',
       description: 'Struggled with Equivalent Fractions & Equations. Demonstrates Math recovery recommendations.',
       icon: GraduationCap,
@@ -19,7 +19,7 @@ export const DemoAccountsModal = ({ isOpen, onClose }) => {
     },
     {
       role: 'student-priya',
-      title: 'Learner B: Priya Patel (Grade 7)',
+      title: 'Learner B: Priya Patel (Middle School)',
       name: 'Interest: Computer Science & AI',
       description: 'Struggled with Algorithmic Complexity (Big O). Demonstrates CS & AI recovery recommendations.',
       icon: GraduationCap,
@@ -38,7 +38,7 @@ export const DemoAccountsModal = ({ isOpen, onClose }) => {
     {
       role: 'teacher',
       title: 'Educator: Mr. Rajesh Kumar',
-      name: 'Grade 7 STEM Lead Teacher',
+      name: 'Middle School STEM Lead Teacher',
       description: 'Manages Class 7A, inspects real synced student analytics, class gaps, and offline status.',
       icon: BookOpen,
       color: 'border-[#1E2229]/40 bg-[#FAF9F6] text-[#1E2229]',

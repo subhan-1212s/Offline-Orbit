@@ -101,7 +101,7 @@ router.post('/login', async (req, res) => {
         name: derivedName,
         email: email,
         role: resolvedRole,
-        grade: isAdmin ? 'Root Administrator' : (isEducator ? 'Grade 7-8 Lead Teacher' : 'Grade 7'),
+        grade: isAdmin ? 'Root Administrator' : (isEducator ? 'Middle School STEM Lead Teacher' : 'Middle School'),
         learnerType: isAdmin ? 'System Supervisor' : (isEducator ? 'Educator' : 'Individual Learner'),
         primaryFocus: isAdmin ? 'Platform Telemetry' : 'Science & Mathematics',
         preferredLanguage: 'en',
@@ -455,7 +455,7 @@ router.post('/reset-password', async (req, res) => {
             email: cleanEmail,
             password: newPassword,
             role: 'student',
-            grade: 'Grade 7'
+            grade: 'Middle School'
           });
           console.log(`[AUTH] Created user in MongoDB Atlas with new password for ${cleanEmail}`);
         }

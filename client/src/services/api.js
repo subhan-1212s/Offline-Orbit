@@ -44,7 +44,7 @@ export const api = {
           name: role === 'admin' ? 'Super Admin' : (email ? email.split('@')[0] : 'Learner'),
           email: email || (role === 'admin' ? 'admin@offline-orbit.edu' : 'learner@orbit.edu'),
           role: role === 'admin' ? 'admin' : (role === 'educator' ? 'educator' : 'learner'),
-          grade: role === 'admin' ? 'Root Administrator' : 'Grade 7',
+          grade: role === 'admin' ? 'Root Administrator' : 'Middle School',
           points: role === 'admin' ? 9999 : 480,
           streakDays: role === 'admin' ? 30 : getDynamicStreak('user-offline'),
           isOfflineMode: true
@@ -164,12 +164,12 @@ export const api = {
           name: 'Aarav Sharma',
           email: 'aarav@orbit.edu',
           role: 'student',
-          grade: 'Grade 7',
-          learnerCategory: 'Grade 7 Rural Learner',
+          grade: 'Middle School',
+          learnerCategory: 'Middle School Rural Learner',
           learnerType: 'Shared Mobile Device',
           interestDomain: 'Physics & Mathematics',
           preferredLanguage: 'en',
-          subLevel: 'Grade 7',
+          subLevel: 'Middle School',
           quizHistory: [
             { topic: 'Equivalent Fractions', score: 1, total: 3, percentage: 33 },
             { topic: 'Linear Equations', score: 2, total: 3, percentage: 67 }
@@ -185,12 +185,12 @@ export const api = {
           name: 'Priya Patel',
           email: 'priya@orbit.edu',
           role: 'student',
-          grade: 'Grade 7',
-          learnerCategory: 'Grade 7 Rural Learner',
+          grade: 'Middle School',
+          learnerCategory: 'Middle School Rural Learner',
           learnerType: 'Shared Mobile Device',
           interestDomain: 'Computer Science & AI',
           preferredLanguage: 'en',
-          subLevel: 'Grade 7',
+          subLevel: 'Middle School',
           quizHistory: [
             { topic: 'Algorithmic Complexity', score: 1, total: 3, percentage: 33 },
             { topic: 'Python Data Structures', score: 2, total: 3, percentage: 67 }
@@ -206,7 +206,7 @@ export const api = {
           name: 'Alex Rivera',
           email: 'alex@orbit.edu',
           role: 'independent',
-          grade: 'Grade 7',
+          grade: 'High School',
           learnerCategory: 'Self-Paced Learner',
           learnerType: 'Personal Mobile',
           interestDomain: 'Biotechnology & Chemistry',
@@ -222,7 +222,7 @@ export const api = {
           name: 'Mr. Rajesh Kumar',
           email: 'teacher@orbit.edu',
           role: 'educator',
-          grade: 'Grade 7 STEM Lead',
+          grade: 'Middle School STEM Lead',
           subjects: ['Science', 'Mathematics', 'Computer Science'],
           preferredLanguage: 'en',
           points: 1200,
@@ -245,7 +245,7 @@ export const api = {
     } catch (err) {
       const cached = localStorage.getItem('orbit_user');
       if (cached) return JSON.parse(cached);
-      return { _id: 'user-student-1', name: 'Maya Lin', role: 'student', grade: 'Grade 7', preferredLanguage: 'en' };
+      return { _id: 'user-student-1', name: 'Maya Lin', role: 'student', grade: 'Middle School', preferredLanguage: 'en' };
     }
   },
 
@@ -319,8 +319,8 @@ export const api = {
       if (generateCustomQuiz) {
         return generateCustomQuiz({
           subject: options.interestDomain || 'Computer Science & AI',
-          educationLevel: options.subLevel || 'Intermediate',
-          subLevel: options.subLevel || 'Intermediate',
+          educationLevel: options.subLevel || options.educationLevel || 'High School',
+          subLevel: options.subLevel || options.educationLevel || 'High School',
           isRetake: options.retake,
           seed: options.seed || Date.now()
         });
@@ -329,7 +329,7 @@ export const api = {
         _id: `quiz-diagnostic-fallback-${Date.now()}`,
         title: `${options.interestDomain || 'STEM'} Diagnostic Assessment (10 Questions)`,
         subject: options.interestDomain || 'STEM Curriculum',
-        grade: options.subLevel || 'Intermediate',
+        grade: options.subLevel || options.educationLevel || 'High School',
         questions: [
           {
             id: 'q-diag-1',
@@ -1226,7 +1226,7 @@ export const api = {
     const newRoom = {
       _id: `class-${Date.now()}`,
       className: className || 'Interactive STEM Room',
-      grade: grade || 'Grade 10',
+      grade: grade || 'High School',
       subject: subject || 'STEM',
       code: randomCode,
       teacherId: 'user-teacher-1',

@@ -833,7 +833,7 @@ export const StudentHomePage = ({
             </button>
 
             <button
-              onClick={() => onNavigateToQuiz('quiz-diagnostic-g7')}
+              onClick={() => onNavigateToQuiz('quiz-diagnostic-assessment')}
               className="w-full btn-outline text-xs py-2.5 px-4 bg-white hover:bg-[#FAF9F6] text-[#1E2229] font-bold justify-center"
             >
               <Target className="w-3.5 h-3.5 text-[#F95738]" />

@@ -7,13 +7,13 @@ export const OnboardingPage = ({ onComplete }) => {
   const { user, updateUserProfile } = useAuth();
   const { lang, changeLanguage } = useLanguage();
 
-  const [selectedGrade, setSelectedGrade] = useState(user?.grade || 'Grade 7');
+  const [selectedGrade, setSelectedGrade] = useState(user?.grade || 'High School');
   const [selectedSubjects, setSelectedSubjects] = useState(user?.subjects || ['Science', 'Mathematics']);
-  const [selectedGoals, setSelectedGoals] = useState(user?.goals || ['Master Grade 7 Algebra']);
+  const [selectedGoals, setSelectedGoals] = useState(user?.goals || ['Master Core Algebra']);
 
-  const grades = ['Grade 6', 'Grade 7', 'Grade 8', 'High School', 'Self-Paced Adult'];
+  const grades = ['Primary School', 'Middle School', 'High School', 'Higher Secondary', 'College / Adult'];
   const subjectsList = ['Science', 'Mathematics', 'English Language Arts', 'Environmental Studies'];
-  const sampleGoals = ['Master Grade 7 Algebra', 'Science Olympiad Prep', 'Data Literacy', 'Offline Study Habit'];
+  const sampleGoals = ['Master Core Algebra', 'Science Olympiad Prep', 'Data Literacy', 'Offline Study Habit'];
 
   const toggleSubject = (subj) => {
     setSelectedSubjects(prev => 
@@ -45,15 +45,15 @@ export const OnboardingPage = ({ onComplete }) => {
         <div className="mb-6">
           <span className="text-xs font-bold text-[#F95738] uppercase tracking-wider">Step 1 of 1</span>
           <h2 className="text-2xl font-extrabold text-[#1E2229] mt-1">Personalize Your Orbit Profile</h2>
-          <p className="text-xs text-[#5A606C] mt-1">Configure your preferred grade, subjects, and language for offline lesson recommendations.</p>
+          <p className="text-xs text-[#5A606C] mt-1">Configure your preferred education level, subjects, and language for offline lesson recommendations.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           
-          {/* Grade / Level Selection */}
+          {/* Education Level Selection */}
           <div>
             <label className="block text-xs font-bold text-[#1E2229] mb-2 flex items-center gap-1.5">
-              <BookOpen className="w-4 h-4 text-[#F95738]" /> Select Grade or Level
+              <BookOpen className="w-4 h-4 text-[#F95738]" /> Select Education Level
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {grades.map(g => (

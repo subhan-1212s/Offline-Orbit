@@ -60,7 +60,7 @@ router.get('/:id/pack', async (req, res) => {
       quizzes = await Quiz.find({ lessonId: req.params.id });
     } else {
       lesson = initialSeedData.lessons.find(l => l._id === req.params.id);
-      quizzes = initialSeedData.quizzes.filter(q => q.lessonId === req.params.id || q._id === 'quiz-diagnostic-g7');
+      quizzes = initialSeedData.quizzes.filter(q => q.lessonId === req.params.id || q._id === 'quiz-diagnostic-assessment' || q._id === 'quiz-diagnostic-g7');
     }
 
     if (!lesson) {

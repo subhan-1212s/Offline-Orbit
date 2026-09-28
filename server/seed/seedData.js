@@ -7,10 +7,10 @@ export const initialSeedData = {
       password: '$2a$10$e7Ww0Bw8/s9Nl4C...password123hash',
       plainPassword: 'password123',
       role: 'student',
-      grade: 'Grade 7',
+      grade: 'Middle School',
       subjects: ['Science', 'Mathematics'],
       preferredLanguage: 'en',
-      goals: ['Master Grade 7 Algebra', 'Prepare for Science Olympiad'],
+      goals: ['Master Core Algebra', 'Prepare for Science Olympiad'],
       classIds: ['class-7a'],
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
       masteredTopicsCount: 6,
@@ -50,7 +50,7 @@ export const initialSeedData = {
       password: '$2a$10$e7Ww0Bw8/s9Nl4C...password123hash',
       plainPassword: 'password123',
       role: 'teacher',
-      grade: 'Grade 7-8 Lead Teacher',
+      grade: 'Middle School STEM Lead Teacher',
       subjects: ['Science', 'Mathematics'],
       preferredLanguage: 'en',
       goals: ['Close math concept gaps in Class 7A'],
@@ -84,8 +84,8 @@ export const initialSeedData = {
   classes: [
     {
       _id: 'class-7a',
-      className: 'Grade 7 Science & Math (7A)',
-      grade: 'Grade 7',
+      className: 'Middle School Science & Math (Room 7A)',
+      grade: 'Middle School',
       subject: 'Science & Math',
       code: 'ORBIT-7A',
       teacherId: 'user-teacher-1',
@@ -105,7 +105,7 @@ export const initialSeedData = {
       title: 'Photosynthesis & Cellular Energy',
       subject: 'Science',
       topic: 'Plant Biology & Energy Flow',
-      grade: 'Grade 7',
+      grade: 'Middle School',
       summary: 'Explore how plants transform sunlight, carbon dioxide, and water into chemical energy (glucose) and oxygen, fueling ecosystems worldwide.',
       sizeKB: 420,
       estimatedMinutes: 12,
@@ -202,7 +202,7 @@ export const initialSeedData = {
       title: 'Ratios, Proportions & Unit Rates',
       subject: 'Mathematics',
       topic: 'Ratios & Proportional Reasoning',
-      grade: 'Grade 7',
+      grade: 'Middle School',
       summary: 'Master equivalent ratios, unit rate calculations, scale factors, and real-life proportional problem solving.',
       sizeKB: 380,
       estimatedMinutes: 15,
@@ -247,7 +247,7 @@ export const initialSeedData = {
       title: 'Linear Equations & Problem Solving',
       subject: 'Mathematics',
       topic: 'Algebraic Expressions & Equations',
-      grade: 'Grade 7',
+      grade: 'Middle School',
       summary: 'Learn inverse operations to solve one-step and two-step linear equations involving integers and fractions.',
       sizeKB: 390,
       estimatedMinutes: 18,
@@ -279,7 +279,7 @@ export const initialSeedData = {
       title: 'Ecosystem Dynamics & Biodiversity',
       subject: 'Science',
       topic: 'Ecology & Environmental Science',
-      grade: 'Grade 7',
+      grade: 'Middle School',
       summary: 'Investigate food webs, energy pyramids, trophic levels, and ecological resilience.',
       sizeKB: 410,
       estimatedMinutes: 14,
@@ -373,11 +373,11 @@ export const initialSeedData = {
 
   quizzes: [
     {
-      _id: 'quiz-diagnostic-g7',
-      title: 'Grade 7 STEM Diagnostic Assessment (10 Questions)',
+      _id: 'quiz-diagnostic-assessment',
+      title: 'Middle School STEM Diagnostic Assessment (10 Questions)',
       subject: 'STEM Curriculum',
       topic: 'Comprehensive Diagnostic',
-      grade: 'Grade 7 / Secondary',
+      grade: 'Middle School',
       type: 'diagnostic',
       questions: [
         {
@@ -573,7 +573,7 @@ export const initialSeedData = {
       lessonId: 'lesson-1',
       topic: 'Plant Biology & Energy Flow',
       subject: 'Science',
-      grade: 'Grade 7',
+      grade: 'Middle School',
       type: 'lesson_quiz',
       questions: [
         {
@@ -613,7 +613,7 @@ export const initialSeedData = {
         { topic: 'Cell Biology & Genetics', status: 'needs_review', scoreAvg: 58, lastPracticed: '2026-09-20T10:00:00Z' }
       ],
       quizAttempts: [
-        { quizId: 'quiz-diagnostic-g7', quizTitle: 'Grade 7 Diagnostic', topic: 'Diagnostic', score: 2, total: 3, percentage: 67, completedAt: '2026-09-20T10:00:00Z', offlineSynced: true },
+        { quizId: 'quiz-diagnostic-assessment', quizTitle: 'Middle School Diagnostic', topic: 'Diagnostic', score: 2, total: 3, percentage: 67, completedAt: '2026-09-20T10:00:00Z', offlineSynced: true },
         { quizId: 'quiz-lesson-1', quizTitle: 'Photosynthesis Mastery', topic: 'Plant Biology', score: 1, total: 1, percentage: 100, completedAt: '2026-09-24T16:00:00Z', offlineSynced: true }
       ],
       completedLessons: ['lesson-1', 'lesson-2'],

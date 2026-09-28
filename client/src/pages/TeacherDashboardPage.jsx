@@ -186,7 +186,7 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
     try {
       const res = await api.aiTeacherAssistant({
         topic: draftTopic,
-        targetGrade: 'Grade 7',
+        targetGrade: 'Middle School',
         contentType: draftType
       });
       setDraftResult(res);
@@ -593,14 +593,17 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-bold text-[#1E2229] mb-1">Grade Level</label>
+                  <label className="block text-xs font-bold text-[#1E2229] mb-1">Education Level</label>
                   <select
                     value={newRoomGrade}
                     onChange={(e) => setNewRoomGrade(e.target.value)}
                     className="w-full bg-[#FAF9F6] border border-[#E5E2DA] rounded-xl p-2.5 text-xs font-semibold focus:outline-none"
                   >
+                    <option value="Primary School">Primary School</option>
+                    <option value="Middle School">Middle School</option>
                     <option value="High School">High School</option>
-                    <option value="Undergraduate">Undergraduate</option>
+                    <option value="Higher Secondary">Higher Secondary</option>
+                    <option value="College / University">College / University</option>
                   </select>
                 </div>
 

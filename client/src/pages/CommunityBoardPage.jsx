@@ -89,7 +89,7 @@ export const CommunityBoardPage = () => {
                 </div>
                 <div>
                   <h4 className="font-bold text-xs text-[#1E2229]">{post.author}</h4>
-                  <span className="text-[10px] text-[#89909E]">Grade 7 STEM Student</span>
+                  <span className="text-[10px] text-[#89909E]">Middle School STEM Student</span>
                 </div>
               </div>
 

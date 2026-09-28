@@ -3,6 +3,308 @@
 
 export const QUESTION_BANK = {
   "Computer Science & AI": {
+    "Primary School": [
+      {
+            "id": "cs-p1",
+            "questionText": "1. What device is used to type letters, numbers, and words into a computer?",
+            "options": [
+                  "A computer keyboard",
+                  "A pair of headphones",
+                  "A power plug",
+                  "A mouse pad"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Headphones are used to listen to sound, not to type text."
+            },
+            "explanation": "A keyboard has letter, number, and symbol keys used to type text into a computer."
+      },
+      {
+            "id": "cs-p2",
+            "questionText": "2. Which device do you move with your hand to point and click items on a screen?",
+            "options": [
+                  "A computer mouse",
+                  "A power socket",
+                  "A microphone",
+                  "A storage disk"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "2": "A microphone records voice, while a mouse moves the pointer on screen."
+            },
+            "explanation": "A mouse allows users to point, click, and drag items on a computer screen."
+      },
+      {
+            "id": "cs-p3",
+            "questionText": "3. What is the computer component called that acts like its brain to process instructions?",
+            "options": [
+                  "CPU (Central Processing Unit)",
+                  "Computer Desk",
+                  "Paper Printer",
+                  "Plastic Case"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "2": "A printer prints paper, while the CPU processes data and instructions."
+            },
+            "explanation": "The CPU processes instructions and calculations, acting as the brain of the computer."
+      },
+      {
+            "id": "cs-p4",
+            "questionText": "4. If a robot is given the steps: \"Step Forward, Turn Right, Step Forward\", what is this list of instructions called?",
+            "options": [
+                  "An Algorithm (Step-by-step instructions)",
+                  "A computer screen",
+                  "A power battery",
+                  "A plastic toy"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "A screen displays images, while an algorithm is the list of instructions to follow."
+            },
+            "explanation": "An algorithm is an ordered set of step-by-step instructions designed to solve a problem or complete a task."
+      },
+      {
+            "id": "cs-p5",
+            "questionText": "5. Which of these is an example of computer software (an application you use)?",
+            "options": [
+                  "A drawing program or web browser",
+                  "The computer power cord",
+                  "The computer desk chair",
+                  "The glass monitor stand"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "A power cord is physical hardware, while drawing apps and web browsers are software."
+            },
+            "explanation": "Software includes the programs, apps, and games that run on a computer."
+      },
+      {
+            "id": "cs-p6",
+            "questionText": "6. What does a computer monitor do?",
+            "options": [
+                  "Displays pictures, text, and videos on screen",
+                  "Prints physical paper drawings",
+                  "Cools the computer room with air",
+                  "Plays music from a radio station"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "A printer produces paper copies, while the monitor displays the visual screen."
+            },
+            "explanation": "A monitor displays visual output such as pictures, words, and videos."
+      },
+      {
+            "id": "cs-p7",
+            "questionText": "7. Which password is the safest and most secure to protect your account?",
+            "options": [
+                  "A private mix of letters, numbers, and symbols that you keep secret",
+                  "Your first name 123",
+                  "The word password",
+                  "Sharing your password with strangers"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "2": "Common words like \"password\" are very easy for attackers to guess."
+            },
+            "explanation": "A strong password uses a unique mix of characters and should never be shared with others."
+      },
+      {
+            "id": "cs-p8",
+            "questionText": "8. What is a bug in computer programming?",
+            "options": [
+                  "A mistake or error in the code",
+                  "A tiny spider on the keyboard",
+                  "A colorful screen wallpaper",
+                  "A fast internet connection"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "In programming, a bug refers to an error or flaw in the code instructions."
+            },
+            "explanation": "A bug is an error in a computer program that prevents it from working as intended."
+      },
+      {
+            "id": "cs-p9",
+            "questionText": "9. Where are your saved drawings, documents, and games stored on a computer?",
+            "options": [
+                  "On a storage drive (Hard Drive or SSD)",
+                  "Inside the computer mouse",
+                  "On the keyboard surface",
+                  "Inside the power cable"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "The mouse is an input device, not a storage device."
+            },
+            "explanation": "Storage drives (HDD/SSD) hold digital files and programs permanently even when powered off."
+      },
+      {
+            "id": "cs-p10",
+            "questionText": "10. Which device produces a physical paper copy of what you see on the screen?",
+            "options": [
+                  "A printer",
+                  "A webcam",
+                  "A microphone",
+                  "A keyboard"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "A webcam captures video input, while a printer outputs onto paper."
+            },
+            "explanation": "Printers output text and graphics onto physical sheets of paper."
+      },
+      {
+            "id": "cs-p11",
+            "questionText": "11. What happens when you click a blue link or button on a website?",
+            "options": [
+                  "It takes you to another page or performs an action",
+                  "It turns off your home power",
+                  "It erases all your computer memory",
+                  "It locks the keyboard permanently"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "2": "Hyperlinks are designed to navigate between pages, not erase computer memory."
+            },
+            "explanation": "A hyperlink connects to another webpage, document, or feature when clicked."
+      },
+      {
+            "id": "cs-p12",
+            "questionText": "12. Which screen technology on tablets and smartphones allows you to tap directly with your finger?",
+            "options": [
+                  "Touchscreen",
+                  "Mirror screen",
+                  "Solar panel",
+                  "Plastic magnifying glass"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "A touchscreen senses finger touches to interact directly with apps."
+            },
+            "explanation": "Touchscreens detect finger touches and gestures directly on the display."
+      },
+      {
+            "id": "cs-p13",
+            "questionText": "13. In Scratch or block-based coding, what is an animated character or object called?",
+            "options": [
+                  "A Sprite",
+                  "A Pixel cord",
+                  "A Battery",
+                  "A Chip"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "3": "A chip is hardware, while a Sprite is an interactive graphic character in code."
+            },
+            "explanation": "In block coding environments like Scratch, objects that perform actions on stage are called Sprites."
+      },
+      {
+            "id": "cs-p14",
+            "questionText": "14. What is Artificial Intelligence (AI) able to do?",
+            "options": [
+                  "Learn from patterns to recognize images, voice, or answer questions",
+                  "Cook food on an oven physically",
+                  "Turn water into ice instantly",
+                  "Grow tree leaves in a garden"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "AI is computational software that learns from data patterns, not a kitchen appliance."
+            },
+            "explanation": "Artificial Intelligence uses computer algorithms to process information and recognize patterns."
+      },
+      {
+            "id": "cs-p15",
+            "questionText": "15. What do we call the physical parts of a computer that you can touch and hold?",
+            "options": [
+                  "Hardware",
+                  "Software",
+                  "Internet thoughts",
+                  "Cloud dreams"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Software is digital code, while hardware refers to the physical physical parts."
+            },
+            "explanation": "Computer hardware includes all tangible components such as monitor, keyboard, and motherboard."
+      },
+      {
+            "id": "cs-p16",
+            "questionText": "16. What wireless technology allows laptops and tablets to connect to the internet without a cable?",
+            "options": [
+                  "Wi-Fi",
+                  "Audio headphone jack",
+                  "Paper ribbon",
+                  "Flashlight beam"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Audio jacks transfer sound to headphones, while Wi-Fi provides wireless internet."
+            },
+            "explanation": "Wi-Fi uses radio waves to connect devices to local networks and the internet wirelessly."
+      },
+      {
+            "id": "cs-p17",
+            "questionText": "17. Which of these is a safe digital habit when using the internet or games?",
+            "options": [
+                  "Never share your real home address or phone number with strangers online",
+                  "Tell everyone your secret password",
+                  "Click every flashing ad you see",
+                  "Download unknown files without asking an adult"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Sharing personal details online can compromise your safety and privacy."
+            },
+            "explanation": "Keeping personal information like address and passwords private ensures cyber safety."
+      },
+      {
+            "id": "cs-p18",
+            "questionText": "18. In computer coding, if a command repeats an action 5 times, what is that called?",
+            "options": [
+                  "A Loop",
+                  "A Crash",
+                  "A Stop sign",
+                  "A Monitor"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "2": "A loop repeats instructions, while a crash means an unexpected halt."
+            },
+            "explanation": "A loop instructs a computer to execute a block of code multiple times."
+      },
+      {
+            "id": "cs-p19",
+            "questionText": "19. What does a computer microphone allow you to do?",
+            "options": [
+                  "Record your voice and speak to teachers or friends online",
+                  "Print colorful pictures",
+                  "Make the monitor brighter",
+                  "Clean dust off the screen"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "A microphone captures audio input, while a printer prints pictures."
+            },
+            "explanation": "Microphones convert sound waves from your voice into digital audio signals."
+      },
+      {
+            "id": "cs-p20",
+            "questionText": "20. What is an internet browser used for?",
+            "options": [
+                  "To visit and view web pages on the World Wide Web",
+                  "To bake cookies in the kitchen",
+                  "To tie your shoes in the morning",
+                  "To wash dishes with soap"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Web browsers like Chrome or Firefox display websites from the internet."
+            },
+            "explanation": "A web browser is an application used to access and view information on the internet."
+      }
+],
     "Beginner": [
       {
         "id": "cs-b1",
@@ -752,6 +1054,308 @@ export const QUESTION_BANK = {
     ]
   },
   "Mathematics": {
+    "Primary School": [
+      {
+            "id": "math-p1",
+            "questionText": "1. What is 8 + 7?",
+            "options": [
+                  "15",
+                  "14",
+                  "16",
+                  "13"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "8 + 7 = 15, not 14."
+            },
+            "explanation": "8 + 7 = 15."
+      },
+      {
+            "id": "math-p2",
+            "questionText": "2. What is 6 × 4?",
+            "options": [
+                  "24",
+                  "20",
+                  "28",
+                  "22"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "6 × 4 means four groups of 6, which equals 24."
+            },
+            "explanation": "6 × 4 = 24."
+      },
+      {
+            "id": "math-p3",
+            "questionText": "3. How many sides does a triangle have?",
+            "options": [
+                  "3 sides",
+                  "4 sides",
+                  "5 sides",
+                  "2 sides"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "A 4-sided shape is a quadrilateral, while a triangle has exactly 3 sides."
+            },
+            "explanation": "By definition, a triangle has 3 sides and 3 angles."
+      },
+      {
+            "id": "math-p4",
+            "questionText": "4. What is half of 20?",
+            "options": [
+                  "10",
+                  "5",
+                  "15",
+                  "12"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Half of 20 means dividing 20 by 2, which gives 10."
+            },
+            "explanation": "20 ÷ 2 = 10."
+      },
+      {
+            "id": "math-p5",
+            "questionText": "5. If you have 15 apples and give 6 apples to your friend, how many apples do you have left?",
+            "options": [
+                  "9 apples",
+                  "8 apples",
+                  "10 apples",
+                  "7 apples"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "15 - 6 = 9."
+            },
+            "explanation": "15 - 6 = 9 apples remaining."
+      },
+      {
+            "id": "math-p6",
+            "questionText": "6. Which digit is in the tens place in the number 358?",
+            "options": [
+                  "5",
+                  "3",
+                  "8",
+                  "0"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "3 is in the hundreds place, 5 is in the tens place, and 8 is in the ones place."
+            },
+            "explanation": "In 358: 3 is hundreds, 5 is tens, and 8 is ones."
+      },
+      {
+            "id": "math-p7",
+            "questionText": "7. What fraction represents one slice of a pizza that has been cut into 4 equal slices?",
+            "options": [
+                  "1/4",
+                  "1/2",
+                  "3/4",
+                  "4/1"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "1/2 is half (2 of 4 slices). One of 4 slices is 1/4."
+            },
+            "explanation": "One part out of four equal parts is represented by the fraction 1/4."
+      },
+      {
+            "id": "math-p8",
+            "questionText": "8. How many centimeters are in 1 meter?",
+            "options": [
+                  "100 cm",
+                  "10 cm",
+                  "1000 cm",
+                  "50 cm"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "There are 100 centimeters in 1 full meter."
+            },
+            "explanation": "1 meter = 100 centimeters."
+      },
+      {
+            "id": "math-p9",
+            "questionText": "9. Which geometric shape has 4 equal sides and 4 square right angles?",
+            "options": [
+                  "Square",
+                  "Circle",
+                  "Triangle",
+                  "Oval"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "2": "A triangle has only 3 sides. A square has 4 equal sides and 4 right angles."
+            },
+            "explanation": "A square has 4 equal-length sides and 4 right angles."
+      },
+      {
+            "id": "math-p10",
+            "questionText": "10. Which of these numbers is an even number?",
+            "options": [
+                  "14",
+                  "11",
+                  "17",
+                  "19"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Even numbers end in 0, 2, 4, 6, or 8 and can be divided evenly by 2."
+            },
+            "explanation": "14 is even because 14 ÷ 2 = 7 with no remainder."
+      },
+      {
+            "id": "math-p11",
+            "questionText": "11. What is 100 minus 35?",
+            "options": [
+                  "65",
+                  "75",
+                  "55",
+                  "60"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "100 - 35 = 65, not 75."
+            },
+            "explanation": "100 - 30 = 70, and 70 - 5 = 65."
+      },
+      {
+            "id": "math-p12",
+            "questionText": "12. If a pencil costs 5 coins, how much will 6 pencils cost in total?",
+            "options": [
+                  "30 coins",
+                  "25 coins",
+                  "35 coins",
+                  "20 coins"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "6 pencils at 5 coins each = 6 × 5 = 30 coins."
+            },
+            "explanation": "6 × 5 = 30 coins."
+      },
+      {
+            "id": "math-p13",
+            "questionText": "13. How many minutes are in one full hour?",
+            "options": [
+                  "60 minutes",
+                  "100 minutes",
+                  "30 minutes",
+                  "24 minutes"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "There are 60 minutes in an hour, not 100."
+            },
+            "explanation": "1 hour is divided into 60 minutes."
+      },
+      {
+            "id": "math-p14",
+            "questionText": "14. Which number is the largest: 409, 490, or 419?",
+            "options": [
+                  "490",
+                  "409",
+                  "419",
+                  "They are all equal"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "2": "490 has 9 tens, making it larger than 419 (1 ten) and 409 (0 tens)."
+            },
+            "explanation": "490 is the greatest value among the three numbers."
+      },
+      {
+            "id": "math-p15",
+            "questionText": "15. What is 9 × 3?",
+            "options": [
+                  "27",
+                  "24",
+                  "30",
+                  "21"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "9 × 3 = 27 (three nines: 9, 18, 27)."
+            },
+            "explanation": "9 × 3 = 27."
+      },
+      {
+            "id": "math-p16",
+            "questionText": "16. A rectangle is 5 cm long and 3 cm wide. What is its perimeter (the distance all around its outside)?",
+            "options": [
+                  "16 cm",
+                  "15 cm",
+                  "10 cm",
+                  "8 cm"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "15 cm² is the area (5 × 3). Perimeter is 5 + 3 + 5 + 3 = 16 cm."
+            },
+            "explanation": "Perimeter = 2 × (length + width) = 2 × (5 + 3) = 16 cm."
+      },
+      {
+            "id": "math-p17",
+            "questionText": "17. What is 50 divided by 5?",
+            "options": [
+                  "10",
+                  "5",
+                  "15",
+                  "20"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "50 ÷ 5 = 10, because 10 × 5 = 50."
+            },
+            "explanation": "50 ÷ 5 = 10."
+      },
+      {
+            "id": "math-p18",
+            "questionText": "18. If school begins at 9:00 AM and finishes at 3:00 PM, how many hours long was the school day?",
+            "options": [
+                  "6 hours",
+                  "5 hours",
+                  "7 hours",
+                  "8 hours"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "From 9 AM to 12 PM is 3 hours, and from 12 PM to 3 PM is 3 hours: 3 + 3 = 6 hours."
+            },
+            "explanation": "There are 6 hours between 9:00 AM and 3:00 PM."
+      },
+      {
+            "id": "math-p19",
+            "questionText": "19. What number comes next in this pattern: 5, 10, 15, 20, __?",
+            "options": [
+                  "25",
+                  "30",
+                  "22",
+                  "24"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "The pattern increases by adding 5 each step: 20 + 5 = 25."
+            },
+            "explanation": "Skip counting by 5: 5, 10, 15, 20, 25."
+      },
+      {
+            "id": "math-p20",
+            "questionText": "20. How many sides does an octagon have, like a red stop sign?",
+            "options": [
+                  "8 sides",
+                  "6 sides",
+                  "5 sides",
+                  "10 sides"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "A 6-sided shape is a hexagon. An octagon has 8 sides."
+            },
+            "explanation": "An octagon is an 8-sided polygon."
+      }
+],
     "Beginner": [
       {
         "id": "m-b1",
@@ -1483,6 +2087,308 @@ export const QUESTION_BANK = {
     ]
   },
   "Physics": {
+    "Primary School": [
+      {
+            "id": "phy-p1",
+            "questionText": "1. What invisible force pulls dropped toys and balls down toward the Earth?",
+            "options": [
+                  "Gravity",
+                  "Wind friction",
+                  "Static magnetism",
+                  "Solar rays"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Gravity is the gravitational pull of Earth that attracts objects downward."
+            },
+            "explanation": "Gravity is the universal force of attraction between masses, pulling objects toward the center of the Earth."
+      },
+      {
+            "id": "phy-p2",
+            "questionText": "2. What is water called when it cools down and freezes solid?",
+            "options": [
+                  "Ice",
+                  "Steam",
+                  "Mist",
+                  "Lava"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Steam is water in gas form. Frozen solid water is ice."
+            },
+            "explanation": "When liquid water freezes below 0°C (32°F), it transitions into solid ice."
+      },
+      {
+            "id": "phy-p3",
+            "questionText": "3. Which celestial body in space gives Earth natural daylight and warmth?",
+            "options": [
+                  "The Sun",
+                  "The Moon",
+                  "Mars",
+                  "Jupiter"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "The Moon reflects sunlight but does not produce its own heat and light for Earth."
+            },
+            "explanation": "The Sun is the star at the center of our Solar System that radiates heat and light to Earth."
+      },
+      {
+            "id": "phy-p4",
+            "questionText": "4. What type of energy is created when guitar strings or drum skins vibrate?",
+            "options": [
+                  "Sound energy",
+                  "Nuclear energy",
+                  "Chemical energy",
+                  "Electrical lightning"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "2": "Vibrations produce pressure waves in air that our ears hear as sound."
+            },
+            "explanation": "Sound is produced when matter vibrates, creating longitudinal pressure waves in the air."
+      },
+      {
+            "id": "phy-p5",
+            "questionText": "5. What navigational tool uses a tiny magnet to point toward the Earth's North Pole?",
+            "options": [
+                  "A Magnetic Compass",
+                  "A Thermometer",
+                  "A Barometer",
+                  "A Ruler"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "A thermometer measures temperature. A compass uses a magnetic needle to point North."
+            },
+            "explanation": "A magnetic compass aligns with Earth's magnetic field to indicate North."
+      },
+      {
+            "id": "phy-p6",
+            "questionText": "6. What happens when you push two North poles of two bar magnets toward each other?",
+            "options": [
+                  "They repel and push apart",
+                  "They stick tightly together",
+                  "They melt into liquid",
+                  "They turn into wood"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Opposite poles attract (North and South), but like poles (North and North) repel."
+            },
+            "explanation": "In magnetism, like magnetic poles repel each other, while unlike poles attract."
+      },
+      {
+            "id": "phy-p7",
+            "questionText": "7. Which material is a good electrical conductor that lets electricity flow through it?",
+            "options": [
+                  "A copper wire or metal coin",
+                  "A wooden twig",
+                  "A rubber band",
+                  "A plastic spoon"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "2": "Rubber and wood are electrical insulators. Metals like copper conduct electricity easily."
+            },
+            "explanation": "Metals like copper have free electrons that allow electric current to flow freely."
+      },
+      {
+            "id": "phy-p8",
+            "questionText": "8. What scientific instrument is used to measure how warm or cold something is?",
+            "options": [
+                  "A Thermometer",
+                  "A Stopwatch",
+                  "A Scale",
+                  "A Telescope"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "A stopwatch measures time. A thermometer measures temperature."
+            },
+            "explanation": "A thermometer measures thermal temperature in degrees Celsius or Fahrenheit."
+      },
+      {
+            "id": "phy-p9",
+            "questionText": "9. What causes the continuous cycle of day and night on Earth?",
+            "options": [
+                  "The Earth spinning (rotating) on its axis every 24 hours",
+                  "The Sun turning off at night",
+                  "Clouds blocking the Sun every evening",
+                  "The Moon moving in front of the Sun"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "The Sun shines continuously; Earth rotates so different halves face the Sun in turn."
+            },
+            "explanation": "Earth's rotation on its axis once every 24 hours brings different parts into sunlight (day) and shadow (night)."
+      },
+      {
+            "id": "phy-p10",
+            "questionText": "10. Which of these is a clean, renewable energy source from nature?",
+            "options": [
+                  "Solar sunlight and wind energy",
+                  "Burning coal rocks",
+                  "Gasoline fuel",
+                  "Burning plastic garbage"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Coal is a fossil fuel. Sunlight and wind are naturally replenished clean resources."
+            },
+            "explanation": "Solar and wind energy are renewable because their natural supply is constantly replenished."
+      },
+      {
+            "id": "phy-p11",
+            "questionText": "11. What happens when liquid water boils in a kettle?",
+            "options": [
+                  "It turns into water vapor / steam (a gas)",
+                  "It freezes into hard ice cubes",
+                  "It turns into liquid vegetable oil",
+                  "It disappears permanently from the universe"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Boiling water evaporates into gas (steam); it does not freeze."
+            },
+            "explanation": "When water boils at 100°C, it changes phase from liquid to gaseous water vapor."
+      },
+      {
+            "id": "phy-p12",
+            "questionText": "12. Why do we see a flash of lightning before we hear the rumble of thunder?",
+            "options": [
+                  "Light travels much faster through air than sound does",
+                  "Sound travels faster than light",
+                  "Thunder happens minutes before lightning",
+                  "Our eyes are closer to the sky than our ears"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Light travels at nearly 300,000 km/s, while sound travels at about 343 m/s in air."
+            },
+            "explanation": "Light travels nearly a million times faster than sound in air, reaching our eyes almost instantaneously."
+      },
+      {
+            "id": "phy-p13",
+            "questionText": "13. Which simple machine consists of a grooved wheel and a rope used to lift water from a well?",
+            "options": [
+                  "A Pulley",
+                  "A Wedge",
+                  "A Lever",
+                  "A Screw"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "2": "A lever uses a fulcrum, whereas a grooved wheel with a rope is a pulley."
+            },
+            "explanation": "A pulley changes the direction of the applied force to lift heavy loads more easily."
+      },
+      {
+            "id": "phy-p14",
+            "questionText": "14. What causes an echo when you shout inside a large empty canyon or room?",
+            "options": [
+                  "Sound waves bouncing off hard surfaces and returning to your ears",
+                  "Wind speaking back to you",
+                  "Earthquakes vibrating deep in the ground",
+                  "Radio signals from a cell tower"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "An echo is the acoustic reflection of sound waves off solid barriers."
+            },
+            "explanation": "An echo is produced when acoustic sound waves reflect off distant solid surfaces."
+      },
+      {
+            "id": "phy-p15",
+            "questionText": "15. Which material is transparent, allowing light to pass straight through so you can see outside?",
+            "options": [
+                  "Clear window glass",
+                  "A thick brick wall",
+                  "A solid wooden door",
+                  "A metal baking pan"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Brick and wood are opaque materials that block light entirely."
+            },
+            "explanation": "Transparent materials like clear glass allow light rays to pass through without scattering."
+      },
+      {
+            "id": "phy-p16",
+            "questionText": "16. How long does it take for Earth to complete one full revolution (orbit) around the Sun?",
+            "options": [
+                  "One year (about 365 days)",
+                  "One day (24 hours)",
+                  "One month (30 days)",
+                  "One week (7 days)"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "One day is Earth spinning on its axis. One year is Earth orbiting around the Sun."
+            },
+            "explanation": "Earth takes approximately 365.25 days to complete its annual orbit around the Sun."
+      },
+      {
+            "id": "phy-p17",
+            "questionText": "17. What happens when you rub a party balloon on a wool sweater and hold it near tiny pieces of paper?",
+            "options": [
+                  "Static electricity attracts the paper pieces to the balloon",
+                  "The balloon immediately fills with water",
+                  "The balloon turns into a magnet for heavy iron",
+                  "The paper bursts into flames"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Friction transfers electrical charges, creating static electricity that attracts light paper."
+            },
+            "explanation": "Rubbing transfers electrons, generating a static electric charge that attracts neutral paper bits."
+      },
+      {
+            "id": "phy-p18",
+            "questionText": "18. Which color t-shirt absorbs the most sunlight and feels warmest on a sunny summer day?",
+            "options": [
+                  "A black or dark t-shirt",
+                  "A pure white t-shirt",
+                  "A silver mirror shirt",
+                  "A clear plastic poncho"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "White reflects most sunlight, while dark colors absorb solar light and convert it into heat."
+            },
+            "explanation": "Dark and black surfaces absorb almost all visible light wavelengths and transform them into thermal energy."
+      },
+      {
+            "id": "phy-p19",
+            "questionText": "19. What state of matter is the air all around us?",
+            "options": [
+                  "Gas",
+                  "Solid",
+                  "Liquid",
+                  "Plasma rock"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Air is a mixture of gases including nitrogen and oxygen, with molecules spaced far apart."
+            },
+            "explanation": "Air is a mixture of gases that expands to fill any open container."
+      },
+      {
+            "id": "phy-p20",
+            "questionText": "20. Which simple machine is a flat sloping ramp used to roll heavy carts up into a truck?",
+            "options": [
+                  "An Inclined Plane (Ramp)",
+                  "A Lever",
+                  "A Wheel and Axle",
+                  "A Pulley"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "A ramp is an inclined plane, reducing the force needed to raise an object."
+            },
+            "explanation": "An inclined plane allows moving heavy objects to a higher elevation with less applied force."
+      }
+],
     "Beginner": [
       {
         "id": "p-b1",
@@ -2211,6 +3117,308 @@ export const QUESTION_BANK = {
     ]
   },
   "Biology": {
+    "Primary School": [
+      {
+            "id": "bio-p1",
+            "questionText": "1. What part of a plant grows beneath the soil to absorb water and nutrients?",
+            "options": [
+                  "Roots",
+                  "Flowers",
+                  "Fruit",
+                  "Bark"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Flowers are for reproduction, while roots absorb water and anchor the plant in soil."
+            },
+            "explanation": "Roots absorb water and dissolved minerals from the soil and anchor the plant."
+      },
+      {
+            "id": "bio-p2",
+            "questionText": "2. What gas do green plants release into the air that animals and humans breathe in?",
+            "options": [
+                  "Oxygen",
+                  "Carbon monoxide",
+                  "Helium gas",
+                  "Smoke"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Plants absorb carbon dioxide and release oxygen as a byproduct of photosynthesis."
+            },
+            "explanation": "During photosynthesis, plants produce and release oxygen into the atmosphere."
+      },
+      {
+            "id": "bio-p3",
+            "questionText": "3. Which of these animals is a mammal that feeds its newborn babies milk?",
+            "options": [
+                  "A Dolphin or Dog",
+                  "A Goldfish",
+                  "A Crocodile",
+                  "A Housefly"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Fish and reptiles lay eggs and do not produce milk. Dolphins and dogs are mammals."
+            },
+            "explanation": "Mammals are warm-blooded vertebrates that nurse their young with milk."
+      },
+      {
+            "id": "bio-p4",
+            "questionText": "4. What green substance in plant leaves traps sunlight energy to make plant food?",
+            "options": [
+                  "Chlorophyll",
+                  "Honey",
+                  "Sap sugar",
+                  "Clay soil"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Chlorophyll is the green pigment in chloroplasts that absorbs sunlight."
+            },
+            "explanation": "Chlorophyll absorbs sunlight wavelengths to drive the photosynthesis reaction."
+      },
+      {
+            "id": "bio-p5",
+            "questionText": "5. What sweet liquid do honeybees collect from blossoms to make honey?",
+            "options": [
+                  "Nectar",
+                  "Rainwater",
+                  "Dew drops",
+                  "Tree bark"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Bees collect sugary nectar from flowers and transform it into honey."
+            },
+            "explanation": "Nectar is a sugar-rich liquid produced by plants to attract pollinators like bees."
+      },
+      {
+            "id": "bio-p6",
+            "questionText": "6. Which essential organ in the human body pumps blood through all your blood vessels?",
+            "options": [
+                  "The Heart",
+                  "The Stomach",
+                  "The Lungs",
+                  "The Ear"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "The stomach digests food, while the muscular heart pumps blood throughout the body."
+            },
+            "explanation": "The heart is a muscular organ that pumps oxygen-rich blood throughout the circulatory system."
+      },
+      {
+            "id": "bio-p7",
+            "questionText": "7. What is the internal framework of hard bones that supports your body called?",
+            "options": [
+                  "The Skeleton",
+                  "The Skin",
+                  "The Muscle",
+                  "The Stomach"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Skin is the outer covering, while the skeleton is the rigid bone framework."
+            },
+            "explanation": "The human skeletal system provides structural support, movement leverage, and organ protection."
+      },
+      {
+            "id": "bio-p8",
+            "questionText": "8. What type of animal begins life in water with gills and grows up to live on land, like a frog?",
+            "options": [
+                  "An Amphibian",
+                  "A Bird",
+                  "A Reptile",
+                  "A Mammal"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "2": "Reptiles are born on land with lungs and scaly skin. Amphibians undergo metamorphosis from aquatic tadpoles."
+            },
+            "explanation": "Amphibians like frogs have an aquatic larval stage and can live on land as adults."
+      },
+      {
+            "id": "bio-p9",
+            "questionText": "9. What do herbivore animals eat in the wild?",
+            "options": [
+                  "Plants, grass, leaves, and fruit",
+                  "Other animals and meat exclusively",
+                  "Metal rocks and sand",
+                  "Plastic toys"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Carnivores eat meat. Herbivores eat exclusively plant matter."
+            },
+            "explanation": "Herbivores are animals adapted anatomically and physiologically to feed on plant material."
+      },
+      {
+            "id": "bio-p10",
+            "questionText": "10. How do fish breathe oxygen while swimming underwater?",
+            "options": [
+                  "Using their Gills to extract dissolved oxygen from water",
+                  "They hold their breath their whole life",
+                  "Using lungs like humans do",
+                  "Through their tail fins"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "2": "Fish do not have lungs; their feathery gills absorb oxygen directly from water passing over them."
+            },
+            "explanation": "Gills are respiratory organs that extract dissolved oxygen from water and excrete carbon dioxide."
+      },
+      {
+            "id": "bio-p11",
+            "questionText": "11. What does a caterpillar transform into after resting inside a chrysalis?",
+            "options": [
+                  "A Butterfly or Moth",
+                  "A Frog",
+                  "A Beetle shell",
+                  "A Bird"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Tadpoles turn into frogs, while caterpillars metamorphose into butterflies or moths."
+            },
+            "explanation": "Metamorphosis is the biological process where a caterpillar develops into an adult butterfly."
+      },
+      {
+            "id": "bio-p12",
+            "questionText": "12. Which human sensory organ is responsible for detecting sound waves and hearing?",
+            "options": [
+                  "Ears",
+                  "Eyes",
+                  "Nose",
+                  "Tongue"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Eyes detect light, while ears detect sound wave vibrations."
+            },
+            "explanation": "The ear detects sound vibrations and converts them into nerve impulses sent to the brain."
+      },
+      {
+            "id": "bio-p13",
+            "questionText": "13. What is the largest organ of the human body that protects you from germs and cold?",
+            "options": [
+                  "The Skin",
+                  "The Liver",
+                  "The Heart",
+                  "The Teeth"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "The skin is the largest organ, covering and protecting your entire body."
+            },
+            "explanation": "Skin is the integumentary organ that forms an external physical barrier against infection and dehydration."
+      },
+      {
+            "id": "bio-p14",
+            "questionText": "14. What do scientists call the natural environment or home where an animal or plant lives?",
+            "options": [
+                  "A Habitat",
+                  "A Laboratory",
+                  "A Schoolroom",
+                  "A Museum"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "A habitat is the natural ecological area where a species lives, finds food, and shelters."
+            },
+            "explanation": "A habitat provides food, water, shelter, and climate suitable for an organism's survival."
+      },
+      {
+            "id": "bio-p15",
+            "questionText": "15. Which colorful part of a plant attracts birds, bees, and butterflies for pollination?",
+            "options": [
+                  "The Flower petals",
+                  "The Roots",
+                  "The Trunk bark",
+                  "The Soil dirt"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Roots stay underground; flower petals have bright colors and scents to attract pollinators."
+            },
+            "explanation": "Flower petals produce bright colors and nectar to attract animal pollinators."
+      },
+      {
+            "id": "bio-p16",
+            "questionText": "16. What special body covering do birds have that no other animals possess?",
+            "options": [
+                  "Feathers",
+                  "Scales",
+                  "Fur coat",
+                  "Shell armor"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Reptiles and fish have scales. Only birds have feathers for flight and warmth."
+            },
+            "explanation": "Feathers are unique epidermal growths found exclusively in birds, aiding in insulation and flight."
+      },
+      {
+            "id": "bio-p17",
+            "questionText": "17. What happens to the leaves of deciduous trees in the autumn season?",
+            "options": [
+                  "They change color and shed (fall off)",
+                  "They turn into ice sculptures",
+                  "They grow giant fruit overnight",
+                  "They dissolve into rainwater"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "In autumn, deciduous trees break down chlorophyll, showing orange/red colors before dropping leaves."
+            },
+            "explanation": "Deciduous trees shed their leaves in autumn to conserve moisture and energy during winter."
+      },
+      {
+            "id": "bio-p18",
+            "questionText": "18. Which organ located in your skull controls your thoughts, emotions, memory, and movements?",
+            "options": [
+                  "The Brain",
+                  "The Stomach",
+                  "The Liver",
+                  "The Skeleton"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "The stomach handles food digestion, while the brain controls all cognitive and body functions."
+            },
+            "explanation": "The brain is the command center of the central nervous system."
+      },
+      {
+            "id": "bio-p19",
+            "questionText": "19. What do carnivore predators eat to survive?",
+            "options": [
+                  "Meat and other animals",
+                  "Only grass and tree leaves",
+                  "Rocks and river mud",
+                  "Sunlight directly"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Herbivores eat grass, while carnivores hunt and consume other animals."
+            },
+            "explanation": "Carnivores are organisms that derive energy and nutrient requirements from animal tissue."
+      },
+      {
+            "id": "bio-p20",
+            "questionText": "20. Why do desert camels have humps on their backs?",
+            "options": [
+                  "To store fat tissue that can be converted into energy and water",
+                  "To carry desert tourists comfortably",
+                  "To hold gallons of drinking water like a bucket",
+                  "To cool themselves with ice"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "2": "Camel humps store fat, not liquid water. The fat is metabolized when food is unavailable."
+            },
+            "explanation": "Camels store adipose fat in their humps, minimizing heat-trapping insulation over the rest of their body."
+      }
+],
     "Beginner": [
       {
         "id": "b-b1",
@@ -2945,6 +4153,308 @@ export const QUESTION_BANK = {
     ]
   },
   "Chemistry": {
+    "Primary School": [
+      {
+            "id": "chem-p1",
+            "questionText": "1. What are the three common states of matter found on Earth?",
+            "options": [
+                  "Solid, Liquid, and Gas",
+                  "Hot, Cold, and Warm",
+                  "Big, Medium, and Tiny",
+                  "Rock, Wood, and Paper"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Hot and cold are temperatures. Solid, liquid, and gas are the physical states of matter."
+            },
+            "explanation": "The three principal classical states of matter are solid, liquid, and gas."
+      },
+      {
+            "id": "chem-p2",
+            "questionText": "2. What happens to a solid ice cube when left outside in the warm summer sun?",
+            "options": [
+                  "It melts into liquid water",
+                  "It freezes into hard rock",
+                  "It turns into iron metal",
+                  "It catches fire with flames"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Heat causes ice to melt into liquid water, not freeze further."
+            },
+            "explanation": "Melting is the physical process where a solid absorbs heat energy and transitions into a liquid."
+      },
+      {
+            "id": "chem-p3",
+            "questionText": "3. Which of these everyday objects is a solid?",
+            "options": [
+                  "A wooden building block",
+                  "A cup of orange juice",
+                  "The steam from soup",
+                  "The air inside a room"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Orange juice is a liquid. A wooden block is a firm solid that holds its shape."
+            },
+            "explanation": "Solids have a definite shape and volume because their particles are tightly bonded together."
+      },
+      {
+            "id": "chem-p4",
+            "questionText": "4. What is formed when you stir white table salt into a glass of warm water until it disappears?",
+            "options": [
+                  "A clear saltwater solution",
+                  "A pile of stones",
+                  "A solid plastic toy",
+                  "A cloud of smoke"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Salt dissolves uniformly in water to form a liquid homogeneous solution."
+            },
+            "explanation": "Dissolving salt into water creates a homogeneous liquid solution."
+      },
+      {
+            "id": "chem-p5",
+            "questionText": "5. Which of these household items will be attracted to a magnetic bar?",
+            "options": [
+                  "An iron metal nail",
+                  "A plastic ruler",
+                  "A wooden pencil",
+                  "A paper tissue"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Plastic and wood are non-magnetic. Iron and steel are ferromagnetic and stick to magnets."
+            },
+            "explanation": "Ferromagnetic metals like iron and nickel are attracted to magnetic fields."
+      },
+      {
+            "id": "chem-p6",
+            "questionText": "6. What happens when you mix white vinegar with baking soda powder?",
+            "options": [
+                  "It fizzes and bubbles, producing carbon dioxide gas",
+                  "It freezes into solid ice instantly",
+                  "It turns into gold coins",
+                  "Nothing happens at all"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "3": "Vinegar (an acid) reacts with baking soda (a base) to produce bubbling carbon dioxide gas."
+            },
+            "explanation": "The acid-base chemical reaction between vinegar and baking soda releases carbon dioxide gas bubbles."
+      },
+      {
+            "id": "chem-p7",
+            "questionText": "7. Which statement is true about liquids like water and milk?",
+            "options": [
+                  "They take the shape of whatever container they are poured into",
+                  "They have a fixed square shape like a brick",
+                  "They float away into the clouds like air",
+                  "They cannot be poured"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Solids have a fixed shape. Liquids take the shape of their container while keeping a constant volume."
+            },
+            "explanation": "Liquids flow and conform to the shape of their container while retaining a definite volume."
+      },
+      {
+            "id": "chem-p8",
+            "questionText": "8. What do we call a material that prevents heat from escaping, like a thick winter coat or thermos?",
+            "options": [
+                  "A thermal insulator",
+                  "An electric battery",
+                  "A solar reflector",
+                  "A metal conductor"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "3": "Conductors transfer heat quickly, while insulators slow down heat transfer."
+            },
+            "explanation": "Thermal insulators reduce the rate of heat conduction between warmer and cooler areas."
+      },
+      {
+            "id": "chem-p9",
+            "questionText": "9. What color does iron metal turn when it rusts after being exposed to rain and air?",
+            "options": [
+                  "Reddish-brown rust",
+                  "Bright neon green",
+                  "Shiny silver chrome",
+                  "Deep purple velvet"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Iron oxide (rust) is characteristically reddish-brown."
+            },
+            "explanation": "Iron reacts with oxygen and moisture to form hydrated iron(III) oxide, which is reddish-brown."
+      },
+      {
+            "id": "chem-p10",
+            "questionText": "10. Which material is waterproof and used to make rainboots and raincoats?",
+            "options": [
+                  "Rubber or plastic",
+                  "Dry cardboard",
+                  "Cotton towel",
+                  "Tissue paper"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "2": "Cardboard and cotton soak up water. Rubber and plastic repel water."
+            },
+            "explanation": "Rubber and waterproof synthetic polymers repel water without absorbing moisture."
+      },
+      {
+            "id": "chem-p11",
+            "questionText": "11. At what temperature does liquid water freeze into solid ice?",
+            "options": [
+                  "0 degrees Celsius (32 degrees Fahrenheit)",
+                  "100 degrees Celsius (212 degrees Fahrenheit)",
+                  "50 degrees Celsius",
+                  "25 degrees Celsius (Room temperature)"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "100°C is the boiling point of water. 0°C is the freezing point."
+            },
+            "explanation": "The freezing point of pure water at standard atmospheric pressure is 0°C (32°F)."
+      },
+      {
+            "id": "chem-p12",
+            "questionText": "12. Why does a party balloon filled with helium gas float upward into the sky?",
+            "options": [
+                  "Helium gas is lighter and less dense than the surrounding air",
+                  "Helium is heavier than water",
+                  "Helium has tiny invisible wings",
+                  "The balloon is pulled upward by sunlight"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Helium has a much lower density than air, producing positive buoyant lift."
+            },
+            "explanation": "Because helium is less dense than the nitrogen-oxygen air around it, buoyant forces cause it to rise."
+      },
+      {
+            "id": "chem-p13",
+            "questionText": "13. What happens when dry firewood burns in a campfire?",
+            "options": [
+                  "It undergoes a chemical reaction, releasing heat, light, ash, and smoke",
+                  "It freezes into hard ice crystals",
+                  "It turns into liquid milk",
+                  "It turns into shiny gold metal"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Combustion is a chemical change that breaks molecular bonds, releasing heat and light."
+            },
+            "explanation": "Combustion of wood is an exothermic chemical reaction with oxygen that yields ash, CO₂, water vapor, and heat."
+      },
+      {
+            "id": "chem-p14",
+            "questionText": "14. Which transparent material is commonly used to make window panes and eyeglasses?",
+            "options": [
+                  "Glass",
+                  "Concrete stone",
+                  "Cast iron",
+                  "Dark wood"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Concrete and iron are opaque. Glass is non-crystalline and transparent to visible light."
+            },
+            "explanation": "Glass is an amorphous solid that transmits visible light clearly."
+      },
+      {
+            "id": "chem-p15",
+            "questionText": "15. What happens when sugar granules are mixed into a cup of hot herbal tea?",
+            "options": [
+                  "The sugar dissolves into the warm liquid",
+                  "The sugar explodes with loud bangs",
+                  "The tea freezes into a popsicle",
+                  "The cup disappears"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Sugar molecules separate and disperse evenly in hot water without any explosion."
+            },
+            "explanation": "Sugar dissolves into water as polar water molecules pull sucrose molecules into solution."
+      },
+      {
+            "id": "chem-p16",
+            "questionText": "16. What is the well-known chemical formula for pure water molecules?",
+            "options": [
+                  "H₂O (Two Hydrogen atoms, One Oxygen atom)",
+                  "CO₂ (Carbon Dioxide)",
+                  "NaCl (Table Salt)",
+                  "O₂ (Oxygen Gas)"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "CO₂ is carbon dioxide. Water consists of two hydrogen atoms bonded to one oxygen atom: H₂O."
+            },
+            "explanation": "A water molecule consists of two hydrogen atoms covalently bonded to one oxygen atom (H₂O)."
+      },
+      {
+            "id": "chem-p17",
+            "questionText": "17. Which soft, breathable material is harvested from fluffy plant seed pods to make shirts?",
+            "options": [
+                  "Cotton",
+                  "Steel wire",
+                  "Granite rock",
+                  "Glass fiber"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Steel is a metal alloy, while cotton is a natural soft plant fiber."
+            },
+            "explanation": "Cotton is a soft, fluffy staple fiber that grows around the seeds of cotton plants."
+      },
+      {
+            "id": "chem-p18",
+            "questionText": "18. When warm steam from a hot shower touches a cool bathroom mirror and turns into water droplets, what is this process called?",
+            "options": [
+                  "Condensation",
+                  "Melting",
+                  "Freezing",
+                  "Combustion"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Condensation is the phase change from gas to liquid when cooling."
+            },
+            "explanation": "Condensation occurs when gaseous vapor cools upon contact with a colder surface and turns into liquid."
+      },
+      {
+            "id": "chem-p19",
+            "questionText": "19. What gas makes up most of the air in Earth's atmosphere (about 78%)?",
+            "options": [
+                  "Nitrogen gas",
+                  "Chlorine gas",
+                  "Hydrogen gas",
+                  "Helium gas"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "2": "Earth's atmosphere is roughly 78% nitrogen and 21% oxygen."
+            },
+            "explanation": "Nitrogen gas (N₂) is the most abundant gas in Earth's atmosphere, comprising approximately 78%."
+      },
+      {
+            "id": "chem-p20",
+            "questionText": "20. What do we call a mixture where you can easily see and separate the pieces, like a bowl of cereal and fruit?",
+            "options": [
+                  "A physical mixture",
+                  "A chemical explosion",
+                  "Pure distilled water",
+                  "A single element atom"
+            ],
+            "correctAnswerIndex": 0,
+            "misconceptionMap": {
+                  "1": "Physical mixtures retain individual component properties and can be mechanically separated."
+            },
+            "explanation": "A physical mixture combines substances without changing their individual chemical identities."
+      }
+],
     "Beginner": [
       {
         "id": "c-b1",
@@ -3726,38 +5236,62 @@ export const shuffleQuestionOptions = (question) => {
  * Helper to fetch or generate a randomized 10-question quiz customized to user profile
  * Picks 10 random questions from the 20+ question pool and shuffles all answer choices
  */
+export const normalizeSubject = (subject) => {
+  const subLower = (subject || '').toLowerCase();
+  if (subLower.includes('math') || subLower.includes('algebra') || subLower.includes('calculus') || subLower.includes('geometry')) return 'Mathematics';
+  if (subLower.includes('phys') || subLower.includes('electronic') || subLower.includes('mechanic')) return 'Physics';
+  if (subLower.includes('bio') || subLower.includes('life') || subLower.includes('ecolog') || subLower.includes('biotech')) return 'Biology';
+  if (subLower.includes('chem') || subLower.includes('material')) return 'Chemistry';
+  return 'Computer Science & AI';
+};
+
+export const normalizeEducationLevel = (rawLevel) => {
+  const l = (rawLevel || '').toLowerCase().trim();
+  if (l.includes('primary') || l.includes('elementary') || l.includes('grade 1') || l.includes('grade 2') || l.includes('grade 3') || l.includes('grade 4') || l.includes('grade 5')) {
+    return 'Primary School';
+  }
+  if (l.includes('middle') || l.includes('junior') || l.includes('grade 6') || l.includes('grade 7') || l.includes('grade 8')) {
+    return 'Middle School';
+  }
+  if (l.includes('higher') || l.includes('senior') || l.includes('grade 11') || l.includes('grade 12') || l.includes('pre-university') || l.includes('+2')) {
+    return 'Higher Secondary';
+  }
+  if (l.includes('college') || l.includes('university') || l.includes('undergrad') || l.includes('postgrad') || l.includes('degree') || l.includes('adult') || l.includes('professional') || l.includes('advanced')) {
+    return 'College / University';
+  }
+  return 'High School';
+};
+
 export const generateCustomQuiz = ({
   subject = 'Computer Science & AI',
   educationLevel = 'High School',
-  subLevel = 'Intermediate',
+  subLevel = 'High School',
   isRetake = false,
   seed = Date.now()
 }) => {
-  // Normalize subject
-  let domainKey = 'Computer Science & AI';
-  const subLower = (subject || '').toLowerCase();
-  if (subLower.includes('math')) domainKey = 'Mathematics';
-  else if (subLower.includes('phys')) domainKey = 'Physics';
-  else if (subLower.includes('bio')) domainKey = 'Biology';
-  else if (subLower.includes('chem')) domainKey = 'Chemistry';
+  const domainKey = normalizeSubject(subject);
+  const displayLevel = normalizeEducationLevel(educationLevel || subLevel);
 
-  // Normalize level
-  let levelKey = 'Intermediate';
-  const eduLower = (educationLevel || subLevel || '').toLowerCase();
-  if (eduLower.includes('middle') || eduLower.includes('beginner') || eduLower.includes('6') || eduLower.includes('7') || eduLower.includes('8') || eduLower.includes('primary')) {
-    levelKey = 'Beginner';
-  } else if (eduLower.includes('college') || eduLower.includes('advanced') || eduLower.includes('adult') || eduLower.includes('university') || eduLower.includes('senior')) {
-    levelKey = 'Advanced';
-  }
-
-  // Get raw pool
   const subjectPool = QUESTION_BANK[domainKey] || QUESTION_BANK['Computer Science & AI'];
-  let pool = subjectPool[levelKey] || subjectPool['Intermediate'] || [];
+  
+  let pool = [];
+  if (displayLevel === 'Primary School') {
+    pool = subjectPool['Primary School'] || subjectPool['Beginner'];
+  } else if (displayLevel === 'Middle School') {
+    pool = subjectPool['Middle School'] || subjectPool['Beginner'];
+  } else if (displayLevel === 'High School') {
+    pool = subjectPool['High School'] || subjectPool['Intermediate'];
+  } else if (displayLevel === 'Higher Secondary') {
+    pool = subjectPool['Higher Secondary'] || subjectPool['Advanced'];
+  } else {
+    // College / University
+    pool = subjectPool['College / University'] || subjectPool['Advanced'];
+  }
 
   // Deep clone pool
   let clonedPool = JSON.parse(JSON.stringify(pool));
 
-  // Fisher-Yates shuffle of the question pool to select different questions every time
+  // Fisher-Yates shuffle of the question pool to select 10 different questions every time
   for (let i = clonedPool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [clonedPool[i], clonedPool[j]] = [clonedPool[j], clonedPool[i]];
@@ -3783,11 +5317,12 @@ export const generateCustomQuiz = ({
   });
 
   return {
-    _id: `quiz-custom-${domainKey.toLowerCase().replace(/[^a-z]/g, '')}-${levelKey.toLowerCase()}-${seed}`,
-    title: `${domainKey} Adaptive Assessment (${levelKey})`,
+    _id: `quiz-custom-${domainKey.toLowerCase().replace(/[^a-z]/g, '')}-${displayLevel.toLowerCase().replace(/[^a-z]/g, '')}-${seed}`,
+    title: `${domainKey} Diagnostic Assessment (${displayLevel})`,
     subject: domainKey,
-    topic: `${domainKey} ${levelKey} Practice`,
-    grade: `${levelKey} Tier (${educationLevel})`,
+    topic: `${domainKey} Assessment`,
+    educationLevel: displayLevel,
+    grade: displayLevel,
     type: 'custom_diagnostic',
     questions: finalQuestions
   };

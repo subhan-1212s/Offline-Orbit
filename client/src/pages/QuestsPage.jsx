@@ -230,7 +230,7 @@ export const QuestsPage = ({ onLaunchQuiz, onLaunchLesson }) => {
         </div>
 
         <button 
-          onClick={() => onLaunchQuiz('quiz-diagnostic-g7')}
+          onClick={() => onLaunchQuiz('quiz-diagnostic-assessment')}
           className="btn-coral text-xs py-2 px-4 shadow-sm"
         >
           <Zap className="w-4 h-4" />

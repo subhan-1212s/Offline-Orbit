@@ -15,8 +15,8 @@ const generate6DigitCode = () => {
 let inMemoryClasses = [
   {
     _id: 'class-7a',
-    className: 'Grade 10 CS & AI Alpha Room',
-    grade: 'Grade 10',
+    className: 'High School CS & AI Alpha Room',
+    grade: 'High School',
     subject: 'Computer Science',
     code: '794201',
     teacherId: 'user-teacher-1',

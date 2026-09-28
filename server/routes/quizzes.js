@@ -11,11 +11,11 @@ const router = express.Router();
 // GET /api/quizzes/diagnostic
 router.get('/diagnostic', async (req, res) => {
   try {
-    const { interestDomain, subLevel, educationLevel, retake, seed } = req.query;
+    const { interestDomain, subLevel, educationLevel, grade, retake, seed } = req.query;
     
     // Check if user info passed via query or demo header
     const domain = interestDomain || req.headers['x-interest-domain'] || 'Computer Science & AI';
-    const level = subLevel || educationLevel || req.headers['x-education-level'] || 'Intermediate';
+    const level = subLevel || educationLevel || grade || req.headers['x-education-level'] || 'High School';
 
     const customQuiz = generateCustomQuiz({
       subject: domain,
@@ -36,7 +36,7 @@ router.get('/diagnostic', async (req, res) => {
 // GET /api/quizzes/lesson/:lessonId
 router.get('/lesson/:lessonId', async (req, res) => {
   try {
-    const { retake, seed, interestDomain, subLevel } = req.query;
+    const { retake, seed, interestDomain, subLevel, educationLevel, grade } = req.query;
     const lessonId = req.params.lessonId;
 
     let targetSubject = 'Computer Science & AI';
@@ -46,10 +46,12 @@ router.get('/lesson/:lessonId', async (req, res) => {
     else if (lessonId.includes('chem')) targetSubject = 'Chemistry';
     else if (interestDomain) targetSubject = interestDomain;
 
+    const level = subLevel || educationLevel || grade || 'High School';
+
     const customQuiz = generateCustomQuiz({
       subject: targetSubject,
-      educationLevel: subLevel || 'Intermediate',
-      subLevel: subLevel || 'Intermediate',
+      educationLevel: level,
+      subLevel: level,
       isRetake: retake === 'true' || !!seed,
       seed: seed ? parseInt(seed) : Date.now()
     });

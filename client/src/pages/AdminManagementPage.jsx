@@ -77,7 +77,7 @@ export const AdminManagementPage = () => {
         name: 'Priya Patel', 
         email: 'priya@orbit.edu', 
         role: 'student', 
-        grade: 'Grade 8 High School', 
+        grade: 'High School', 
         streak: 7, 
         points: 640, 
         status: 'Active Today',
@@ -107,7 +107,7 @@ export const AdminManagementPage = () => {
         name: 'Mr. Rajesh Kumar', 
         email: 'teacher@orbit.edu', 
         role: 'educator', 
-        grade: 'Grade 7 STEM Lead Teacher', 
+        grade: 'Middle School STEM Lead Teacher', 
         streak: 12, 
         points: 1200, 
         status: 'Active Now',
@@ -124,7 +124,7 @@ export const AdminManagementPage = () => {
           ],
           misconceptions: [],
           recentAttempts: [
-            { quiz: 'Grade 10 STEM Diagnostic Creator', score: 10, total: 10, date: '28 Sep 2026' }
+            { quiz: 'High School STEM Diagnostic Creator', score: 10, total: 10, date: '28 Sep 2026' }
           ]
         }
       },
@@ -189,7 +189,7 @@ export const AdminManagementPage = () => {
       }
     } catch (e) {}
     return [
-      { _id: 'room-1', className: "Mr. Rajesh's STEM Workspace", code: '794201', subject: 'Computer Science & AI', grade: 'Grade 10', studentIds: ['usr-1', 'usr-2'] }
+      { _id: 'room-1', className: "Mr. Rajesh's STEM Workspace", code: '794201', subject: 'Computer Science & AI', grade: 'High School', studentIds: ['usr-1', 'usr-2'] }
     ];
   });
 
@@ -618,7 +618,7 @@ export const AdminManagementPage = () => {
                 <tr>
                   <th className="py-3 px-4">User Details</th>
                   <th className="py-3 px-4">Platform Role</th>
-                  <th className="py-3 px-4">Grade / Category</th>
+                  <th className="py-3 px-4">Education Level / Category</th>
                   <th className="py-3 px-4">Activity & Streak</th>
                   <th className="py-3 px-4">Mastery</th>
                   <th className="py-3 px-4 text-right">Actions</th>
@@ -977,7 +977,7 @@ export const AdminManagementPage = () => {
               <div key={r._id} className="p-5 rounded-2xl border border-[#E2E8F0] bg-white shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-[#4F46E5] uppercase tracking-wider bg-[#EEF2FF] px-2 py-0.5 rounded">
-                    {r.grade || 'Grade 10'} • {r.subject || 'STEM'}
+                    {r.grade || 'High School'} • {r.subject || 'STEM'}
                   </span>
                   <div className="text-right">
                     <span className="text-[10px] text-[#64748B] block">Join Code</span>

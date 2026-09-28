@@ -37,7 +37,7 @@ const MainAppContent = () => {
 
   const [activeTab, setActiveTab] = useState(getDefaultTab());
   const [selectedLessonId, setSelectedLessonId] = useState('lesson-1');
-  const [selectedQuizId, setSelectedQuizId] = useState('quiz-diagnostic-g7');
+  const [selectedQuizId, setSelectedQuizId] = useState('quiz-diagnostic-assessment');
   const [selectedStudentId, setSelectedStudentId] = useState('user-student-mohamed');
   const [selectedStudentMeta, setSelectedStudentMeta] = useState({ name: 'Mohamed Subhan', email: 'mohamedsubhan155@gmail.com', grade: 'High School' });
 
@@ -47,7 +47,7 @@ const MainAppContent = () => {
   };
 
   const handleLaunchQuiz = (quizId) => {
-    setSelectedQuizId(quizId || 'quiz-diagnostic-g7');
+    setSelectedQuizId(quizId || 'quiz-diagnostic-assessment');
     setActiveTab('quiz-view');
   };
 
@@ -61,14 +61,18 @@ const MainAppContent = () => {
   if (!user || activeTab === 'auth') {
     return (
       <div className="min-h-screen bg-[#FAF9F6] text-[#1E2229]">
-        <AuthPage onAuthSuccess={(u) => {
+        <AuthPage onAuthSuccess={(u, isNewUser) => {
           if (u?.role === 'admin' || u?.email?.toLowerCase().includes('admin')) {
             setActiveTab('admin-management');
           } else if (u?.role === 'educator' || u?.role === 'teacher' || u?.email?.toLowerCase().includes('teacher')) {
             setActiveTab('teacher-dashboard');
-          } else {
-            setSelectedQuizId('quiz-diagnostic-g7');
+          } else if (isNewUser) {
+            // Ask new user quiz only upon initial registration
+            setSelectedQuizId('quiz-diagnostic-assessment');
             setActiveTab('quiz-view');
+          } else {
+            // Once they login, DO NOT give quiz after login!
+            setActiveTab(u?.role === 'independent' ? 'independent-home' : 'student-home');
           }
         }} />
       </div>
@@ -83,7 +87,7 @@ const MainAppContent = () => {
             onNavigateToLesson={handleLaunchLesson}
             onNavigateToQuiz={handleLaunchQuiz}
             onNavigateToDiagnostic={() => {
-              setSelectedQuizId('quiz-diagnostic-g7');
+              setSelectedQuizId('quiz-diagnostic-assessment');
               setActiveTab('quiz-view');
             }}
             onNavigateToOffline={() => setActiveTab('offline-manager')}
@@ -122,7 +126,7 @@ const MainAppContent = () => {
           <QuizPage
             quizId={selectedQuizId}
             lessonId={selectedLessonId}
-            isDiagnostic={selectedQuizId === 'quiz-diagnostic-g7'}
+            isDiagnostic={selectedQuizId === 'quiz-diagnostic-assessment' || selectedQuizId?.includes('diagnostic')}
             onComplete={() => setActiveTab(user?.role === 'educator' || user?.role === 'teacher' ? 'teacher-dashboard' : 'student-home')}
             onNavigateToLesson={handleLaunchLesson}
             onNavigateToQuests={() => setActiveTab('quests')}
