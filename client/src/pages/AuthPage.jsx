@@ -183,10 +183,18 @@ export const AuthPage = ({ onAuthSuccess }) => {
     setMessage('');
     setAuthIpData(null);
 
+    const cleanEmail = (email || '').trim().toLowerCase();
+    if (!cleanEmail) {
+      setMessage('Please enter a valid email address.');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await api.forgotPassword({ email });
+      const res = await api.forgotPassword({ email: cleanEmail });
       setResetCode(''); // Clean code state so user must check their inbox
-      setMessage(res.message || `A 6-digit verification code has been dispatched to ${email}. Please check your email inbox.`);
+      try { sessionStorage.setItem('offline_orbit_reset_email', cleanEmail); } catch (e) {}
+      setMessage(res.message || `A 6-digit verification code has been dispatched to ${cleanEmail}. Please check your email inbox.`);
       setResetStep(2);
     } catch (err) {
       if (err.unrecognisedIp || err.message?.includes('Brevo Security Alert') || err.message?.includes('authorised_ips')) {
@@ -207,17 +215,40 @@ export const AuthPage = ({ onAuthSuccess }) => {
     setLoading(true);
     setMessage('');
 
+    const cleanEmail = (email || (typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('offline_orbit_reset_email') : '') || '').trim().toLowerCase();
+    const cleanCode = (resetCode || '').replace(/\D/g, '').trim();
+
+    if (!cleanEmail) {
+      setMessage('Please enter your email address first.');
+      setResetStep(1);
+      setLoading(false);
+      return;
+    }
+
+    if (!cleanCode || cleanCode.length !== 6) {
+      setMessage('Please enter all 6 digits of the verification code received in your email.');
+      setLoading(false);
+      return;
+    }
+
+    if (!newPassword || newPassword.length < 4) {
+      setMessage('New password must be at least 4 characters long.');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await api.resetPassword({ email, resetCode, newPassword });
+      const res = await api.resetPassword({ email: cleanEmail, resetCode: cleanCode, newPassword });
       setMessage(res.message || '✅ Password reset successful! You can now sign in with your new password.');
       setPassword(newPassword); // Pre-fill password on the login form
+      setEmail(cleanEmail);
       setTimeout(() => {
         setActiveMode(previousMode || 'learner-login');
         setResetStep(1);
         setMessage('✅ Password reset successful! Please sign in with your new password.');
       }, 1600);
     } catch (err) {
-      setMessage(err.message || 'Password reset failed. Please verify your 6-digit code.');
+      setMessage(err.message || 'Password reset failed. Please verify your 6-digit code or request a new one.');
     } finally {
       setLoading(false);
     }
@@ -902,11 +933,15 @@ export const AuthPage = ({ onAuthSuccess }) => {
                     <label className="block text-xs font-bold text-[#1E2229] mb-1">6-Digit Verification Code</label>
                     <input
                       type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
                       required
-                      maxLength={6}
                       placeholder="123456"
                       value={resetCode}
-                      onChange={(e) => setResetCode(e.target.value.trim())}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, '').slice(0, 6);
+                        setResetCode(digits);
+                      }}
                       className="w-full bg-[#FAF9F6] border border-[#E2E8F0] rounded-xl p-3 text-xs font-bold text-center tracking-[0.35em] text-lg font-mono focus:outline-none focus:border-[#F95738]"
                     />
                   </div>

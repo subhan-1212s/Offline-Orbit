@@ -21,6 +21,7 @@ yarn-debug.log*
 yarn-error.log*
 .tempmediaStorage/
 scratch/
+server/data/*.json
 
 # IDE & System files
 .DS_Store
