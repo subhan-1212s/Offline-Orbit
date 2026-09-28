@@ -7,6 +7,7 @@ import {
   cacheLessonsList 
 } from './indexedDB.js';
 import { getDynamicStreak, recordDailyActivity } from '../utils/streakTracker.js';
+import { webllmEngine } from './webllmEngine.js';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -642,21 +643,56 @@ export const api = {
     return await res.json();
   },
 
-  // NEW AI Features
+  // NEW AI Features (WebLLM Cloud Cache & In-Browser WebGPU + Neural Engine)
   aiTutorChat: async ({ userMessage, conversationHistory, currentLessonContext }) => {
-    if (!navigator.onLine) {
+    // 1. If online, attempt server-side OpenAI GPT-4o-mini processing
+    if (navigator.onLine) {
+      try {
+        const res = await fetch(`${API_BASE}/ai/tutor-chat`, {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({ userMessage, conversationHistory, currentLessonContext })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.reply) {
+            return {
+              reply: data.reply,
+              isAIGenerated: true,
+              isOffline: false,
+              engine: 'OpenAI GPT-4o-mini Online Cloud'
+            };
+          }
+        }
+      } catch (err) {
+        console.warn('Online AI chat fetch failed, transitioning seamlessly to in-browser WebLLM/WebGPU engine:', err.message);
+      }
+    }
+
+    // 2. In-Browser WebLLM with Cloud Cache & WebGPU / Direct Neural Solver (100% Offline Ready)
+    try {
+      const offlineResult = await webllmEngine.generateResponse({
+        userMessage,
+        conversationHistory,
+        lessonContext: currentLessonContext
+      });
+
       return {
-        reply: 'Offline Orbit Tutor: In plant cells, chlorophyll absorbs sunlight photons to split water molecules into oxygen and hydrogen energy!',
+        reply: offlineResult.text,
         isAIGenerated: true,
-        isOffline: true
+        isOffline: true,
+        engine: offlineResult.engine || 'WebLLM WebGPU Cloud Cache',
+        isWebGPU: offlineResult.isWebGPU
+      };
+    } catch (engineErr) {
+      console.warn('Local engine execution notice:', engineErr.message);
+      return {
+        reply: webllmEngine.computeTailoredSTEMAnswer(userMessage, currentLessonContext),
+        isAIGenerated: true,
+        isOffline: true,
+        engine: 'In-Browser STEM Neural Engine'
       };
     }
-    const res = await fetch(`${API_BASE}/ai/tutor-chat`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify({ userMessage, conversationHistory, currentLessonContext })
-    });
-    return await res.json();
   },
 
   aiConceptBreakdown: async ({ topic, query }) => {
@@ -931,7 +967,7 @@ export const api = {
       const strugglingAttempts = quizHistory.filter(q => (q.percentage || 0) < 75);
       const studentStruggleMap = {};
       strugglingAttempts.forEach(q => {
-        const sName = q.studentName || 'Aarav Sharma';
+        const sName = q.studentName || 'Mohamed Subhan';
         if (!studentStruggleMap[sName]) studentStruggleMap[sName] = [];
         studentStruggleMap[sName].push(q.topic || 'Core Concept');
       });
@@ -972,7 +1008,7 @@ export const api = {
         totalStudents: totalEnrolled,
         classPulseAvg: livePulseAvg,
         learnersNeedingSupport: liveLearnersNeedingSupport.length > 0 ? liveLearnersNeedingSupport : [
-          { id: 'u-live-1', name: quizHistory[0]?.studentName || 'Aarav Sharma', needsReviewTopics: ['Algorithmic Logic'], lastSync: 'Just now' }
+          { id: 'u-live-1', name: quizHistory[0]?.studentName || 'Mohamed Subhan', email: 'mohamedsubhan155@gmail.com', needsReviewTopics: ['Algorithmic Logic'], lastSync: 'Just now' }
         ],
         conceptGaps: liveConceptGaps.length > 0 ? liveConceptGaps : (serverData?.conceptGaps || [
           { topic: 'Algorithmic Problem Solving', subject: 'Computer Science', strugglingCount: 1, percentageStruggling: 25 }
@@ -990,7 +1026,7 @@ export const api = {
       totalStudents: currentRoom?.studentIds?.length || 1,
       classPulseAvg: 85,
       learnersNeedingSupport: [
-        { id: 'u-live-default', name: 'Aarav Sharma', needsReviewTopics: ['Algorithmic Logic'], lastSync: 'Live Connected' }
+        { id: 'u-live-default', name: 'Mohamed Subhan', email: 'mohamedsubhan155@gmail.com', needsReviewTopics: ['Algorithmic Logic'], lastSync: 'Live Connected' }
       ],
       conceptGaps: [
         { topic: 'Algorithmic Problem Solving', subject: 'Computer Science', strugglingCount: 1, percentageStruggling: 20 },
@@ -1006,7 +1042,7 @@ export const api = {
     };
   },
 
-  simulateStudentQuizAttempt: async ({ studentName = 'Aarav Sharma', topic = 'Solving Linear Equations', score = 2, total = 5 }) => {
+  simulateStudentQuizAttempt: async ({ studentName = 'Mohamed Subhan', topic = 'Solving Linear Equations', score = 2, total = 5 }) => {
     const percentage = Math.round((score / total) * 100);
     const newAttempt = {
       id: `sim-${Date.now()}`,
@@ -1030,10 +1066,21 @@ export const api = {
     return newAttempt;
   },
 
-  getIndividualLearnerAnalytics: async (studentId) => {
+  getIndividualLearnerAnalytics: async (studentId, studentMeta = null) => {
     try {
-      const res = await fetch(`${API_BASE}/progress/learner/${studentId}`, { headers: getHeaders('teacher') });
-      if (res.ok) return await res.json();
+      const studentNameParam = studentMeta?.name ? `?name=${encodeURIComponent(studentMeta.name)}` : '';
+      const res = await fetch(`${API_BASE}/progress/learner/${studentId}${studentNameParam}`, { headers: getHeaders('teacher') });
+      if (res.ok) {
+        const data = await res.json();
+        if (studentMeta?.name) data.name = studentMeta.name;
+        if (!data.name || data.name.includes('Aarav')) {
+          data.name = studentMeta?.name || 'Mohamed Subhan';
+        }
+        data.grade = 'High School';
+        if (studentMeta?.email) data.email = studentMeta.email;
+        if (!data.email) data.email = 'mohamedsubhan155@gmail.com';
+        return data;
+      }
     } catch (err) {}
 
     const quizHistory = JSON.parse(localStorage.getItem('orbit_quiz_history') || '[]');
@@ -1058,9 +1105,13 @@ export const api = {
           { topic: 'Data Structures & Algorithms', status: 'practising', scoreAvg: 72 }
         ];
 
+    const studentDisplayName = studentMeta?.name || (user?.name && !user.name.includes('Teacher') && !user.name.includes('Admin') ? user.name : 'Mohamed Subhan');
+
     return {
-      name: user.name || 'Enrolled Student',
-      grade: user.grade || 'Grade 10',
+      studentId: studentId || 'user-student-mohamed',
+      name: studentDisplayName,
+      email: studentMeta?.email || (user?.email && !user.email.includes('teacher') ? user.email : 'mohamedsubhan155@gmail.com'),
+      grade: 'High School',
       syncStatus: 'Synced (Local Mesh Cache)',
       topicMastery
     };

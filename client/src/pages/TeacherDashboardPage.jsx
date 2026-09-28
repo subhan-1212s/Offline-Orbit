@@ -19,7 +19,7 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
   // New Room Creation Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
-  const [newRoomGrade, setNewRoomGrade] = useState('Grade 10');
+  const [newRoomGrade, setNewRoomGrade] = useState('High School');
   const [newRoomSubject, setNewRoomSubject] = useState('Computer Science');
   const [creatingRoom, setCreatingRoom] = useState(false);
 
@@ -86,7 +86,7 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
   const handleSimulateQuizSubmission = async () => {
     setIsSimulating(true);
     try {
-      const studentNames = ['Aarav Sharma', 'Priya Patel', 'Rohan Mehta', 'Sneha Gupta'];
+      const studentNames = ['Mohamed Subhan', 'Priya Patel', 'Rohan Mehta', 'Sneha Gupta'];
       const topics = [
         'Solving Two-Step Linear Equations',
         'Photosynthesis & Stomata',
@@ -120,7 +120,7 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
       if (!myRooms || myRooms.length === 0) {
         const initialRoom = await api.createClass({
           className: `${user?.name || 'Educator'}'s STEM Workspace`,
-          grade: 'Grade 10',
+          grade: 'High School',
           subject: user?.subjectTaught || 'Computer Science & AI',
           description: `Active STEM Classroom Workspace for ${user?.name || 'Educator'}`
         });
@@ -541,7 +541,7 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
             {classData.learnersNeedingSupport.map((student) => (
               <div 
                 key={student.id} 
-                onClick={() => onSelectStudent(student.id)}
+                onClick={() => onSelectStudent(student.id, student)}
                 className="p-4 rounded-xl border border-[#E5E2DA] bg-[#FAF9F6] hover:bg-white hover:border-[#D4CF0] cursor-pointer flex flex-wrap items-center justify-between gap-3 transition-all"
               >
                 <div>
@@ -584,7 +584,7 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Grade 10 STEM Workspace"
+                  placeholder="e.g. High School STEM Workspace"
                   value={newRoomName}
                   onChange={(e) => setNewRoomName(e.target.value)}
                   className="w-full bg-[#FAF9F6] border border-[#E5E2DA] rounded-xl p-2.5 text-xs font-semibold focus:outline-none focus:border-[#4F46E5]"
@@ -599,9 +599,7 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
                     onChange={(e) => setNewRoomGrade(e.target.value)}
                     className="w-full bg-[#FAF9F6] border border-[#E5E2DA] rounded-xl p-2.5 text-xs font-semibold focus:outline-none"
                   >
-                    <option value="Grade 9">Grade 9</option>
-                    <option value="Grade 10">Grade 10</option>
-                    <option value="Grade 11-12">Grade 11-12</option>
+                    <option value="High School">High School</option>
                     <option value="Undergraduate">Undergraduate</option>
                   </select>
                 </div>

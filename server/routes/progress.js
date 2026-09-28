@@ -208,7 +208,7 @@ router.get('/class/:classId', protect, async (req, res) => {
       totalStudents: totalCount,
       classPulseAvg,
       learnersNeedingSupport: learnersNeedingSupport.length > 0 ? learnersNeedingSupport : [
-        { id: students[0]?._id || 'student-1', name: students[0]?.name || 'Aarav Sharma', needsReviewTopics: ['Algorithmic Logic'], lastSync: 'Just now' }
+        { id: students[0]?._id || 'student-mohamed', name: (students[0]?.name && !students[0].name.includes('Aarav')) ? students[0].name : 'Mohamed Subhan', email: 'mohamedsubhan155@gmail.com', needsReviewTopics: ['Algorithmic Logic'], lastSync: 'Just now' }
       ],
       conceptGaps,
       assignmentCompletion,
@@ -234,8 +234,9 @@ router.get('/learner/:studentId', protect, async (req, res) => {
       progress = initialSeedData.progressData.find(p => p.userId === req.params.studentId);
     }
 
-    const studentName = studentUser?.name || 'Aarav Sharma';
-    const studentGrade = studentUser?.grade || 'Grade 10';
+    const queryName = req.query.name;
+    const studentName = queryName || (studentUser?.name && !studentUser.name.includes('Aarav') ? studentUser.name : 'Mohamed Subhan');
+    const studentGrade = 'High School';
 
     const topicMastery = progress?.topicMastery?.length > 0 
       ? progress.topicMastery 
@@ -249,6 +250,7 @@ router.get('/learner/:studentId', protect, async (req, res) => {
       studentId: req.params.studentId,
       name: studentName,
       grade: studentGrade,
+      email: studentUser?.email || 'mohamedsubhan155@gmail.com',
       preferredLanguage: studentUser?.preferredLanguage || 'en',
       syncStatus: 'Synced (Real-time Mesh Active)',
       offlinePacksDownloaded: 3,

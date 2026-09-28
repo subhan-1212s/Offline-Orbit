@@ -38,7 +38,8 @@ const MainAppContent = () => {
   const [activeTab, setActiveTab] = useState(getDefaultTab());
   const [selectedLessonId, setSelectedLessonId] = useState('lesson-1');
   const [selectedQuizId, setSelectedQuizId] = useState('quiz-diagnostic-g7');
-  const [selectedStudentId, setSelectedStudentId] = useState('user-student-1');
+  const [selectedStudentId, setSelectedStudentId] = useState('user-student-mohamed');
+  const [selectedStudentMeta, setSelectedStudentMeta] = useState({ name: 'Mohamed Subhan', email: 'mohamedsubhan155@gmail.com', grade: 'High School' });
 
   const handleLaunchLesson = (lessonId) => {
     setSelectedLessonId(lessonId || 'lesson-1');
@@ -142,8 +143,9 @@ const MainAppContent = () => {
       case 'teacher-dashboard':
         return (
           <TeacherDashboardPage
-            onSelectStudent={(studentId) => {
+            onSelectStudent={(studentId, studentMeta) => {
               setSelectedStudentId(studentId);
+              setSelectedStudentMeta(studentMeta || { name: 'Mohamed Subhan', email: 'mohamedsubhan155@gmail.com', grade: 'High School' });
               setActiveTab('teacher-learner');
             }}
           />
@@ -153,6 +155,7 @@ const MainAppContent = () => {
         return (
           <TeacherLearnerViewPage
             studentId={selectedStudentId}
+            studentMeta={selectedStudentMeta}
             onBack={() => setActiveTab('teacher-dashboard')}
           />
         );
