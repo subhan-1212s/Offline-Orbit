@@ -786,19 +786,41 @@ export const api = {
   getStudentProgress: async () => {
     try {
       const res = await fetch(`${API_BASE}/progress/student`, { headers: getHeaders() });
-      if (!res.ok) throw new Error('Fetch progress failed');
-      return await res.json();
-    } catch (err) {
+      if (res.ok) return await res.json();
+    } catch (err) {}
+
+    try {
+      const quizHistory = JSON.parse(localStorage.getItem('orbit_quiz_history') || '[]');
+      const user = JSON.parse(localStorage.getItem('orbit_user') || '{}');
+
+      const topicMap = {};
+      quizHistory.forEach(q => {
+        const t = q.topic || 'General STEM';
+        if (!topicMap[t]) topicMap[t] = [];
+        topicMap[t].push(q.percentage || 0);
+      });
+
+      const topicMastery = Object.keys(topicMap).length > 0
+        ? Object.keys(topicMap).map(topic => {
+            const scores = topicMap[topic];
+            const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+            const status = avg >= 80 ? 'mastered' : avg >= 60 ? 'practising' : 'needs_review';
+            return { topic, status, scoreAvg: avg };
+          })
+        : [
+            { topic: user.interestDomain || 'Computer Science & AI', status: 'practising', scoreAvg: 75 }
+          ];
+
       return {
-        userId: 'user-student-1',
-        topicMastery: [
-          { topic: 'Plant Biology & Energy Flow', status: 'mastered', scoreAvg: 92 },
-          { topic: 'Ratios & Unit Rates', status: 'practising', scoreAvg: 74 },
-          { topic: 'Linear Equations', status: 'needs_review', scoreAvg: 58 }
-        ],
-        quizAttempts: [
-          { quizTitle: 'Grade 7 Diagnostic', score: 2, total: 3, percentage: 67 }
-        ]
+        userId: user._id || 'current-user',
+        topicMastery,
+        quizAttempts: quizHistory
+      };
+    } catch (e) {
+      return {
+        userId: 'current-user',
+        topicMastery: [{ topic: 'Computer Science & AI', status: 'practising', scoreAvg: 75 }],
+        quizAttempts: []
       };
     }
   },
@@ -806,43 +828,81 @@ export const api = {
   getClassAnalytics: async (classId = 'class-7a') => {
     try {
       const res = await fetch(`${API_BASE}/progress/class/${classId}`, { headers: getHeaders('teacher') });
-      if (!res.ok) throw new Error('Fetch class analytics failed');
-      return await res.json();
-    } catch (err) {
-      return {
-        className: 'Grade 7 Science & Math (7A)',
-        totalStudents: 24,
-        classPulseAvg: 82,
-        learnersNeedingSupport: [
-          { id: 'u-101', name: 'Jordan Smith', needsReviewTopics: ['Linear Equations'], lastSync: '2 hours ago' }
-        ],
-        conceptGaps: [
-          { topic: 'Solving Two-Step Linear Equations', subject: 'Mathematics', strugglingCount: 9, percentageStruggling: 37.5 },
-          { topic: 'Ecology & Energy Pyramids', subject: 'Science', strugglingCount: 6, percentageStruggling: 25.0 }
-        ],
-        assignmentCompletion: [
-          { assignment: 'Photosynthesis Lab', completed: 21, inProgress: 2, notStarted: 1 }
-        ]
-      };
-    }
+      if (res.ok) return await res.json();
+    } catch (err) {}
+
+    const quizHistory = JSON.parse(localStorage.getItem('orbit_quiz_history') || '[]');
+    const teacherRooms = JSON.parse(localStorage.getItem('orbit_teacher_rooms') || '[]');
+    const currentRoom = teacherRooms.length > 0 ? teacherRooms[0] : null;
+
+    const avgScore = quizHistory.length > 0
+      ? Math.round(quizHistory.reduce((a, q) => a + (q.percentage || 0), 0) / quizHistory.length)
+      : 84;
+
+    const strugglingAttempts = quizHistory.filter(q => (q.percentage || 0) < 70);
+    const conceptGaps = strugglingAttempts.length > 0
+      ? strugglingAttempts.map(q => ({
+          topic: q.topic || 'Assessment Concept Gap',
+          subject: 'STEM',
+          strugglingCount: 1,
+          percentageStruggling: Math.round(100 - (q.percentage || 50))
+        }))
+      : [
+          { topic: 'Algorithmic Complexity & Logic', subject: 'Computer Science', strugglingCount: 2, percentageStruggling: 20 },
+          { topic: 'Cellular Respiration Kinetics', subject: 'Biology', strugglingCount: 1, percentageStruggling: 15 }
+        ];
+
+    return {
+      className: currentRoom?.className || 'Active Educator Workspace',
+      totalStudents: currentRoom?.studentIds?.length || 1,
+      classPulseAvg: avgScore,
+      learnersNeedingSupport: strugglingAttempts.map((s, idx) => ({
+        id: `struggle-${idx}`,
+        name: `Learner (#${idx + 1})`,
+        needsReviewTopics: [s.topic || 'STEM Concept Gap'],
+        lastSync: 'Recently'
+      })),
+      conceptGaps,
+      assignmentCompletion: [
+        { assignment: 'Core Diagnostic Assessment', completed: quizHistory.length > 0 ? quizHistory.length : 1, inProgress: 0, notStarted: 0 }
+      ]
+    };
   },
 
   getIndividualLearnerAnalytics: async (studentId) => {
     try {
       const res = await fetch(`${API_BASE}/progress/learner/${studentId}`, { headers: getHeaders('teacher') });
-      if (!res.ok) throw new Error('Fetch student analytics failed');
-      return await res.json();
-    } catch (err) {
-      return {
-        name: 'Maya Lin',
-        grade: 'Grade 7',
-        syncStatus: 'Synced (Offline Cache)',
-        topicMastery: [
-          { topic: 'Plant Biology', status: 'mastered', scoreAvg: 92 },
-          { topic: 'Linear Equations', status: 'needs_review', scoreAvg: 58 }
-        ]
-      };
-    }
+      if (res.ok) return await res.json();
+    } catch (err) {}
+
+    const quizHistory = JSON.parse(localStorage.getItem('orbit_quiz_history') || '[]');
+    const user = JSON.parse(localStorage.getItem('orbit_user') || '{}');
+
+    const topicMap = {};
+    quizHistory.forEach(q => {
+      const t = q.topic || 'General STEM';
+      if (!topicMap[t]) topicMap[t] = [];
+      topicMap[t].push(q.percentage || 0);
+    });
+
+    const topicMastery = Object.keys(topicMap).length > 0
+      ? Object.keys(topicMap).map(topic => {
+          const scores = topicMap[topic];
+          const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+          const status = avg >= 80 ? 'mastered' : avg >= 60 ? 'practising' : 'needs_review';
+          return { topic, status, scoreAvg: avg };
+        })
+      : [
+          { topic: 'Computer Science & AI', status: 'mastered', scoreAvg: 88 },
+          { topic: 'Data Structures & Algorithms', status: 'practising', scoreAvg: 72 }
+        ];
+
+    return {
+      name: user.name || 'Enrolled Student',
+      grade: user.grade || 'Grade 10',
+      syncStatus: 'Synced (Local Mesh Cache)',
+      topicMastery
+    };
   },
 
   // Classroom Workspaces & 6-Digit Code Join Rooms

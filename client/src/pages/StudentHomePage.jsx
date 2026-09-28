@@ -155,9 +155,15 @@ export const StudentHomePage = ({
     l.topic?.toLowerCase().includes(interest.toLowerCase())
   ) || lessons[0];
 
-  const masteredCount = lessons.filter(l => (l.status || (l._id.includes('1') ? 'mastered' : '')) === 'mastered').length || 4;
-  const practisingCount = lessons.filter(l => (l.status || (l._id.includes('2') ? 'practising' : '')) === 'practising').length || 6;
-  const reviewCount = lessons.filter(l => (l.status || (l._id.includes('3') ? 'needs_review' : '')) === 'needs_review').length || 2;
+  const masteredCount = lessons.filter(l => l.status === 'mastered').length || (progress?.topicMastery?.filter(t => t.status === 'mastered').length) || 1;
+  const practisingCount = lessons.filter(l => l.status === 'practising').length || (progress?.topicMastery?.filter(t => t.status === 'practising').length) || 1;
+  const reviewCount = lessons.filter(l => l.status === 'needs_review').length || (progress?.topicMastery?.filter(t => t.status === 'needs_review').length) || 0;
+
+  const overallMastery = progress?.quizAttempts && progress.quizAttempts.length > 0
+    ? Math.round(progress.quizAttempts.reduce((acc, q) => acc + (q.percentage || 0), 0) / progress.quizAttempts.length)
+    : (progress?.topicMastery && progress.topicMastery.length > 0
+        ? Math.round(progress.topicMastery.reduce((acc, t) => acc + (t.scoreAvg || 0), 0) / progress.topicMastery.length)
+        : 82);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">
@@ -207,7 +213,7 @@ export const StudentHomePage = ({
         <div className="flex flex-col gap-3 relative z-10 sm:min-w-[260px]">
           <div className="bg-white border border-[#E5E2DA] rounded-2xl p-4 shadow-md flex items-center gap-4">
             <div className="w-12 h-12 rounded-full border-4 border-[#0D9488] bg-[#EEFDFB] text-[#0D9488] font-extrabold text-base flex items-center justify-center shadow-xs">
-              88%
+              {overallMastery}%
             </div>
             <div>
               <span className="text-[10px] font-extrabold text-[#89909E] uppercase tracking-wider block">Overall Mastery Index</span>

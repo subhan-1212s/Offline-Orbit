@@ -222,10 +222,15 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
     }
   };
 
-  const activeRoom = rooms.find(r => r._id === activeRoomId) || rooms[0] || null;
+  const activeRoom = rooms.find(r => r._id === activeRoomId) || rooms[0] || {
+    _id: 'default-room',
+    className: `${user?.name || 'Educator'}'s Workspace`,
+    code: '------',
+    messages: []
+  };
 
   const copyCodeToClipboard = () => {
-    if (!activeRoom?.code) return;
+    if (!activeRoom?.code || activeRoom.code === '------') return;
     navigator.clipboard.writeText(activeRoom.code);
     setCopiedCode(true);
     setTimeout(() => setCopiedCode(false), 3000);
@@ -336,7 +341,7 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
 
           {/* Messages Feed */}
           <div className="h-48 overflow-y-auto space-y-3 p-3 bg-white border border-[#E5E2DA] rounded-xl text-xs">
-            {(activeRoom.messages || []).map((msg) => (
+            {(activeRoom?.messages || []).map((msg) => (
               <div 
                 key={msg.id || Math.random()} 
                 className={`p-3 rounded-2xl max-w-[85%] ${
@@ -496,15 +501,12 @@ export const TeacherDashboardPage = ({ onSelectStudent }) => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E5E2DA] pb-5">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-[#2D2F31] text-white flex items-center justify-center font-extrabold text-2xl shadow-md border border-gray-700">
-              <span className="text-[#A435F0]">U</span>
+              <Award className="w-6 h-6 text-[#A435F0]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="bg-[#A435F0]/10 text-[#A435F0] text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
+                <span className="bg-[#A435F0]/10 text-[#A435F0] text-[10px] font-black px-2.5 py-0.5 rounded uppercase tracking-wider">
                   Educator & Org In-App Purchases
-                </span>
-                <span className="bg-[#ECEB98] text-[#2D2F31] text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
-                  Udemy Format
                 </span>
               </div>
               <h3 className="text-xl font-black text-[#1E2229] mt-0.5">

@@ -39,6 +39,26 @@ export const StudentAnalyticsPage = () => {
     );
   }
 
+  const learningTrendData = (progress?.quizAttempts && progress.quizAttempts.length > 0)
+    ? progress.quizAttempts.map((q, idx) => ({
+        date: q.timestamp ? new Date(q.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' }) : `Quiz ${idx + 1}`,
+        score: q.percentage || 0,
+        label: q.quizTitle || q.topic || 'Assessment'
+      }))
+    : [
+        { date: 'Day 1', score: 75, label: 'Diagnostic Assessment' }
+      ];
+
+  const masteredCount = (progress?.topicMastery || []).filter(t => t.status === 'mastered').length;
+  const practisingCount = (progress?.topicMastery || []).filter(t => t.status === 'practising').length;
+  const reviewCount = (progress?.topicMastery || []).filter(t => t.status === 'needs_review').length;
+
+  const topicMasteryData = [
+    { name: 'Mastered', count: masteredCount, color: '#0D9488' },
+    { name: 'Practising', count: practisingCount, color: '#4F46E5' },
+    { name: 'Needs Review', count: reviewCount, color: '#D97706' }
+  ];
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
       
@@ -55,7 +75,10 @@ export const StudentAnalyticsPage = () => {
           <div>
             <span className="font-extrabold text-[#4F46E5] block mb-1">AI Automated Progress Summary</span>
             <p className="leading-relaxed">
-              Maya has achieved Mastery status in <strong>Photosynthesis & Energy Flow</strong> (92% avg) and is making steady progress in <strong>Ratios & Unit Rates</strong>. Consistent effort across 5 active days this week!
+              <strong>{user?.name || 'Learner'}</strong> has logged active progress in <strong>{user?.interestDomain || 'STEM Curriculum'}</strong> with an active streak of <strong>{user?.streakDays || 1} days</strong>!
+              {progress?.topicMastery && progress.topicMastery.length > 0 && (
+                <> Current topic mastery: {progress.topicMastery.map(t => `${t.topic} (${t.scoreAvg}%)`).join(', ')}.</>
+              )}
             </p>
           </div>
         </div>
@@ -73,7 +96,7 @@ export const StudentAnalyticsPage = () => {
             </div>
             <TrendingUp className="w-5 h-5 text-[#F95738]" />
           </div>
-          <LearningTrendChart />
+          <LearningTrendChart data={learningTrendData} />
         </div>
 
         {/* Topic Mastery Distribution Chart */}
@@ -85,7 +108,7 @@ export const StudentAnalyticsPage = () => {
             </div>
             <CheckCircle2 className="w-5 h-5 text-[#0D9488]" />
           </div>
-          <TopicMasteryChart />
+          <TopicMasteryChart data={topicMasteryData} />
         </div>
 
       </div>

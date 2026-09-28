@@ -79,14 +79,14 @@ export const UdemyCourseCheckoutModal = ({ isOpen, onClose, courseItem, onPurcha
         <div className="bg-[#2D2F31] text-white p-5 flex items-center justify-between border-b border-gray-700">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#A435F0] text-white font-extrabold text-lg flex items-center justify-center shadow-md">
-              U
+              <Award className="w-5 h-5" />
             </div>
             <div>
               <span className="text-[10px] font-extrabold text-[#ECEB98] uppercase tracking-wider block">
                 Educator In-App Checkout
               </span>
               <h3 className="font-extrabold text-base text-white leading-tight">
-                Udemy-Style Course & Toolkit Enrollment
+                Toolkit & Institutional Accreditation Enrollment
               </h3>
             </div>
           </div>
