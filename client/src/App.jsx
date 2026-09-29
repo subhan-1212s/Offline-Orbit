@@ -138,7 +138,12 @@ const MainAppContent = () => {
         );
 
       case 'analytics':
-        return <StudentAnalyticsPage />;
+        return (
+          <StudentAnalyticsPage
+            onNavigateToLesson={handleLaunchLesson}
+            onNavigateToQuiz={handleLaunchQuiz}
+          />
+        );
 
       case 'teacher-dashboard':
         return (
