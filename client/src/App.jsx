@@ -21,7 +21,6 @@ import { OfflineManagerPage } from './pages/OfflineManagerPage';
 // Interactive AI Pages
 import { AIConceptPlaygroundPage } from './pages/AIConceptPlaygroundPage';
 import { AIQuizGeneratorPage } from './pages/AIQuizGeneratorPage';
-import { CommunityBoardPage } from './pages/CommunityBoardPage';
 import { AdminManagementPage } from './pages/AdminManagementPage';
 
 const MainAppContent = () => {
@@ -108,9 +107,6 @@ const MainAppContent = () => {
 
       case 'custom-quiz-gen':
         return <AIQuizGeneratorPage />;
-
-      case 'community-board':
-        return <CommunityBoardPage />;
 
       case 'lesson-view':
         return (

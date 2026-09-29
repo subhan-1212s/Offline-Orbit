@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   Orbit, Compass, BookOpen, GraduationCap, Award, HardDrive, 
-  Sparkles, MessageSquare, LogOut, Sliders, Menu, X, Bell, CheckCircle2, Zap, ShieldCheck 
+  Sparkles, LogOut, Sliders, Menu, X, Bell, CheckCircle2, Zap, ShieldCheck 
 } from 'lucide-react';
 
 export const Navbar = ({ activeTab, setActiveTab, onSignOut }) => {
@@ -110,7 +110,6 @@ export const Navbar = ({ activeTab, setActiveTab, onSignOut }) => {
       { id: 'student-home', label: 'Learner Home', icon: Orbit },
       { id: 'concept-playground', label: 'AI Playground', icon: Sparkles },
       { id: 'quests', label: 'Quests & Badges', icon: Award },
-      { id: 'community-board', label: 'Community Q&A', icon: MessageSquare },
       { id: 'analytics', label: 'Growth Analytics', icon: GraduationCap },
       { id: 'offline-manager', label: 'Offline Downloads', icon: HardDrive }
     ];
