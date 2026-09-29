@@ -13,12 +13,16 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
   const { isOnline } = useOffline();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [masterVolume, setMasterVolume] = useState(0.85); // Clearly audible 85% volume default
   const [currentTime, setCurrentTime] = useState(0); // 0 to 120 seconds
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const totalDuration = 120; // Exactly 2 minutes (02:00)
 
   // Dynamic slides for this specific STEM topic
   const slides = useMemo(() => getTopicSlides(topicTitle), [topicTitle]);
+
+  const activeSlideIndex = Math.min(Math.floor(currentTime / 10), slides.length - 1);
+  const activeSlide = slides[activeSlideIndex] || slides[0];
 
   // Download & Video Blob State
   const [isDownloading, setIsDownloading] = useState(false);
@@ -28,6 +32,8 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
 
   const videoRef = useRef(null);
   const videoId = `${topicTitle}_en`;
+  const ambientAudioRef = useRef(null);
+  const prevSlideIndexRef = useRef(activeSlideIndex);
 
   // Refresh local downloaded video status from IndexedDB
   const refreshVideoStatus = async () => {
@@ -49,8 +55,6 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
     }
   };
 
-  const ambientAudioRef = useRef(null);
-
   useEffect(() => {
     ambientAudioRef.current = new StudioAmbientAudioChime();
     return () => {
@@ -58,13 +62,24 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
     };
   }, []);
 
+  // Update ambient background chime playback & volume
   useEffect(() => {
     if (isPlaying && !isMuted) {
-      if (ambientAudioRef.current) ambientAudioRef.current.start();
+      if (ambientAudioRef.current) ambientAudioRef.current.start(masterVolume * 0.35);
     } else {
       if (ambientAudioRef.current) ambientAudioRef.current.stop();
     }
-  }, [isPlaying, isMuted]);
+  }, [isPlaying, isMuted, masterVolume]);
+
+  // Trigger bell chime on slide transition when playing
+  useEffect(() => {
+    if (prevSlideIndexRef.current !== activeSlideIndex) {
+      prevSlideIndexRef.current = activeSlideIndex;
+      if (isPlaying && !isMuted && ambientAudioRef.current) {
+        ambientAudioRef.current.playSlideChime(activeSlideIndex);
+      }
+    }
+  }, [activeSlideIndex, isPlaying, isMuted]);
 
   useEffect(() => {
     refreshVideoStatus();
@@ -77,7 +92,27 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
 
   // Audio speech narration helper
   const speakCurrentNarration = (text) => {
-    speechNarrationEngine.speak(text, { speed: playbackSpeed, isMuted });
+    if (ambientAudioRef.current) {
+      ambientAudioRef.current.getAudioContext();
+    }
+    speechNarrationEngine.speak(text, { 
+      speed: playbackSpeed, 
+      isMuted,
+      volume: masterVolume 
+    });
+  };
+
+  // Sound Test Function for users & judges
+  const handleTestAudio = () => {
+    if (ambientAudioRef.current) {
+      ambientAudioRef.current.getAudioContext();
+      ambientAudioRef.current.testSound();
+    }
+    speechNarrationEngine.speak("Offline Orbit sound test. Audio is loud and clear.", {
+      speed: 1,
+      isMuted: false,
+      volume: 1.0
+    });
   };
 
   // Playback timer (runs when playing and not using native video)
@@ -179,10 +214,14 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
 
   const handleTogglePlay = () => {
     if (!isPlaying) {
-      const currentSlide = slides[Math.min(Math.floor(currentTime / 10), slides.length - 1)];
-      speakCurrentNarration(currentSlide?.narration);
+      if (ambientAudioRef.current) {
+        ambientAudioRef.current.getAudioContext();
+        ambientAudioRef.current.playSlideChime(activeSlideIndex);
+      }
+      speakCurrentNarration(activeSlide?.narration);
     } else {
       speechNarrationEngine.cancel();
+      if (ambientAudioRef.current) ambientAudioRef.current.stop();
     }
     setIsPlaying(!isPlaying);
   };
@@ -190,13 +229,22 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
   const handleRestart = () => {
     setCurrentTime(0);
     setIsPlaying(true);
+    if (ambientAudioRef.current) {
+      ambientAudioRef.current.getAudioContext();
+      ambientAudioRef.current.playSlideChime(0);
+    }
     speakCurrentNarration(slides[0]?.narration);
   };
 
   const handleSeek = (e) => {
     const newTime = Number(e.target.value);
     setCurrentTime(newTime);
-    const currentSlide = slides[Math.min(Math.floor(newTime / 10), slides.length - 1)];
+    const newSlideIdx = Math.min(Math.floor(newTime / 10), slides.length - 1);
+    if (ambientAudioRef.current) {
+      ambientAudioRef.current.getAudioContext();
+      ambientAudioRef.current.playSlideChime(newSlideIdx);
+    }
+    const currentSlide = slides[newSlideIdx];
     speakCurrentNarration(currentSlide?.narration);
   };
 
@@ -267,9 +315,6 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
     const secs = String(seconds % 60).padStart(2, '0');
     return `${mins}:${secs}`;
   };
-
-  const activeSlideIndex = Math.min(Math.floor(currentTime / 10), slides.length - 1);
-  const activeSlide = slides[activeSlideIndex] || slides[0];
 
   return (
     <div className="bg-white border border-[#E5E2DA] rounded-3xl p-6 shadow-sm space-y-6">
@@ -372,7 +417,7 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
                     ))}
                   </div>
                   <span className="font-semibold text-gray-300">
-                    {isPlaying && !isMuted ? 'Studio Audio & Synchronized Speech Active' : isMuted ? 'Audio Muted' : 'Press Play to Hear Audio & Narration'}
+                    {isPlaying && !isMuted ? `Studio Audio & Synchronized Speech Active (${Math.round(masterVolume * 100)}%)` : isMuted ? 'Audio Muted' : 'Press Play or Test Sound to Hear Audio'}
                   </span>
                 </div>
               </div>
@@ -404,7 +449,7 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
       <div className="bg-[#FAF9F6] border border-[#E5E2DA] rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
         
         {/* Play / Pause / Replay / Audio Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5 flex-wrap">
           {!videoBlobUrl && (
             <>
               <button
@@ -424,25 +469,56 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
                 <span>Restart</span>
               </button>
 
+              {/* Master Volume Controls with Slider & Mute Toggle */}
+              <div className="flex items-center gap-2 bg-white border border-[#E5E2DA] rounded-xl px-3 py-2 shadow-2xs">
+                <button
+                  onClick={() => {
+                    const nextMuted = !isMuted;
+                    setIsMuted(nextMuted);
+                    if (nextMuted) {
+                      speechNarrationEngine.cancel();
+                    } else if (isPlaying) {
+                      speakCurrentNarration(activeSlide?.narration);
+                    }
+                  }}
+                  className={`p-1 rounded-lg transition-colors text-xs font-bold flex items-center gap-1 ${
+                    isMuted 
+                      ? 'bg-red-50 text-red-600' 
+                      : 'text-[#5A606C] hover:text-[#1E2229]'
+                  }`}
+                  title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+                >
+                  {isMuted ? <VolumeX className="w-4 h-4 text-red-500" /> : <Volume2 className="w-4 h-4 text-[#0D9488]" />}
+                </button>
+
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={isMuted ? 0 : masterVolume}
+                  onChange={(e) => {
+                    const v = parseFloat(e.target.value);
+                    setMasterVolume(v);
+                    if (isMuted && v > 0) setIsMuted(false);
+                  }}
+                  className="w-16 sm:w-24 accent-[#0D9488] cursor-pointer h-1.5"
+                  title={`Volume: ${Math.round((isMuted ? 0 : masterVolume) * 100)}%`}
+                />
+
+                <span className="font-mono text-[11px] font-bold text-[#5A606C] w-8 text-right">
+                  {Math.round((isMuted ? 0 : masterVolume) * 100)}%
+                </span>
+              </div>
+
+              {/* Instant Test Sound Button */}
               <button
-                onClick={() => {
-                  const nextMuted = !isMuted;
-                  setIsMuted(nextMuted);
-                  if (nextMuted) {
-                    speechNarrationEngine.cancel();
-                  } else if (isPlaying) {
-                    speakCurrentNarration(activeSlide?.narration);
-                  }
-                }}
-                className={`p-3 border rounded-xl transition-colors text-xs font-bold flex items-center gap-1 ${
-                  isMuted 
-                    ? 'bg-red-50 text-red-600 border-red-200' 
-                    : 'bg-white text-[#5A606C] border-[#E5E2DA] hover:bg-[#F3F1EC]'
-                }`}
-                title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+                onClick={handleTestAudio}
+                className="p-2.5 bg-[#EEFDFB] text-[#0D9488] border border-[#0D9488]/40 hover:bg-[#CCFBF1] rounded-xl transition-all text-xs font-extrabold flex items-center gap-1.5 shadow-2xs active:scale-95"
+                title="Click to test both crystal chime tone and spoken English narration"
               >
-                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                <span>{isMuted ? 'Muted' : 'Audio On'}</span>
+                <Sparkles className="w-3.5 h-3.5 text-[#0D9488]" />
+                <span>Test Sound</span>
               </button>
 
               {/* Playback Speed */}
@@ -519,6 +595,10 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
               key={idx}
               onClick={() => {
                 setCurrentTime(slide.sec);
+                if (ambientAudioRef.current) {
+                  ambientAudioRef.current.getAudioContext();
+                  ambientAudioRef.current.playSlideChime(idx);
+                }
                 speakCurrentNarration(slide.narration);
               }}
               className={`p-3 rounded-xl border text-left transition-all space-y-1 ${

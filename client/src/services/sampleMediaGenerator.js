@@ -20,24 +20,30 @@ export const generateSampleVideoBlob = async ({
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const dest = audioCtx.createMediaStreamDestination();
       
-      // Dual Harmonized Oscillators (Root 432 Hz & Harmonic 648 Hz fifth) for clean studio ambient tone
+      // Harmonized Triad Oscillators (C4=261.6Hz, E4=329.6Hz, G4=392.0Hz) for rich, audible masterclass audio
       const osc1 = audioCtx.createOscillator();
       const osc2 = audioCtx.createOscillator();
+      const osc3 = audioCtx.createOscillator();
       const masterGain = audioCtx.createGain();
 
       osc1.type = 'triangle';
-      osc1.frequency.setValueAtTime(216, audioCtx.currentTime); // Warm fundamental A tone
+      osc1.frequency.setValueAtTime(261.63, audioCtx.currentTime); // C4 fundamental
       osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(324, audioCtx.currentTime); // E harmonic fifth
+      osc2.frequency.setValueAtTime(329.63, audioCtx.currentTime); // E4 harmonic third
+      osc3.type = 'sine';
+      osc3.frequency.setValueAtTime(392.00, audioCtx.currentTime); // G4 harmonic fifth
 
-      masterGain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+      // Loud, clear studio gain (0.28 = 28% gain vs inaudible 0.06)
+      masterGain.gain.setValueAtTime(0.28, audioCtx.currentTime);
 
       osc1.connect(masterGain);
       osc2.connect(masterGain);
+      osc3.connect(masterGain);
       masterGain.connect(dest);
 
       osc1.start();
       osc2.start();
+      osc3.start();
 
       // 3. Combine Canvas Video Stream & Audio Stream
       const canvasStream = canvas.captureStream(24);
@@ -62,6 +68,7 @@ export const generateSampleVideoBlob = async ({
         try {
           osc1.stop();
           osc2.stop();
+          osc3.stop();
           audioCtx.close();
         } catch (e) {}
         const blob = new Blob(chunks, { type: 'video/webm' });

@@ -529,6 +529,7 @@ class EnglishSpeechNarrationEngine {
     this.cachedVoice = null;
     this.isMuted = false;
     this.playbackSpeed = 1;
+    this.cancelTimeout = null;
 
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       this.initVoices();
@@ -538,24 +539,27 @@ class EnglishSpeechNarrationEngine {
 
   initVoices() {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    const voices = window.speechSynthesis.getVoices();
-    if (!voices || voices.length === 0) return;
+    try {
+      const voices = window.speechSynthesis.getVoices();
+      if (!voices || voices.length === 0) return;
 
-    // Prioritize natural English voices
-    const preferred = voices.find(v => 
-      v.lang.startsWith('en') && (
-        v.name.includes('Natural') || 
-        v.name.includes('Google US English') || 
-        v.name.includes('Samantha') || 
-        v.name.includes('Daniel') || 
-        v.name.includes('David')
-      )
-    ) || voices.find(v => v.lang.startsWith('en')) || voices[0];
+      // Prioritize natural English voices
+      const preferred = voices.find(v => 
+        v.lang.startsWith('en') && (
+          v.name.includes('Natural') || 
+          v.name.includes('Google US English') || 
+          v.name.includes('Samantha') || 
+          v.name.includes('Daniel') || 
+          v.name.includes('David') ||
+          v.name.includes('Microsoft')
+        )
+      ) || voices.find(v => v.lang.startsWith('en')) || voices[0];
 
-    this.cachedVoice = preferred;
+      this.cachedVoice = preferred;
+    } catch (e) {}
   }
 
-  speak(text, { speed = 1, isMuted = false, onStart, onEnd } = {}) {
+  speak(text, { speed = 1, isMuted = false, volume = 1.0, onStart, onEnd } = {}) {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     if (isMuted || !text) {
       this.cancel();
@@ -563,53 +567,69 @@ class EnglishSpeechNarrationEngine {
     }
 
     try {
-      this.cancel();
-      window.speechSynthesis.resume();
-
-      if (!this.cachedVoice) {
-        this.initVoices();
+      // Clear pending timers and cancel current utterance cleanly
+      if (this.cancelTimeout) clearTimeout(this.cancelTimeout);
+      window.speechSynthesis.cancel();
+      
+      // Unfreeze Chrome synthesis if stuck
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
       }
 
-      const utterance = new SpeechSynthesisUtterance(text);
-      if (this.cachedVoice) {
-        utterance.voice = this.cachedVoice;
-      }
-      utterance.lang = 'en-US';
-      utterance.rate = Math.max(0.6, Math.min(1.8, (speed || this.playbackSpeed) * 0.95));
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
-
-      utterance.onstart = () => {
-        if (onStart) onStart();
-        if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
-        this.heartbeatTimer = setInterval(() => {
-          if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis.speaking) {
-            window.speechSynthesis.pause();
-            window.speechSynthesis.resume();
-          } else {
-            clearInterval(this.heartbeatTimer);
+      this.cancelTimeout = setTimeout(() => {
+        try {
+          if (!this.cachedVoice) {
+            this.initVoices();
           }
-        }, 10000);
-      };
 
-      utterance.onend = () => {
-        if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
-        if (onEnd) onEnd();
-      };
+          const utterance = new SpeechSynthesisUtterance(text);
+          if (this.cachedVoice) {
+            utterance.voice = this.cachedVoice;
+          }
+          utterance.lang = 'en-US';
+          utterance.rate = Math.max(0.7, Math.min(1.5, (speed || this.playbackSpeed) * 0.95));
+          utterance.pitch = 1.0;
+          utterance.volume = Math.max(0.1, Math.min(1.0, volume !== undefined ? volume : 1.0));
 
-      utterance.onerror = (e) => {
-        if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
-        console.warn('Speech narration notice:', e);
-      };
+          utterance.onstart = () => {
+            if (onStart) onStart();
+            if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+            this.heartbeatTimer = setInterval(() => {
+              if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis.speaking) {
+                window.speechSynthesis.pause();
+                window.speechSynthesis.resume();
+              } else {
+                clearInterval(this.heartbeatTimer);
+              }
+            }, 8000);
+          };
 
-      this.currentUtterance = utterance;
-      window.speechSynthesis.speak(utterance);
+          utterance.onend = () => {
+            if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+            if (onEnd) onEnd();
+          };
+
+          utterance.onerror = (e) => {
+            if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+            console.warn('Speech narration notice:', e);
+          };
+
+          this.currentUtterance = utterance;
+          window.speechSynthesis.speak(utterance);
+        } catch (err) {
+          console.warn('Speech synthesis narration error:', err);
+        }
+      }, 35);
     } catch (err) {
-      console.warn('Speech synthesis narration error:', err);
+      console.warn('Speech synthesis dispatch error:', err);
     }
   }
 
   cancel() {
+    if (this.cancelTimeout) {
+      clearTimeout(this.cancelTimeout);
+      this.cancelTimeout = null;
+    }
     if (this.heartbeatTimer) {
       clearInterval(this.heartbeatTimer);
       this.heartbeatTimer = null;
@@ -625,57 +645,151 @@ class EnglishSpeechNarrationEngine {
 export const speechNarrationEngine = new EnglishSpeechNarrationEngine();
 
 // Harmonious Ambient Learning Chime Synthesizer (Web Audio API)
-// Provides clean studio acoustic chords during video playback
+// High-yield acoustic chord progression + crystal slide transition bells
 export class StudioAmbientAudioChime {
   constructor() {
     this.audioCtx = null;
     this.gainNode = null;
+    this.activeNodes = [];
     this.isPlaying = false;
+    this.masterVolume = 0.25; // Clearly audible studio volume (25% gain)
   }
 
-  start() {
+  getAudioContext() {
+    if (typeof window === 'undefined') return null;
+    if (!this.audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return null;
+      this.audioCtx = new AudioContext();
+    }
+    if (this.audioCtx.state === 'suspended') {
+      this.audioCtx.resume();
+    }
+    return this.audioCtx;
+  }
+
+  start(volume = 0.25) {
     if (typeof window === 'undefined') return;
     try {
-      if (!this.audioCtx) {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        this.audioCtx = new AudioContext();
-      }
-      if (this.audioCtx.state === 'suspended') {
-        this.audioCtx.resume();
-      }
+      this.stop(); // Stop any active nodes first
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
 
-      this.gainNode = this.audioCtx.createGain();
-      this.gainNode.gain.setValueAtTime(0.04, this.audioCtx.currentTime);
-      this.gainNode.connect(this.audioCtx.destination);
+      this.masterVolume = volume;
+      this.gainNode = ctx.createGain();
+      this.gainNode.gain.setValueAtTime(0.01, ctx.currentTime);
+      this.gainNode.gain.exponentialRampToValueAtTime(this.masterVolume, ctx.currentTime + 0.8);
+      this.gainNode.connect(ctx.destination);
 
-      // Warm background chords (216 Hz fundamental & 324 Hz harmonic fifth)
-      this.osc1 = this.audioCtx.createOscillator();
-      this.osc2 = this.audioCtx.createOscillator();
-      this.osc1.type = 'triangle';
-      this.osc1.frequency.setValueAtTime(216, this.audioCtx.currentTime);
-      this.osc2.type = 'sine';
-      this.osc2.frequency.setValueAtTime(324, this.audioCtx.currentTime);
+      // Warm acoustic triad chords (C4=261.6Hz, E4=329.6Hz, G4=392.0Hz)
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const osc3 = ctx.createOscillator();
 
-      this.osc1.connect(this.gainNode);
-      this.osc2.connect(this.gainNode);
-      this.osc1.start();
-      this.osc2.start();
+      osc1.type = 'triangle';
+      osc1.frequency.setValueAtTime(261.63, ctx.currentTime); // C4 root
+
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(329.63, ctx.currentTime); // E4 major third
+
+      osc3.type = 'sine';
+      osc3.frequency.setValueAtTime(392.00, ctx.currentTime); // G4 fifth
+
+      osc1.connect(this.gainNode);
+      osc2.connect(this.gainNode);
+      osc3.connect(this.gainNode);
+
+      osc1.start();
+      osc2.start();
+      osc3.start();
+
+      this.activeNodes = [osc1, osc2, osc3];
       this.isPlaying = true;
     } catch (e) {
-      console.warn('Ambient chime error:', e);
+      console.warn('Ambient chime start error:', e);
+    }
+  }
+
+  // Plays a crystal bell chime when slides change
+  playSlideChime(slideIndex = 0) {
+    if (typeof window === 'undefined') return;
+    try {
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+
+      const pentatonic = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50]; // C5, D5, E5, G5, A5, C6
+      const freq = pentatonic[slideIndex % pentatonic.length];
+
+      const bellGain = ctx.createGain();
+      bellGain.gain.setValueAtTime(0.3, ctx.currentTime);
+      bellGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
+      bellGain.connect(ctx.destination);
+
+      const bellOsc = ctx.createOscillator();
+      bellOsc.type = 'sine';
+      bellOsc.frequency.setValueAtTime(freq, ctx.currentTime);
+      bellOsc.connect(bellGain);
+
+      bellOsc.start();
+      bellOsc.stop(ctx.currentTime + 1.3);
+    } catch (e) {
+      console.warn('Slide chime error:', e);
+    }
+  }
+
+  // Instant Sound Test Trigger (Plays a joyful 3-note chime sequence)
+  testSound() {
+    if (typeof window === 'undefined') return;
+    try {
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+
+      const notes = [392.00, 523.25, 659.25]; // G4, C5, E5
+      notes.forEach((freq, i) => {
+        const time = ctx.currentTime + i * 0.15;
+        const testGain = ctx.createGain();
+        testGain.gain.setValueAtTime(0.35, time);
+        testGain.gain.exponentialRampToValueAtTime(0.001, time + 0.5);
+        testGain.connect(ctx.destination);
+
+        const osc = ctx.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, time);
+        osc.connect(testGain);
+
+        osc.start(time);
+        osc.stop(time + 0.6);
+      });
+    } catch (e) {
+      console.warn('Test sound error:', e);
+    }
+  }
+
+  setVolume(vol = 0.25) {
+    this.masterVolume = vol;
+    if (this.gainNode && this.audioCtx) {
+      try {
+        this.gainNode.gain.setValueAtTime(vol, this.audioCtx.currentTime);
+      } catch (e) {}
     }
   }
 
   stop() {
     try {
-      if (this.osc1) {
-        this.osc1.stop();
-        this.osc1.disconnect();
+      if (this.activeNodes && this.activeNodes.length > 0) {
+        this.activeNodes.forEach(node => {
+          try {
+            node.stop();
+            node.disconnect();
+          } catch (e) {}
+        });
+        this.activeNodes = [];
       }
-      if (this.osc2) {
-        this.osc2.stop();
-        this.osc2.disconnect();
+      if (this.gainNode) {
+        try {
+          this.gainNode.disconnect();
+        } catch (e) {}
+        this.gainNode = null;
       }
       this.isPlaying = false;
     } catch (e) {}
