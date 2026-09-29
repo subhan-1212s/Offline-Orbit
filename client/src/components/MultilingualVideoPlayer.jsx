@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useOffline } from '../context/OfflineContext';
 import { generateSampleVideoBlob } from '../services/sampleMediaGenerator';
 import { saveDownloadedVideo, deleteDownloadedVideo, getAllDownloadedVideos } from '../services/indexedDB';
-import { getTopicSlides, speechNarrationEngine } from '../services/videoContentLibrary';
+import { getTopicSlides, speechNarrationEngine, StudioAmbientAudioChime } from '../services/videoContentLibrary';
+import { STEMDiagramVisual } from './STEMDiagramVisual';
 import { 
   Play, Pause, Volume2, VolumeX, CheckCircle2, 
-  Film, RotateCcw, Download, Trash2, HardDrive, RefreshCw, Clock
+  Film, RotateCcw, Download, Trash2, HardDrive, RefreshCw, Clock, Sparkles, Activity
 } from 'lucide-react';
 
 export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant Energy" }) => {
@@ -48,11 +49,29 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
     }
   };
 
+  const ambientAudioRef = useRef(null);
+
+  useEffect(() => {
+    ambientAudioRef.current = new StudioAmbientAudioChime();
+    return () => {
+      if (ambientAudioRef.current) ambientAudioRef.current.stop();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isPlaying && !isMuted) {
+      if (ambientAudioRef.current) ambientAudioRef.current.start();
+    } else {
+      if (ambientAudioRef.current) ambientAudioRef.current.stop();
+    }
+  }, [isPlaying, isMuted]);
+
   useEffect(() => {
     refreshVideoStatus();
     return () => {
       if (videoBlobUrl) URL.revokeObjectURL(videoBlobUrl);
       speechNarrationEngine.cancel();
+      if (ambientAudioRef.current) ambientAudioRef.current.stop();
     };
   }, [topicTitle]);
 
@@ -310,24 +329,52 @@ export const MultilingualVideoPlayer = ({ topicTitle = "Photosynthesis & Plant E
               </div>
             </div>
 
-            {/* Center Stage Animation & Content */}
-            <div className="flex items-center gap-6 my-auto">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-white/10 border border-white/20 flex items-center justify-center text-4xl sm:text-5xl shadow-xl shrink-0">
-                {activeSlide?.icon || '🔬'}
+            {/* Center Stage Diagram & Content */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center my-auto py-2">
+              {/* Left: Rich Scientific Diagram Visual */}
+              <div className="md:col-span-5 w-full max-w-[280px] sm:max-w-[320px] mx-auto aspect-[16/11] rounded-2xl overflow-hidden bg-black/50 border border-white/10 shadow-lg shrink-0 flex items-center justify-center p-1">
+                <STEMDiagramVisual 
+                  topicTitle={topicTitle} 
+                  slideIndex={activeSlideIndex} 
+                  isPlaying={isPlaying} 
+                />
               </div>
 
-              <div className="space-y-2 max-w-xl">
-                <h4 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight leading-snug">
-                  {activeSlide?.headline}
-                </h4>
-                <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
+              {/* Right: Chapter Content & Formulas */}
+              <div className="md:col-span-7 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{activeSlide?.icon || '🔬'}</span>
+                  <h4 className="text-lg sm:text-xl font-extrabold text-white tracking-tight leading-snug">
+                    {activeSlide?.headline}
+                  </h4>
+                </div>
+                
+                <p className="text-xs sm:text-sm text-gray-200 leading-relaxed font-medium">
                   {activeSlide?.narration}
                 </p>
+
                 {activeSlide?.formula && (
-                  <div className="inline-block bg-white/10 border border-white/20 rounded-xl px-3 py-1.5 font-mono text-xs font-bold text-[#4ADE80]">
-                    ⚡ {activeSlide.formula}
+                  <div className="inline-flex items-center gap-1.5 bg-black/50 border border-emerald-500/40 rounded-xl px-3 py-1.5 font-mono text-xs font-bold text-emerald-300 shadow-sm">
+                    <span>⚡</span>
+                    <span>{activeSlide.formula}</span>
                   </div>
                 )}
+
+                {/* Audio Status & Frequency Wave Visualizer */}
+                <div className="pt-1 flex items-center gap-2 text-[11px] text-gray-400">
+                  <div className="flex items-center gap-0.5 h-3.5">
+                    {[35, 75, 100, 60, 95, 45, 80, 50, 90].map((h, i) => (
+                      <span 
+                        key={i} 
+                        className={`w-1 rounded-full transition-all duration-150 ${isPlaying && !isMuted ? 'bg-[#0D9488]' : 'bg-gray-600'}`} 
+                        style={{ height: isPlaying && !isMuted ? `${h}%` : '25%' }} 
+                      />
+                    ))}
+                  </div>
+                  <span className="font-semibold text-gray-300">
+                    {isPlaying && !isMuted ? 'Studio Audio & Synchronized Speech Active' : isMuted ? 'Audio Muted' : 'Press Play to Hear Audio & Narration'}
+                  </span>
+                </div>
               </div>
             </div>
 

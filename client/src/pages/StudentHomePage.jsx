@@ -5,11 +5,14 @@ import { api } from '../services/api';
 import { LearningTrendChart } from '../components/charts/LearningTrendChart';
 import { TopicMasteryChart } from '../components/charts/TopicMasteryChart';
 import { InstallPWABanner } from '../components/InstallPWABanner';
+import { MultilingualVideoPlayer } from '../components/MultilingualVideoPlayer';
+import { STEMDiagramVisual } from '../components/STEMDiagramVisual';
 
 import { 
   Play, Sparkles, BookOpen, Download, HardDrive, Award, 
   HelpCircle, CheckCircle2, AlertTriangle, ArrowRight, Zap, RefreshCw, 
-  TrendingUp, Key, Users, Check, Gamepad2, Layers, Filter, Compass, BrainCircuit, Target, Star
+  TrendingUp, Key, Users, Check, Gamepad2, Layers, Filter, Compass, BrainCircuit, Target, Star,
+  Film, Volume2, Video, ChevronDown, ChevronUp, Eye, X
 } from 'lucide-react';
 
 // Rich Default Dataset for Multi-Level STEM Curriculum
@@ -103,6 +106,16 @@ const DEFAULT_CURRICULUM_LESSONS = [
     status: 'needs_review',
     summary: 'Balance chemical equations, calculate molar mass stoichiometry ratios, electron orbital configurations, and periodic element trends.',
     sizeKB: 410
+  },
+  {
+    _id: 'lesson-chem-2',
+    title: 'Thermodynamics, Reaction Kinetics & Equilibrium',
+    subject: 'Chemistry',
+    topic: 'Physical Chemistry',
+    level: 'Advanced',
+    status: 'practising',
+    summary: 'Analyze endothermic vs exothermic energy profiles, activation energy barriers, Le Chatelier principle, and chemical equilibrium constants.',
+    sizeKB: 490
   }
 ];
 
@@ -126,6 +139,10 @@ export const StudentHomePage = ({
   const [activeMasteryFilter, setActiveMasteryFilter] = useState('all'); // 'all' | 'mastered' | 'practising' | 'needs_review'
   const [activeLevelFilter, setActiveLevelFilter] = useState('all'); // 'all' | 'beginner' | 'intermediate' | 'advanced'
   const [activeSubjectFilter, setActiveSubjectFilter] = useState('all');
+  
+  // Interactive Video Player states per topic
+  const [expandedInlineVideoId, setExpandedInlineVideoId] = useState(null);
+  const [modalVideoTopic, setModalVideoTopic] = useState(null);
 
   // Ref for auto-scrolling when clicking analytics card
   const curriculumRef = useRef(null);
@@ -959,7 +976,11 @@ export const StudentHomePage = ({
               return (
                 <div 
                   key={lesson._id}
-                  className="bg-white border border-[#E5E2DA] rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-[#F95738]/50 transition-all flex flex-col justify-between group relative"
+                  className={`bg-white border rounded-3xl p-6 shadow-sm transition-all flex flex-col justify-between group relative ${
+                    expandedInlineVideoId === lesson._id 
+                      ? 'border-[#F95738] ring-2 ring-[#F95738]/20 md:col-span-2 lg:col-span-3 shadow-md' 
+                      : 'border-[#E5E2DA] hover:shadow-md hover:border-[#F95738]/50'
+                  }`}
                 >
                   <div className="space-y-3">
                     
@@ -986,6 +1007,35 @@ export const StudentHomePage = ({
                       </span>
                     </div>
 
+                    {/* Illustrated Video Masterclass Banner with Offline Diagram */}
+                    <div 
+                      onClick={() => setExpandedInlineVideoId(prev => prev === lesson._id ? null : lesson._id)}
+                      className="group/video relative aspect-[16/9] w-full rounded-2xl overflow-hidden bg-[#0F172A] border border-[#E5E2DA] cursor-pointer shadow-xs hover:border-[#F95738]/50 transition-all flex flex-col justify-between p-3"
+                    >
+                      <div className="absolute inset-0 opacity-80 group-hover/video:opacity-95 transition-opacity">
+                        <STEMDiagramVisual topicTitle={lesson.title} slideIndex={0} isPlaying={expandedInlineVideoId === lesson._id} />
+                      </div>
+
+                      <div className="relative z-10 flex items-center justify-between">
+                        <span className="bg-[#1E2229]/80 backdrop-blur-xs text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md border border-white/20 flex items-center gap-1">
+                          <Film className="w-3 h-3 text-[#F95738]" /> 02:00 Video
+                        </span>
+                        <span className="bg-[#0D9488]/80 backdrop-blur-xs text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md border border-white/20 flex items-center gap-1">
+                          <Volume2 className="w-3 h-3" /> Voice & Audio
+                        </span>
+                      </div>
+
+                      <div className="relative z-10 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 bg-[#F95738] text-white text-[11px] font-extrabold px-3 py-1 rounded-xl shadow-md group-hover/video:scale-105 transition-transform">
+                          <Play className="w-3 h-3 fill-white" />
+                          <span>{expandedInlineVideoId === lesson._id ? 'Playing Below' : 'Watch Video'}</span>
+                        </div>
+                        <span className="text-[10px] text-gray-200 font-semibold bg-black/60 px-2 py-0.5 rounded backdrop-blur-xs">
+                          Offline Diagram
+                        </span>
+                      </div>
+                    </div>
+
                     {/* Lesson Title & Description */}
                     <div>
                       <h4 className="font-extrabold text-[#1E2229] text-base group-hover:text-[#F95738] transition-colors leading-snug">
@@ -1001,6 +1051,28 @@ export const StudentHomePage = ({
                       <Sparkles className="w-3.5 h-3.5 text-[#F95738] shrink-0" />
                       <span>Adapted for {level} learner level</span>
                     </div>
+
+                    {/* Inline Expanded Video Player Under Topic */}
+                    {expandedInlineVideoId === lesson._id && (
+                      <div className="mt-4 pt-4 border-t border-[#E5E2DA] space-y-3 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-extrabold text-[#F95738] flex items-center gap-1.5">
+                            <Film className="w-4 h-4" /> Live Topic Video Masterclass ({lesson.subject})
+                          </span>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setExpandedInlineVideoId(null); }}
+                            className="text-xs font-bold text-[#5A606C] hover:text-[#1E2229] flex items-center gap-0.5 bg-[#FAF9F6] border border-[#E5E2DA] px-2.5 py-0.5 rounded-lg"
+                          >
+                            <span>Minimize Video</span>
+                            <ChevronUp className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        
+                        <div className="rounded-2xl overflow-hidden border border-[#E5E2DA] shadow-inner">
+                          <MultilingualVideoPlayer topicTitle={lesson.title} />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Direct Topic Action Buttons */}
@@ -1008,32 +1080,43 @@ export const StudentHomePage = ({
                     
                     <div className="grid grid-cols-2 gap-2">
                       <button
-                        onClick={() => onNavigateToLesson(lesson._id)}
-                        className="btn-coral text-xs py-2 px-3 justify-center shadow-xs"
+                        onClick={() => setExpandedInlineVideoId(prev => prev === lesson._id ? null : lesson._id)}
+                        className={`text-xs py-2 px-3 justify-center shadow-xs rounded-xl font-bold flex items-center gap-1.5 transition-all ${
+                          expandedInlineVideoId === lesson._id
+                            ? 'bg-[#1E2229] text-white'
+                            : 'btn-coral'
+                        }`}
                       >
-                        <Play className="w-3.5 h-3.5" />
-                        <span>Watch Video</span>
+                        {expandedInlineVideoId === lesson._id ? (
+                          <>
+                            <ChevronUp className="w-3.5 h-3.5" />
+                            <span>Hide Video</span>
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-3.5 h-3.5 fill-white" />
+                            <span>Watch Video</span>
+                          </>
+                        )}
                       </button>
 
                       <button
-                        onClick={() => onNavigateToQuiz(lesson._id)}
+                        onClick={() => onNavigateToLesson(lesson._id)}
                         className="btn-outline text-xs py-2 px-3 justify-center bg-white text-[#1E2229] hover:bg-[#FAF9F6]"
                       >
-                        <Target className="w-3.5 h-3.5 text-[#F95738]" />
-                        <span>Quiz</span>
+                        <BookOpen className="w-3.5 h-3.5 text-[#4F46E5]" />
+                        <span>Full Guide</span>
                       </button>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
-                      {onNavigateToQuests && (
-                        <button
-                          onClick={onNavigateToQuests}
-                          className="btn-outline text-xs py-1.5 px-2.5 justify-center bg-[#EEF2FF] text-[#4F46E5] border-[#4F46E5]/30 hover:bg-[#E0E7FF]"
-                        >
-                          <Gamepad2 className="w-3.5 h-3.5" />
-                          <span>Games</span>
-                        </button>
-                      )}
+                      <button
+                        onClick={() => onNavigateToQuiz(lesson._id)}
+                        className="btn-outline text-xs py-1.5 px-2.5 justify-center bg-[#EEFDFB] text-[#0D9488] border-[#0D9488]/30 hover:bg-[#CCFBF1]"
+                      >
+                        <Target className="w-3.5 h-3.5" />
+                        <span>Quiz</span>
+                      </button>
 
                       <button
                         onClick={(e) => handleDownloadPack(e, lesson._id)}
